@@ -1,0 +1,11 @@
+*
+!.gitignore
+!EditorBuildSettings.asset
+!InputManager.asset
+!ProjectSettings.asset
+!QualitySettings.asset
+!TagManager.asset
+!TimeManager.asset
+!AudioManager.asset
+!DynamicsManager.asset
+!NetworkManager.asset

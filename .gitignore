@@ -1,0 +1,12 @@
+# this file should be used ignore temp files left behind by editors like vim or mono
+*.orig
+*.swp
+*.bak
+*.unityproj
+*.userprefs
+*.csproj
+*.pidb
+*.sln
+[Bb]uild
+[Tt]emp
+.DS_Store
