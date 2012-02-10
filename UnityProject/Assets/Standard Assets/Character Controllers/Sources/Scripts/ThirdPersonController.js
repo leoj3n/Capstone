@@ -1,6 +1,4 @@
 
-// @TODO: Modify this controller so the character doesn't spin
-
 // Require a character controller to be attached to the same game object
 @script RequireComponent(CharacterController)
 
