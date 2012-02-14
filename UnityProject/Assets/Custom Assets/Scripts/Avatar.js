@@ -23,6 +23,7 @@ public var rotateSpeed = 500.0;
 public var trotAfterSeconds = 3.0;
 public var canJump = true;
 public var jumpSound : AudioClip;
+public var orbPrefab : Rigidbody;
 
 enum CharacterState {
 	Idle = 0,
@@ -35,6 +36,7 @@ enum CharacterState {
 private var _animation : Animation;
 private var playerLetter;
 private var initialZ;
+private var facing = 'left';
 private var _characterState : CharacterState;
 private var jumpRepeatTime = 0.05;
 private var jumpTimeout = 0.15;
@@ -255,8 +257,10 @@ function Update() {
 	// face left or right (to face closest enemy)
 	if( closestDist > 0.0 ) {
 		if (transform.localScale.x < 0.0) transform.localScale.x *= -1; // face left
+		facing = 'left';
 	} else {
 		if (transform.localScale.x > 0.0) transform.localScale.x *= -1; // face right
+		facing = 'right';
 	}
 	
 	// ANIMATION sector
@@ -315,6 +319,12 @@ function Update() {
 	
 	// lock avatar movement along the z-axis
 	transform.position.z = initialZ;
+	
+	if( Input.GetButtonDown( 'Fire1 ' + playerLetter ) ) {
+		var orbClone : Rigidbody = Instantiate( orbPrefab, transform.position, transform.rotation );
+		orbClone.rigidbody.AddForce( Vector3( (facing == 'left' ? -1 : 1), 0, 0 ) * 500.0 );
+		Physics.IgnoreCollision( orbClone.collider, collider );
+	}
 }
 
 function OnControllerColliderHit( hit : ControllerColliderHit ) {
