@@ -1,17 +1,7 @@
 
-// @TODO: Change AnimationClip to MovieTexture
 @script RequireComponent( CharacterController ) // require a "character controller"
 @script RequireComponent( AudioSource ) // require an "audio source"
 
-public var idleAnimation : AnimationClip;
-public var walkAnimation : AnimationClip;
-public var runAnimation : AnimationClip;
-public var jumpPoseAnimation : AnimationClip;
-public var walkMaxAnimationSpeed = 0.75;
-public var trotMaxAnimationSpeed = 1.0;
-public var runMaxAnimationSpeed  = 1.0;
-public var jumpAnimationSpeed = 1.15;
-public var landAnimationSpeed = 1.0;
 public var walkSpeed = 2.0;
 public var trotSpeed = 4.0; // after trotAfterSeconds of walking we trot with trotSpeed
 public var runSpeed = 6.0; // when pressing "Fire3" button (cmd) we start running
@@ -33,7 +23,6 @@ enum CharacterState {
 	Jumping = 4,
 }
 
-private var _animation : Animation;
 private var playerLetter;
 private var initialZ;
 private var facing = 'left';
@@ -60,27 +49,6 @@ private var isControllable = true;
 
 function Awake() {
 	moveDirection = transform.TransformDirection( Vector3.forward );
-	
-	_animation = GetComponent( Animation );
-	if(!_animation)
-		Debug.Log( "The character you would like to control doesn't have animations." );
-	
-	if( !idleAnimation ) {
-		_animation = null;
-		Debug.Log( 'No idle animation found. Turning off animations.' );
-	}
-	if( !walkAnimation ) {
-		_animation = null;
-		Debug.Log( 'No walk animation found. Turning off animations.' );
-	}
-	if( !runAnimation ) {
-		_animation = null;
-		Debug.Log( 'No run animation found. Turning off animations.' );
-	}
-	if( !jumpPoseAnimation && canJump ) {
-		_animation = null;
-		Debug.Log( 'No jump animation found and the character has canJump enabled. Turning off animations.' );
-	}
 	
 	playerLetter = this.name.Substring( (this.name.Length - 3), 3 ); // grab last 3 characters of name string
 	
@@ -120,15 +88,7 @@ function UpdateSmoothedMovementDirection() {
 		// we store speed and direction seperately,
 		// so that when the character stands still we still have a valid forward direction
 		// moveDirection is always normalized, and we only update it if there is user input
-		if( targetDirection != Vector3.zero ) {
-			// if we are really slow, just snap to the target direction
-			//if( moveSpeed < walkSpeed * 0.9 && grounded ) {
-				moveDirection = targetDirection.normalized;
-			//} else { // Otherwise smoothly turn towards it
-			//	moveDirection = Vector3.RotateTowards( moveDirection, targetDirection, rotateSpeed * Mathf.Deg2Rad * Time.deltaTime, 1000 );
-			//	moveDirection = moveDirection.normalized;
-			//}
-		}
+		if (targetDirection != Vector3.zero) moveDirection = targetDirection.normalized;
 		
 		// smooth the speed based on the current target direction
 		var curSmooth = speedSmoothing * Time.deltaTime;
@@ -231,15 +191,6 @@ function Update() {
 	var controller : CharacterController = GetComponent( CharacterController );
 	collisionFlags = controller.Move( movement );
 	
-	/*
-	// face left or right // @TODO: shouldn't the characters be always facing eachother?
-	if( moveDirection.x == 1 ) { // avatar's right
-		if (transform.localScale.x > 0.0) transform.localScale.x *= -1; // face right
-	} else { // avatar's left
-		if (transform.localScale.x < 0.0) transform.localScale.x *= -1; // face left
-	}
-	*/
-	
 	var dist : float = 0.0;
 	var closestDist : float = 999.0;
 	var gofwt = GameObject.FindGameObjectsWithTag( 'Player' );
@@ -262,50 +213,6 @@ function Update() {
 		if (transform.localScale.x > 0.0) transform.localScale.x *= -1; // face right
 		facing = 'right';
 	}
-	
-	// ANIMATION sector
-	/*
-	if( _animation ) {
-		if( _characterState == CharacterState.Jumping ) {
-			if( !jumpingReachedApex ) {
-				_animation[jumpPoseAnimation.name].speed = jumpAnimationSpeed;
-				_animation[jumpPoseAnimation.name].wrapMode = WrapMode.ClampForever;
-				_animation.CrossFade( jumpPoseAnimation.name );
-			} else {
-				_animation[jumpPoseAnimation.name].speed = -landAnimationSpeed;
-				_animation[jumpPoseAnimation.name].wrapMode = WrapMode.ClampForever;
-				_animation.CrossFade( jumpPoseAnimation.name );				
-			}
-		} else {
-			if( controller.velocity.sqrMagnitude < 0.1 ) {
-				_animation.CrossFade( idleAnimation.name );
-			} else {
-				if( _characterState == CharacterState.Running ) {
-					_animation[runAnimation.name].speed = Mathf.Clamp( controller.velocity.magnitude, 0.0, runMaxAnimationSpeed );
-					_animation.CrossFade( runAnimation.name );	
-				} else if( _characterState == CharacterState.Trotting ) {
-					_animation[walkAnimation.name].speed = Mathf.Clamp( controller.velocity.magnitude, 0.0, trotMaxAnimationSpeed );
-					_animation.CrossFade( walkAnimation.name );	
-				} else if( _characterState == CharacterState.Walking ) {
-					_animation[walkAnimation.name].speed = Mathf.Clamp( controller.velocity.magnitude, 0.0, walkMaxAnimationSpeed );
-					_animation.CrossFade( walkAnimation.name );	
-				}
-			}
-		}
-	}
-	*/
-	// ANIMATION sector
-	
-	// set rotation to the move direction
-	/*
-	if( IsGrounded() ) {
-		transform.rotation = Quaternion.LookRotation( moveDirection );
-	} else {
-		var xzMove = movement;
-		xzMove.y = 0;
-		if (xzMove.sqrMagnitude > 0.001) transform.rotation = Quaternion.LookRotation( xzMove );
-	}
-	*/
 	
 	// we are in jump mode but just became grounded
 	if( IsGrounded() ) {

@@ -2,6 +2,7 @@ private var mainTex : MovieTexture;
 private var maskTex : MovieTexture;
 
 public var testTex : MovieTexture;
+public var testTexAlpha : MovieTexture;
 
 function Start() {
 	// these variables cannot be defined outside of start
@@ -16,4 +17,8 @@ function Start() {
 
 function Update() {
 	renderer.material.mainTexture = testTex;
+	renderer.material.SetTexture( '_Mask', testTexAlpha );
+	testTex.loop = testTexAlpha.loop = true;
+	testTex.Play();
+	testTexAlpha.Play();
 }
