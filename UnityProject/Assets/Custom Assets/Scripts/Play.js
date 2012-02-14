@@ -1,6 +1,8 @@
 private var mainTex : MovieTexture;
 private var maskTex : MovieTexture;
 
+public var testTex : MovieTexture;
+
 function Start() {
 	// these variables cannot be defined outside of start
 	mainTex = renderer.material.mainTexture;
@@ -13,5 +15,5 @@ function Start() {
 }
 
 function Update() {
-	// renderer.material.mainTexture = '...'
+	renderer.material.mainTexture = testTex;
 }
