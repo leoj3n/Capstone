@@ -239,6 +239,10 @@ function OnControllerColliderHit( hit : ControllerColliderHit ) {
 	if (hit.moveDirection.y > 0.01) return;
 }
 
+function GetPlayerLetter() {
+	return playerLetter;
+}
+
 function GetSpeed() {
 	return moveSpeed;
 }
