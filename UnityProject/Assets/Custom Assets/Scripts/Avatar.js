@@ -9,7 +9,6 @@ public var inAirControlAcceleration = 3.0;
 public var jumpHeight = 0.5; // how high do we jump when pressing jump and letting go immediately
 public var gravity = 20.0; // the gravity for the character
 public var speedSmoothing = 10.0; // the gravity in controlled descent mode
-public var rotateSpeed = 500.0;
 public var trotAfterSeconds = 3.0;
 public var canJump = true;
 public var jumpSound : AudioClip;
@@ -207,10 +206,10 @@ function Update() {
 	
 	// face left or right (to face closest enemy)
 	if( closestDist > 0.0 ) {
-		if (transform.localScale.x < 0.0) transform.localScale.x *= -1; // face left
+		if (transform.localScale.x > 0.0) transform.localScale.x *= -1; // face left
 		facing = 'left';
 	} else {
-		if (transform.localScale.x > 0.0) transform.localScale.x *= -1; // face right
+		if (transform.localScale.x < 0.0) transform.localScale.x *= -1; // face right
 		facing = 'right';
 	}
 	
