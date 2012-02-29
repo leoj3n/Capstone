@@ -14,7 +14,7 @@ public var canJump = true;
 public var jumpSound : AudioClip;
 public var orbPrefab : Rigidbody;
 
-enum CharacterState {
+private enum CharacterState {
 	Idle = 0,
 	Walking = 1,
 	Trotting = 2,
@@ -24,7 +24,7 @@ enum CharacterState {
 
 private var playerLetter;
 private var initialZ;
-private var facing = 'left';
+private var facing = 1;
 private var _characterState : CharacterState;
 private var jumpRepeatTime = 0.05;
 private var jumpTimeout = 0.15;
@@ -77,7 +77,7 @@ function UpdateSmoothedMovementDirection() {
 		movingBack = false;
 	
 	var wasMoving = isMoving;
-	isMoving = Mathf.Abs( h ) > 0.1 || Mathf.Abs( v ) > 0.1;
+	isMoving = Mathf.Abs( h ) > 0.1;// || Mathf.Abs( v ) > 0.1; // only need to track horizontal movement
 	
 	//var targetDirection = h * right + v * forward; // target direction relative to the camera
 	var targetDirection = h * right; // only need to move left & right
@@ -207,11 +207,14 @@ function Update() {
 	// face left or right (to face closest enemy)
 	if( closestDist > 0.0 ) {
 		if (transform.localScale.x > 0.0) transform.localScale.x *= -1; // face left
-		facing = 'left';
+		facing = -1;
 	} else {
 		if (transform.localScale.x < 0.0) transform.localScale.x *= -1; // face right
-		facing = 'right';
+		facing = 1;
 	}
+	
+	// set movingBack variable
+	movingBack = (moveDirection.x + facing == 0 ? true : false); // Warning: would be subtraction if x-axis were not flipped...
 	
 	// we are in jump mode but just became grounded
 	if( IsGrounded() ) {
@@ -226,9 +229,10 @@ function Update() {
 	// lock avatar movement along the z-axis
 	transform.position.z = initialZ;
 	
-	if( Input.GetButtonDown( 'Fire1 ' + playerLetter ) ) {
-		var orbClone : Rigidbody = Instantiate( orbPrefab, transform.position, transform.rotation );
-		orbClone.rigidbody.AddForce( Vector3( (facing == 'left' ? -1 : 1), 0, 0 ) * 500.0 );
+	// orb test
+	if( Input.GetButtonDown( 'Fire2 ' + playerLetter ) ) {
+		var orbClone : Rigidbody = Instantiate( orbPrefab, transform.position + Vector3( 0, 1, 0 ), transform.rotation );
+		orbClone.rigidbody.AddForce( Vector3( facing, 0, 0 ) * 1000.0 );
 		Physics.IgnoreCollision( orbClone.collider, collider );
 	}
 }
@@ -262,8 +266,8 @@ function IsMovingBackwards() {
 	return movingBack;
 }
 
-function IsMoving() : boolean {
-	return (Mathf.Abs( Input.GetAxisRaw( 'Vertical ' + playerLetter ) ) + Mathf.Abs( Input.GetAxisRaw( 'Horizontal ' + playerLetter ) ) > 0.5);
+function IsMoving() {
+	return isMoving;
 }
 
 function HasJumpReachedApex() {

@@ -1,40 +1,65 @@
 
+private var enqueuedTexture : MovieTexture;
 private var waitFinish : boolean = false;
-
-// these get set in Start()
 private var parentScript : Avatar;
-private var mainTexture : MovieTexture;
+private enum action {
+	idle,
+	jump,
+	jumpBackward,
+	jumpForward,
+	walkBackward,
+	walkForward,
+	fire1,
+	fire2
+}
 
-// these get set in the inspector
-public var jumpTexture : MovieTexture;
-public var fire1Texture : MovieTexture;
-public var fire2Texture : MovieTexture;
+// set in the inspector
+public var textures : MovieTexture[];
+
+function Awake() {
+	parentScript = transform.parent.GetComponent( Avatar );
+	
+	// calling Instantiate makes sure this object has its own MovieTexture instances
+	// (this necessary to avoid the textures-shared-between-objects Start()/Stop() problem)
+	for (var tex in textures) tex = Instantiate( tex );
+}
 
 function Start() {
-	parentScript = transform.parent.GetComponent( Avatar );
-	mainTexture = renderer.material.mainTexture;
-	
-	ForceTexture( mainTexture, true );
+	ForceTexture( textures[action.idle], true );
 }
 
 function Update() {
-	if (!IsPlaying()) waitFinish = false;
+	// set texture here instead of ForceTexture() (otherwise it glitches)
+	if( enqueuedTexture ) {
+		renderer.material.mainTexture.Stop();
+		renderer.material.mainTexture = enqueuedTexture;
+		enqueuedTexture = null;
+	}
+	
+	// can stop waiting if nothing is playing...
+	if (waitFinish && !IsPlaying()) waitFinish = false;
 	
 	switch( true ) {
-		case parentScript.IsJumping():
-			SetTexture( jumpTexture, false );
-			break;
 		case IsButtonDown( 'Fire1' ):
-			SetTexture( fire1Texture, false );
+			SetTexture( textures[action.fire1], false );
 			waitFinish = true;
 			break;
 		case IsButtonDown( 'Fire2' ):
-			SetTexture( fire2Texture, false );
+			SetTexture( textures[action.fire2], false );
 			waitFinish = true;
+			break;
+		case parentScript.IsJumping():
+			if (parentScript.IsMoving())
+				SetTexture( (parentScript.IsMovingBackwards() ? textures[action.jumpBackward] : textures[action.jumpForward]), false );
+			else
+				SetTexture( textures[action.jump], false );
+			break;
+		case parentScript.IsMoving():
+			SetTexture( (parentScript.IsMovingBackwards() ? textures[action.walkBackward] : textures[action.walkForward]), true );
 			break;
 		default:
 			if( !waitFinish ) {
-				SetTexture( mainTexture, true );
+				SetTexture( textures[action.idle], true );
 			}
 			break;
 	}
@@ -53,12 +78,13 @@ function IsPlaying() {
 }
 
 function SetTexture( tex : MovieTexture, loop ) {
-	if (IsCurTex( tex )) return; // abort if already current texture
-	ForceTexture( tex, loop ); // else set texture
+	if (!IsCurTex( tex )) ForceTexture( tex, loop );
 }
 function ForceTexture( tex : MovieTexture, loop ) {
-	renderer.material.mainTexture.Stop();
-	renderer.material.mainTexture = tex;
-	renderer.material.mainTexture.loop = loop;
-	renderer.material.mainTexture.Play();
+	waitFinish = false;
+	
+	tex.loop = loop;
+	tex.Play();
+	
+	enqueuedTexture = tex;
 }
