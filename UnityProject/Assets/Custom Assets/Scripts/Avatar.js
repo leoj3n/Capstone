@@ -14,18 +14,9 @@ public var canJump = true;
 public var jumpSound : AudioClip;
 public var orbPrefab : Rigidbody;
 
-private enum CharacterState {
-	Idle = 0,
-	Walking = 1,
-	Trotting = 2,
-	Running = 3,
-	Jumping = 4,
-}
-
 private var playerLetter;
 private var initialZ;
 private var facing = 1;
-private var _characterState : CharacterState;
 private var jumpRepeatTime = 0.05;
 private var jumpTimeout = 0.15;
 private var groundedTimeout = 0.25;
@@ -95,19 +86,14 @@ function UpdateSmoothedMovementDirection() {
 		// choose target speed
 		// - we want to support analog input but make sure you cant walk faster diagonally than just forward or sideways
 		var targetSpeed = Mathf.Min( targetDirection.magnitude, 1.0 );
-	
-		_characterState = CharacterState.Idle;
 		
 		// pick speed modifier
 		if( Input.GetKey( KeyCode.LeftShift ) | Input.GetKey( KeyCode.RightShift ) ) {
 			targetSpeed *= runSpeed;
-			_characterState = CharacterState.Running;
 		} else if( Time.time - trotAfterSeconds > walkTimeStart ) {
 			targetSpeed *= trotSpeed;
-			_characterState = CharacterState.Trotting;
 		} else {
 			targetSpeed *= walkSpeed;
-			_characterState = CharacterState.Walking;
 		}
 		
 		moveSpeed = Mathf.Lerp( moveSpeed, targetSpeed, curSmooth ); // interpolate moveSpeed -> targetSpeed
@@ -164,8 +150,6 @@ function DidJump() {
 	lastJumpTime = Time.time;
 	lastJumpStartHeight = transform.position.y;
 	lastJumpButtonTime = -10;
-	
-	_characterState = CharacterState.Jumping;
 }
 
 function Update() {

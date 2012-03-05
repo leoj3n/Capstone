@@ -3,6 +3,7 @@ private var enqueuedTexture : MovieTexture;
 private var waitFinish : boolean = false;
 private var parentScript : Avatar;
 private enum action {
+	intro,
 	idle,
 	jump,
 	jumpBackward,
@@ -25,11 +26,12 @@ function Awake() {
 }
 
 function Start() {
-	ForceTexture( textures[action.idle], true );
+	ForceTexture( textures[action.intro], false ); // play avatar intro
+	waitFinish = true;
 }
 
 function Update() {
-	// set texture here instead of ForceTexture() (otherwise it glitches)
+	// do texture setting here instead of ForceTexture() (otherwise it glitches)
 	if( enqueuedTexture ) {
 		renderer.material.mainTexture.Stop();
 		renderer.material.mainTexture = enqueuedTexture;
