@@ -26,6 +26,7 @@ private var moveSpeed = 0.0; // the current x-z move speed
 private var collisionFlags : CollisionFlags; // the last collision flags returned from controller.Move
 private var jumping = false; // are we jumping? (initiated with jump button and not grounded yet)
 private var jumpingReachedApex = false;
+private var blocking = false;
 private var movingBack = false; // are we moving backwards?
 private var isMoving = false; // is the user pressing any keys?
 private var walkTimeStart = 0.0; // when did the user start walking (used for going into trot after a while)
@@ -154,7 +155,10 @@ function DidJump() {
 
 function Update() {
 	if (!isControllable) Input.ResetInputAxes(); // kill all inputs if not controllable
-	if (Input.GetButtonDown( 'Jump ' + playerLetter )) lastJumpButtonTime = Time.time;
+	if (Input.GetAxisRaw( 'Vertical ' + playerLetter ) >= 0.2) lastJumpButtonTime = Time.time;
+	
+	blocking = (Input.GetAxisRaw( 'Vertical ' + playerLetter ) <= -0.2) ? true : false;
+	
 
 	UpdateSmoothedMovementDirection();
 	
@@ -236,6 +240,10 @@ function GetSpeed() {
 
 function IsJumping() {
 	return jumping;
+}
+
+function IsBlocking() {
+	return blocking;
 }
 
 function IsGrounded() {
