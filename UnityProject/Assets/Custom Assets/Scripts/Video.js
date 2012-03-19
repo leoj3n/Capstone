@@ -1,5 +1,4 @@
 
-private var wasBlocking = false;
 private var enqueuedTexture : MovieTexture;
 private var waitFinish : boolean = false;
 private var parentScript : Avatar;
@@ -13,9 +12,7 @@ private enum action {
 	walkForward,
 	fire1,
 	fire2,
-	blockStart,
-	block,
-	blockEnd
+	block
 }
 
 // set in the inspector
@@ -46,27 +43,12 @@ function Update() {
 	if (waitFinish && !IsPlaying()) waitFinish = false;
 	
 	switch( true ) {
-		/*case wasBlocking:
-			SetTexture( textures[action.blockEnd], false );
-			wasBlocking = false;
-			waitFinish = true;
-			break;*/
 		case parentScript.IsBlocking():
-			//if( !wasBlocking ) {
-				//SetTexture( textures[action.blockStart], false );
-				//if (!waitFinish) wasBlocking = true;			
-			//} else {
-				SetTexture( textures[action.block], true );
-			//}
-			
-			waitFinish = true;
+			SetTexture( textures[action.block], true );
 			break;
-		case IsButtonDown( 'Fire1' ):
-			SetTexture( textures[action.fire1], false );
-			waitFinish = true;
-			break;
-		case IsButtonDown( 'Fire2' ):
-			SetTexture( textures[action.fire2], false );
+		case parentScript.IsAttacking():
+			if (parentScript.GetAttack() == 1) SetTexture( textures[action.fire1], false );
+			if (parentScript.GetAttack() == 2) SetTexture( textures[action.fire2], false );
 			waitFinish = true;
 			break;
 		case parentScript.IsJumping():
