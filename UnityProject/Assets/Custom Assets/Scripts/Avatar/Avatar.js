@@ -14,6 +14,20 @@ public var canJump = true;
 public var jumpSound : AudioClip;
 public var orbPrefab : Rigidbody;
 
+private enum states {
+	intro,
+	idle,
+	jump,
+	jumpBackward,
+	jumpForward,
+	walkBackward,
+	walkForward,
+	fire1,
+	fire2,
+	block
+}
+private var state = states.intro;
+
 // STATIC
 private var playerLetter;
 private var initialZ;
@@ -272,13 +286,27 @@ function Update() {
 		Physics.IgnoreCollision( orbClone.collider, collider );
 	}
 	
+	switch( true ) {
+		case blocking:
+			state = states.block;
+			break;
+		default:
+			state = states.idle;
+			break;
+	}
+	
 	// lock avatar movement along the z-axis (should always be at bottom of Update())
 	transform.position.z = initialZ;
 }
 
+////////
 function OnControllerColliderHit( hit : ControllerColliderHit ) {
 	// Debug.DrawRay( hit.point, hit.normal );
 	if (hit.moveDirection.y > 0.01) return;
+}
+
+function OutOfBounds() {
+	Debug.Log( 'Player out of bounds!' );
 }
 
 function GetPlayerLetter() {

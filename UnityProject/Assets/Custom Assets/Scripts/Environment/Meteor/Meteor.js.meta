@@ -1,2 +1,6 @@
 fileFormatVersion: 1
 guid: 9928ddb70ed83664788eb3644f475c2f
+MonoImporter:
+  importerVersion: 1
+  defaultReferences:
+    impactSound: {fileID: 8300000, guid: 70b4c37785fc9d947927c64080d794a5, type: 1}
