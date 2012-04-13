@@ -32,7 +32,11 @@ function Update() {
 
 
 function OnCollisionEnter( collision : Collision ) {
-	if( collision.collider.CompareTag( 'Floor' ) || collision.collider.CompareTag( 'Player' ) ) {	
+	Camera.main.SendMessage( 'AddShake', 0.1 );
+	
+	if( collision.collider.CompareTag( 'Floor' ) || collision.collider.CompareTag( 'Player' ) ) {
+		Camera.main.SendMessage( 'AddShake', 1.0 );
+		
 		/*var rand : int = Random.Range( 5, 10 );
 		for( var i = 0; i < rand; i++ ) {
 			// instantiate debris
