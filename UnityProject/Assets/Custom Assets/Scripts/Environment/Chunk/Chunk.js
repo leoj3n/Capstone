@@ -48,7 +48,7 @@ function OnCollisionEnter( collision : Collision ) {
 		audio.volume = origVolume * (collision.impactForceSum.magnitude / 40);
 		audio.Play();
 	}
-	if( collision.collider.CompareTag( 'Meteor' ) && !dislodged ) {
+	if( !dislodged && collision.collider.CompareTag( 'Meteor' ) ) {
 		rigidbody.constraints = RigidbodyConstraints.None;
 		dislodged = true;
 		gameObject.layer = dislodgedLayer;

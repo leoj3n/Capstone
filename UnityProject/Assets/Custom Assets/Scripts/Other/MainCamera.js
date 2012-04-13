@@ -3,6 +3,7 @@ public var damping : float = 8.0;
 public var minimumY : float = 6.75;
 public var minimumSize : float = 8.0;
 public var padding : float = 2.0;
+public var maximumShake : float = 2.0;
 
 private var avatars : GameObject[];
 private var averagePosition : Vector3;
@@ -55,4 +56,5 @@ function Update() {
 
 function AddShake( amount : float ) {
 	shake += amount;
+	if (shake > maximumShake) shake = maximumShake;
 }

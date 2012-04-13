@@ -9,6 +9,7 @@ private var lastPos : Vector3;
 private var timeUntilExpire : float = 1.0;
 private var playedOnce : boolean = false;
 private var layerMask;
+private var health : float = 100.0;
 
 function Start() {
 	origVolume = audio.volume;
@@ -32,14 +33,15 @@ function Update() {
 
 
 function OnCollisionEnter( collision : Collision ) {
-	Camera.main.SendMessage( 'AddShake', 0.1 );
+	Camera.main.SendMessage( 'AddShake', 0.05 );
+	health -= 15.0;
 	
-	if( collision.collider.CompareTag( 'Floor' ) || collision.collider.CompareTag( 'Player' ) ) {
+	if( (health < 0) || collision.collider.CompareTag( 'Floor' ) || collision.collider.CompareTag( 'Player' ) ) {
 		Camera.main.SendMessage( 'AddShake', 1.0 );
 		
-		/*var rand : int = Random.Range( 5, 10 );
+		/*// instantiate debris
+		var rand : int = Random.Range( 5, 10 );
 		for( var i = 0; i < rand; i++ ) {
-			// instantiate debris
 			//var meteor : Meteor = Instantiate( this, transform.position, transform.rotation );
 		}*/
 		
