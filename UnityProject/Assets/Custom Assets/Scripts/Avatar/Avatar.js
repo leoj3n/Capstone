@@ -30,9 +30,9 @@ private var state = states.intro;
 
 // STATIC
 private var playerLetter;
-private var initialZ;
 private var collisionFlags : CollisionFlags; // the last collision flags returned from controller.Move
 private var facing = 1;
+private var avatars : GameObject[];
 
 // ATTACKING
 private var attackNum = 0;
@@ -71,7 +71,7 @@ function Awake() {
 	
 	playerLetter = this.name.Substring( (this.name.Length - 3), 3 ); // grab last 3 characters of name string
 	
-	initialZ = transform.position.z; // set initial z-axis value, for use  later in Update()
+	avatars = GameObject.FindGameObjectsWithTag( 'Player' );
 }
 
 function UpdateSmoothedMovementDirection() {
@@ -237,15 +237,14 @@ function Update() {
 	
 	var dist : float = 0.0;
 	var closestDist : float = 999.0;
-	var gofwt = GameObject.FindGameObjectsWithTag( 'Player' );
-	for( var gO : GameObject in gofwt ) {
-		if (this.collider == gO.collider) continue; // continue if self
+	for( var avatar : GameObject in avatars ) {
+		if (this.collider == avatar.collider) continue; // continue if self
 		
 		// ignore collision between player objects
-		Physics.IgnoreCollision( this.collider, gO.collider, (jumping ? true : false) );
+		Physics.IgnoreCollision( collider, avatar.collider, (jumping ? true : false) );
 		
 		// update closest dist
-		dist = transform.localPosition.x - gO.transform.localPosition.x;
+		dist = transform.localPosition.x - avatar.transform.localPosition.x;
 		if (Mathf.Abs( dist ) < Mathf.Abs( closestDist )) closestDist = dist;
 	}
 	
@@ -296,7 +295,9 @@ function Update() {
 	}
 	
 	// lock avatar movement along the z-axis (should always be at bottom of Update())
-	transform.position.z = initialZ;
+	transform.position.z = Global.sharedZ;
+	if (transform.position.x > Global.sharedMaxX) transform.position.x = Global.sharedMaxX;
+	if (transform.position.x < Global.sharedMinX) transform.position.x = Global.sharedMinX;
 }
 
 ////////

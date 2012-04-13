@@ -1,16 +1,17 @@
 
+public var dislodgedLayer : int = 10;
+public var debrisPrefab : GameObject;
+
 private var origPos : Vector3;
 private var origRot : Quaternion;
 private var origLayer : int;
 private var origVolume : float;
-private var contactTime : float = 0.0; // @TODO: change to "dislodged" (boolean)
+private var dislodged : boolean = false;
 private var trigger : boolean = false;
 private var debris : GameObject;
 private var posOverTime : ArrayList;
 private var rotOverTime : ArrayList;
 private var frame : int = 0;
-public var dislodgedLayer : int = 10;
-public var debrisPrefab : GameObject;
 
 function Awake() {
 	origPos = transform.position;
@@ -23,7 +24,7 @@ function Awake() {
 }
 
 function Update() {
-	renderer.material.color.a = ((contactTime == 0.0 && trigger) ? 0.30 : 1.0);
+	renderer.material.color.a = ((!dislodged && trigger) ? 0.30 : 1.0);
 	if( frame > 0 ) {
 		transform.position = posOverTime[frame];
 		transform.rotation = rotOverTime[frame--];
@@ -34,9 +35,9 @@ function Update() {
 			rigidbody.constraints = RigidbodyConstraints.FreezeAll;		
 			posOverTime.Clear();
 			rotOverTime.Clear();
-			contactTime = 0.0;
+			dislodged = false;
 		}
-	} else if( (contactTime != 0.0) && (rigidbody.velocity.magnitude > 2.0) && (transform.position.y > -2.0) ) {
+	} else if( dislodged && (rigidbody.velocity.magnitude > 2.0) && (transform.position.y > -2.0) ) {
 			posOverTime.Add( transform.position );
 			rotOverTime.Add( transform.rotation );
 	}
@@ -47,9 +48,9 @@ function OnCollisionEnter( collision : Collision ) {
 		audio.volume = origVolume * (collision.impactForceSum.magnitude / 40);
 		audio.Play();
 	}
-	if( collision.collider.CompareTag( 'Meteor' ) && (contactTime == 0.0) ) {
+	if( collision.collider.CompareTag( 'Meteor' ) && !dislodged ) {
 		rigidbody.constraints = RigidbodyConstraints.None;
-		contactTime = Time.time;
+		dislodged = true;
 		gameObject.layer = dislodgedLayer;
 		debris = Instantiate( debrisPrefab, transform.position, transform.rotation );
 		debris.transform.parent = transform;
@@ -57,7 +58,7 @@ function OnCollisionEnter( collision : Collision ) {
 }
 
 function Reset() {	
-	if( (contactTime != 0.0) ) {
+	if( dislodged ) {
 		frame = (posOverTime.Count - 1);
 		Destroy( debris );
 	}

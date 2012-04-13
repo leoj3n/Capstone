@@ -1,2 +1,7 @@
 fileFormatVersion: 1
 guid: 2ac98777ea372be4ab09b79830cb0647
+MonoImporter:
+  importerVersion: 1
+  defaultReferences:
+    jumpSound: {fileID: 8300000, guid: 0d491d934754d7f49b89143f5e2f748b, type: 1}
+    orbPrefab: {fileID: 5400000, guid: b725465ee740b194bb442a5acd328482, type: 2}

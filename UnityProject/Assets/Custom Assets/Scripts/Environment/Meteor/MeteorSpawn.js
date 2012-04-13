@@ -1,33 +1,25 @@
-public var MeteorPrefab : GameObject = null;
-public var meteorTimer : float = 5.0f;
-public var loop : boolean = true;
-public var MinMeteorSpawn : float = -25.0f;
-public var MaxMeteorSpawn : float = 25.0f;
-private var timerRemaining : float = 5.0f;
-private var spawnLoc : Vector3;
-private var lastSpawn : Vector3;
-private var timerActive : boolean;
+
+public var meteorPrefab : GameObject;
+public var timeBetween : float = 5.0;
+public var yOffset : float = 10.0;
+
+private var lastSpawnTime : float;
+private var range : float;
 
 function Start() {
-	timerActive = true;
-	timerRemaining = meteorTimer;
-	spawnLoc = transform.position;
-	spawnLoc.y = 25.0f;
-	spawnLoc.z += 2.0f;
-	lastSpawn = spawnLoc;
+	lastSpawnTime = Time.time;
 }
 
 function Update() {
-	if (timerActive) timerRemaining -= Time.deltaTime;
-	
-	if( timerRemaining < 0.0f ) {
-		spawnLoc.x = Random.Range( MinMeteorSpawn, MaxMeteorSpawn );
+	if( (Time.time - lastSpawnTime) > timeBetween ) {
+		range = Mathf.Clamp( (camera.orthographicSize * camera.aspect), Global.sharedMinX, Global.sharedMaxX );
 		
-		while (spawnLoc.x == lastSpawn.x) spawnLoc.x = Random.Range( MinMeteorSpawn, MaxMeteorSpawn );
+		Instantiate( meteorPrefab,
+			Vector3( Random.Range( (transform.position.x - range), (transform.position.x + range) ),
+				(transform.position.y + camera.orthographicSize + yOffset),
+				Global.sharedZ ),
+			Quaternion.identity );
 		
-		GameObject.Instantiate( MeteorPrefab, spawnLoc, Quaternion.identity );
-		timerRemaining = meteorTimer;
-		timerActive = loop;
-		lastSpawn = spawnLoc;
+		lastSpawnTime = Time.time;
 	}
 }

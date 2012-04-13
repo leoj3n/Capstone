@@ -1,4 +1,6 @@
 
+public var textures : MovieTexture[];
+
 private var enqueuedTexture : MovieTexture;
 private var waitFinish : boolean = false;
 private var parentScript : Avatar;
@@ -14,9 +16,6 @@ private enum action {
 	fire2,
 	block
 }
-
-// set in the inspector
-public var textures : MovieTexture[];
 
 function Awake() {
 	parentScript = transform.parent.GetComponent( Avatar );

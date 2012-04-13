@@ -1,52 +1,42 @@
-public var magnitude : float = 2.0f;
-public var cameraSubject : Vector3 = new Vector3( 0, 5, 0 );
 
-private var cameraShakeSubject : Vector3;
-private var shakeTimer : float;
-private var timerRemaining : float;
-private var timerActive : boolean;
-private var shakeDone : boolean;
+public var damping : float = 8.0;
+public var minimumY : float = 6.75;
+public var minimumSize : float = 8;
 
-// Use this for initialization
+private var avatars : GameObject[];
+private var averagePosition : Vector3;
+private var largestDistance : float;
+private var distance : float;
+private var t : float;
+
 function Start() {
-	transform.LookAt( cameraSubject );
-	timerActive = false;
-	shakeDone = true;
+	avatars = GameObject.FindGameObjectsWithTag( 'Player' );
+	t = (damping * Time.deltaTime);
 }
 
-// Update is called once per frame
 function Update() {
-	if( timerActive ) {
-		timerRemaining -= Time.deltaTime;
-		cameraShakeSubject = cameraSubject;
+	largestDistance = 0.0;
+	averagePosition = Vector3.zero;
+	
+	for( var i = 0; i < avatars.Length; i++ ) {
+		averagePosition += avatars[i].transform.position;
 		
-		var temp : float;
-		if( timerRemaining < 2/shakeTimer ) {
-			temp = 1 - (timerRemaining/shakeTimer);
-			cameraShakeSubject.x += Random.Range( magnitude * -temp, magnitude * temp ); 
-			cameraShakeSubject.y += Random.Range( magnitude * -temp, magnitude * temp ); 
-			cameraShakeSubject.z += Random.Range( magnitude * -temp, magnitude * temp ); 
-		} else {
-			temp = timerRemaining/shakeTimer;
-			cameraShakeSubject.x += Random.Range( magnitude * -temp, magnitude * temp ); 
-			cameraShakeSubject.y += Random.Range( magnitude * -temp, magnitude * temp ); 
-			cameraShakeSubject.z += Random.Range( magnitude * -temp, magnitude * temp ); 
+		for( var j = 0; j < avatars.Length; j++ ) {
+			distance = Vector3.Distance( avatars[i].transform.position, avatars[j].transform.position );
+			if (distance > largestDistance) largestDistance = distance;
 		}
-		transform.LookAt( cameraShakeSubject );
-		cameraShakeSubject = cameraSubject;
-		
-		if( timerRemaining < 0.5f ){
-			timerActive = false;
-			timerRemaining = shakeTimer;
-		}
-	} else if( !shakeDone ) {
-		transform.LookAt( cameraSubject );
-		shakeDone = true;	
 	}
-}
+	
+	averagePosition /= avatars.Length;
+	//Debug.Log( largestDistance );
+	largestDistance /= 2;
 
-function CameraShake( shakeTime : float ) {
-	timerRemaining = shakeTimer = shakeTime;
-	timerActive = true;
-	shakeDone = false;
+	if (averagePosition.y < minimumY) averagePosition.y = minimumY;
+	if (largestDistance < minimumSize) largestDistance = minimumSize;
+	
+	averagePosition.z = transform.position.z;
+	transform.position = Vector3.Lerp( transform.position, averagePosition, t );
+	transform.LookAt( transform.position );
+	
+	camera.orthographicSize = Mathf.Lerp( camera.orthographicSize, largestDistance, t );
 }

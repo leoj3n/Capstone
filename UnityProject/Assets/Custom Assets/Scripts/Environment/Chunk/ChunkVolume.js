@@ -2,6 +2,7 @@
 public var chunkPrefab : GameObject;
 public var chunkScale : float = 1.0;
 public var timeUntilReset : float = 5.0;
+
 private var lastReset : float;
 private var chunks : ArrayList;
 private var chunkScaleVector : Vector3;
@@ -11,8 +12,8 @@ function Start() {
 	chunkScaleVector = Vector3( chunkScale, chunkScale, chunkScale );
 	renderer.enabled = false; // hide this scene object
 
-	var objectSize : Vector3 = getSize( this );
-	var chunkSize : Vector3 = getSize( chunkPrefab );
+	var objectSize : Vector3 = Global.getSize( this );
+	var chunkSize : Vector3 = Global.getSize( chunkPrefab );
 	
 	chunkSize.Scale( chunkScaleVector ); // anticipate additional scaling
 
@@ -47,22 +48,9 @@ function Start() {
 	}
 }
 
-function getSize( object ) {
-	try {
-		var size : Vector3 = object.GetComponent( MeshFilter ).sharedMesh.bounds.size;
-	} catch( err ) {
-		Debug.LogError( err );
-		return Vector3.zero; // if unable get size of mesh, return zero
-	}
-	
-	return Vector3.Scale( size, object.transform.localScale ); // apply scaling to get final size
-}
-
 function Update() {
 	if( (Time.time - lastReset) > timeUntilReset ) {
-		for( var chunk : GameObject in chunks ) {
-			chunk.SendMessage( 'Reset' );
-		}
+		for (var chunk : GameObject in chunks) chunk.SendMessage( 'Reset' );
 		lastReset = Time.time;
 	}
 }
