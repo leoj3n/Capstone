@@ -7,7 +7,7 @@ public var maximumShake : float = 2.0;
 
 private var avatars : GameObject[];
 private var averagePosition : Vector3;
-private var largestDistance : float;
+static var largestDistance : float;
 private var largestY : float;
 private var orthoSize : float;
 private var t : float;

@@ -1,14 +1,15 @@
 
 public var avatarLayer : int = 8;
 public var impactSound : AudioClip;
-public var impactSoundDistance : float = 14.0;
+public var secondsUntilSoundClimax : float = 0.9;
+public var explodeSound : AudioClip;
 
 private var origVolume : float;
 private var startPos : Vector3;
 private var lastPos : Vector3;
 private var timeUntilExpire : float = 1.0;
 private var playedOnce : boolean = false;
-private var layerMask;
+private var layerMask : int;
 private var health : float = 100.0;
 
 function Start() {
@@ -25,25 +26,42 @@ function Update() {
 	
 	audio.volume = origVolume - ((transform.position.y * 0.75) / startPos.y); // volume is relative to distance from ground
 	
-	if( Physics.Raycast( transform.position, Vector3( 0, -1, 0 ), impactSoundDistance, layerMask ) && !playedOnce ) {
-		Camera.main.audio.PlayOneShot( impactSound );
-		playedOnce = true;
+	if( !playedOnce ) {
+		// distance = (initial velocity * t) + (1/2a * t^2)
+		var dist : float = Mathf.Abs( (rigidbody.velocity.y * secondsUntilSoundClimax) + 
+			(0.5 * Physics.gravity.y * secondsUntilSoundClimax * secondsUntilSoundClimax) );
+		
+		if( Physics.Raycast( transform.position, Vector3( 0, -1, 0 ), dist, layerMask ) ) {
+			Camera.main.audio.PlayOneShot( impactSound ); // play on camera because this gets destroyed
+			playedOnce = true;
+		}
 	}
 }
 
 
 function OnCollisionEnter( collision : Collision ) {
-	Camera.main.SendMessage( 'AddShake', 0.05 );
-	health -= 15.0;
+	Camera.main.SendMessage( 'AddShake', 0.1 );
+	health -= 10.0;
 	
-	if( (health < 0) || collision.collider.CompareTag( 'Floor' ) || collision.collider.CompareTag( 'Player' ) ) {
+	if( (health < 0) || !collision.collider.CompareTag( 'Untagged' ) ) {
 		Camera.main.SendMessage( 'AddShake', 1.0 );
+		Camera.main.audio.PlayOneShot( explodeSound );
+		Camera.main.audio.PlayOneShot( audio.clip, 0.5 );
 		
 		/*// instantiate debris
 		var rand : int = Random.Range( 5, 10 );
 		for( var i = 0; i < rand; i++ ) {
 			//var meteor : Meteor = Instantiate( this, transform.position, transform.rotation );
 		}*/
+		
+		// apply an explosion force to nearby objects
+		var radius = 50.0;
+		var colliders : Collider[] = Physics.OverlapSphere( transform.position, radius );
+		for( var collider : Collider in colliders ) {
+			//if (collider.GetComponent( CharacterController )) collider.GetComponent( CharacterController ).enabled = false;
+			if (!collider) continue;
+			if (collider.rigidbody) collider.rigidbody.AddExplosionForce( 500.0, transform.position, radius, 3.0 );
+		}
 		
 		// detach particle emitters from meteor so they don't get destroyed
 		var emitters : Component[] = GetComponentsInChildren( ParticleEmitter );

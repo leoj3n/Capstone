@@ -37,7 +37,8 @@ function Update() {
 			rotOverTime.Clear();
 			dislodged = false;
 		}
-	} else if( dislodged && (rigidbody.velocity.magnitude > 2.0) && (transform.position.y > -2.0) ) {
+	} else if( dislodged && (rigidbody.velocity.magnitude > 2.0) && 
+		(Vector3.Distance( transform.position, origPos ) < 5.0) && (posOverTime.Count < 12) ) {
 			posOverTime.Add( transform.position );
 			rotOverTime.Add( transform.rotation );
 	}
@@ -45,15 +46,18 @@ function Update() {
 
 function OnCollisionEnter( collision : Collision ) {
 	if( !audio.isPlaying ) {
-		audio.volume = origVolume * (collision.impactForceSum.magnitude / 40);
+		audio.volume = origVolume * (collision.impactForceSum.magnitude / 20);
 		audio.Play();
 	}
+	
 	if( !dislodged && collision.collider.CompareTag( 'Meteor' ) ) {
-		rigidbody.constraints = RigidbodyConstraints.None;
-		dislodged = true;
-		gameObject.layer = dislodgedLayer;
 		debris = Instantiate( debrisPrefab, transform.position, transform.rotation );
 		debris.transform.parent = transform;
+		rigidbody.AddExplosionForce( 400.0, collision.transform.position, 0.0, 0.0, ForceMode.Acceleration );
+		
+		rigidbody.constraints = RigidbodyConstraints.None;
+		gameObject.layer = dislodgedLayer;
+		dislodged = true;
 	}
 }
 

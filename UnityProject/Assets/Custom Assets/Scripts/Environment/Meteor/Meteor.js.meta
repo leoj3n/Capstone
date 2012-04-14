@@ -4,3 +4,4 @@ MonoImporter:
   importerVersion: 1
   defaultReferences:
     impactSound: {fileID: 8300000, guid: 70b4c37785fc9d947927c64080d794a5, type: 1}
+    explodeSound: {fileID: 8300000, guid: 4c98e8eff22d9ff439f0122bdf31d6e9, type: 1}

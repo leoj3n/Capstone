@@ -10,7 +10,7 @@ private var chunkScaleVector : Vector3;
 function Start() {
 	lastReset = Time.time;
 	chunkScaleVector = Vector3( chunkScale, chunkScale, chunkScale );
-	renderer.enabled = false; // hide this scene object
+	renderer.enabled = false; // hide the scene object
 
 	var objectSize : Vector3 = Global.getSize( this );
 	var chunkSize : Vector3 = Global.getSize( chunkPrefab );
@@ -39,6 +39,9 @@ function Start() {
 					
 					 // do additional scaling
 					chunk.transform.localScale = Vector3.Scale( chunk.transform.localScale, chunkScaleVector );
+					
+					// set this volume as parent
+					chunk.transform.parent = transform;
 					
 					// keep track of each chunk in chunks list
 					chunks.Add( chunk.gameObject );
