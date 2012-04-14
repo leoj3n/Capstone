@@ -60,7 +60,7 @@ function OnCollisionEnter( collision : Collision ) {
 		for( var collider : Collider in colliders ) {
 			//if (collider.GetComponent( CharacterController )) collider.GetComponent( CharacterController ).enabled = false;
 			if (!collider) continue;
-			if (collider.rigidbody) collider.rigidbody.AddExplosionForce( 500.0, transform.position, radius, 3.0 );
+			if (collider.rigidbody) collider.rigidbody.AddExplosionForce( 200.0, transform.position, radius, 8.0 );
 		}
 		
 		// detach particle emitters from meteor so they don't get destroyed
