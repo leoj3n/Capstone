@@ -1,5 +1,5 @@
 
-static var sharedZ : float = -1.0;
+static var sharedZ : float = 0.0;
 static var sharedMinX : float = -17.0;
 static var sharedMaxX : float = 17.0;
 

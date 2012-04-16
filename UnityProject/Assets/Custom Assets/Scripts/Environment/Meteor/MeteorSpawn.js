@@ -12,7 +12,7 @@ function Start() {
 
 function Update() {
 	if( (Time.time - lastSpawnTime) > timeBetween ) {
-		range = Mathf.Clamp( (GetComponent( 'MainCamera' ).largestDistance / 2), Global.sharedMinX, Global.sharedMaxX );
+		range = Mathf.Clamp( (GetComponent( 'MainCamera' ).largestX / 2), Global.sharedMinX, Global.sharedMaxX );
 		
 		Instantiate( meteorPrefab,
 			Vector3( Random.Range( (transform.position.x - range), (transform.position.x + range) ),

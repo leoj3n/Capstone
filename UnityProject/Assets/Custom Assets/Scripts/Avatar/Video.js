@@ -30,7 +30,7 @@ function Start() {
 	waitFinish = true;
 }
 
-function Update() {
+function Update() {	
 	// do texture setting here instead of ForceTexture() (otherwise it glitches)
 	if( enqueuedTexture ) {
 		renderer.material.mainTexture.Stop();

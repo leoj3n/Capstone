@@ -40,11 +40,11 @@ function Update() {
 
 
 function OnCollisionEnter( collision : Collision ) {
-	Camera.main.SendMessage( 'AddShake', 0.1 );
+	Camera.main.SendMessage( 'AddShake', 0.05 );
 	health -= 10.0;
 	
 	if( (health < 0) || !collision.collider.CompareTag( 'Untagged' ) ) {
-		Camera.main.SendMessage( 'AddShake', 1.0 );
+		Camera.main.SendMessage( 'AddShake', 0.5 );
 		Camera.main.audio.PlayOneShot( explodeSound );
 		Camera.main.audio.PlayOneShot( audio.clip, 0.5 );
 		
@@ -55,12 +55,12 @@ function OnCollisionEnter( collision : Collision ) {
 		}*/
 		
 		// apply an explosion force to nearby objects
-		var radius = 50.0;
+		var radius = 10.0;
 		var colliders : Collider[] = Physics.OverlapSphere( transform.position, radius );
 		for( var collider : Collider in colliders ) {
 			//if (collider.GetComponent( CharacterController )) collider.GetComponent( CharacterController ).enabled = false;
 			if (!collider) continue;
-			if (collider.rigidbody) collider.rigidbody.AddExplosionForce( 200.0, transform.position, radius, 8.0 );
+			if (collider.rigidbody) collider.rigidbody.AddExplosionForce( 200.0 + (collision.impactForceSum.magnitude * 20), transform.position, radius, 8.0 );
 		}
 		
 		// detach particle emitters from meteor so they don't get destroyed
