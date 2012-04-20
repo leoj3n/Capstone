@@ -1,4 +1,5 @@
 
+static var avatars : GameObject[];
 static var sharedZ : float = 0.0;
 static var sharedMinX : float = -17.0;
 static var sharedMaxX : float = 17.0;

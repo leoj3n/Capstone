@@ -22,7 +22,7 @@ function Awake() {
 	
 	// calling Instantiate makes sure this object has its own MovieTexture instances
 	// (this necessary to avoid the textures-shared-between-objects Start()/Stop() problem)
-	for (var tex in textures) tex = Instantiate( tex );
+	//for (var tex in textures) tex = Instantiate( tex );
 }
 
 function Start() {

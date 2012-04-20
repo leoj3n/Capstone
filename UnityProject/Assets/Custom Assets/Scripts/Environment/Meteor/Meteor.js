@@ -3,6 +3,7 @@ public var avatarLayer : int = 8;
 public var impactSound : AudioClip;
 public var secondsUntilSoundClimax : float = 0.9;
 public var explodeSound : AudioClip;
+public var detonatorPrefab : GameObject;
 
 private var origVolume : float;
 private var startPos : Vector3;
@@ -48,20 +49,16 @@ function OnCollisionEnter( collision : Collision ) {
 		Camera.main.audio.PlayOneShot( explodeSound );
 		Camera.main.audio.PlayOneShot( audio.clip, 0.5 );
 		
-		/*// instantiate debris
-		var rand : int = Random.Range( 5, 10 );
-		for( var i = 0; i < rand; i++ ) {
-			//var meteor : Meteor = Instantiate( this, transform.position, transform.rotation );
-		}*/
+		GameObject.Instantiate( detonatorPrefab, transform.position, Quaternion.identity );
 		
 		// apply an explosion force to nearby objects
-		var radius = 10.0;
+		/*var radius = 10.0;
 		var colliders : Collider[] = Physics.OverlapSphere( transform.position, radius );
 		for( var collider : Collider in colliders ) {
 			//if (collider.GetComponent( CharacterController )) collider.GetComponent( CharacterController ).enabled = false;
 			if (!collider) continue;
 			if (collider.rigidbody) collider.rigidbody.AddExplosionForce( 200.0 + (collision.impactForceSum.magnitude * 20), transform.position, radius, 8.0 );
-		}
+		}*/
 		
 		// detach particle emitters from meteor so they don't get destroyed
 		var emitters : Component[] = GetComponentsInChildren( ParticleEmitter );
@@ -74,8 +71,6 @@ function OnCollisionEnter( collision : Collision ) {
 		Destroy( gameObject ); // destroy this meteor
 	}
 }
-
-
 
 /*
 	// Check if the collider we hit has a rigidbody

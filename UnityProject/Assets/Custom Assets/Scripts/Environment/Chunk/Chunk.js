@@ -53,7 +53,7 @@ function OnCollisionEnter( collision : Collision ) {
 	if( !dislodged && collision.collider.CompareTag( 'Meteor' ) ) {
 		debris = Instantiate( debrisPrefab, transform.position, transform.rotation );
 		debris.transform.parent = transform;
-		rigidbody.AddExplosionForce( 400.0, collision.transform.position, 0.0, 0.0, ForceMode.Acceleration );
+		rigidbody.AddExplosionForce( (collision.impactForceSum.magnitude * 20), collision.transform.position, 0.0, 0.0, ForceMode.Acceleration );
 		
 		rigidbody.constraints = RigidbodyConstraints.None;
 		gameObject.layer = dislodgedLayer;
