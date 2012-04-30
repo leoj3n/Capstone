@@ -4,7 +4,7 @@ public var targets : GameObject[];
 private var current : int = 0;
 private var desiredRot : Quaternion;
 
-function Start() {
+function Awake() {
 	setDesiredRot();
 }
 

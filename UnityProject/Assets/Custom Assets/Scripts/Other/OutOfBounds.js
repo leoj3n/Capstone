@@ -1,4 +1,4 @@
 
 function OnTriggerEnter( other : Collider ) {
-	other.transform.SendMessage( 'OutOfBounds', null, SendMessageOptions.DontRequireReceiver );
+	other.transform.BroadcastMessage( 'OutOfBounds', SendMessageOptions.DontRequireReceiver );
 }

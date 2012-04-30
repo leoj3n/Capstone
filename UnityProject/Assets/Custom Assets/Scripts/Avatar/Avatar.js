@@ -1,19 +1,19 @@
 
-@script RequireComponent( CharacterController ) // require a "character controller"
-@script RequireComponent( AudioSource ) // require an "audio source"
+@script RequireComponent( CharacterController )
+@script RequireComponent( AudioSource )
 
-public var walkSpeed = 2.0;
-public var trotSpeed = 4.0; // after trotAfterSeconds of walking we trot with trotSpeed
-public var runSpeed = 6.0; // when pressing "Fire3" button (cmd) we start running
-public var inAirControlAcceleration = 3.0;
-public var jumpHeight = 0.5; // how high do we jump when pressing jump and letting go immediately
-public var gravity = 20.0; // the gravity for the character
-public var speedSmoothing = 10.0; // the gravity in controlled descent mode
-public var trotAfterSeconds = 3.0;
-public var canJump = true;
-public var jumpSound : AudioClip;
-public var orbPrefab : Rigidbody;
+// STATIC
+private var template : AvatarTemplate;
+private var playerLetter : String = 'A';
+private var collisionFlags : CollisionFlags;
+protected var gravity : float = 50.0;
+protected var groundedAcceleration : float = 6.0;
+protected var inAirAcceleration : float = 3.0;
 
+// STATE
+protected var facing : int = 1;
+protected var canJump : boolean = true;
+protected var isControllable : boolean = true;
 private enum states {
 	intro,
 	idle,
@@ -26,131 +26,104 @@ private enum states {
 	fire2,
 	block
 }
-private var state = states.intro;
+public var state : states;
 
-// STATIC
-private var playerLetter;
-private var collisionFlags : CollisionFlags; // the last collision flags returned from controller.Move
-private var facing = 1;
-private var avatars : GameObject[];
-
-// ATTACKING
-private var attackNum = 0;
-private var attacking = false;
-private var attackTimeout = 0.15;
-private var attackRepeatTime = 0.05;
-private var lastAttackButtonTime = -10.0;
-private var lastAttackTime = -1.0;
-
-// BLOCKING
-private var blocking = false;
+// HEALTH
+protected var health : float = 100.0;
 
 // JUMPING
-private var jumping = false;
-private var jumpTimeout = 0.15;
-private var jumpRepeatTime = 0.05;
-private var groundedTimeout = 0.25;
-private var lastJumpButtonTime = -10.0;
-private var lastJumpTime = -1.0;
-private var lastGroundedTime = 0.0;
-private var lastJumpStartHeight = 0.0; // the height we jumped from
-private var jumpingReachedApex = false;
-private var verticalSpeed = 0.0; // the current vertical speed
-private var inAirVelocity = Vector3.zero;
+protected var jumping : boolean = false;
+private var jumpTimeout : float = 0.15;
+private var jumpRepeatTime : float = 0.05;
+private var groundedTimeout : float = 0.25;
+private var lastJumpButtonTime : float = -10.0;
+private var lastJumpTime : float = -1.0;
+private var lastGroundedTime : float = 0.0;
+protected var lastJumpStartHeight : float = 0.0; // the height we jumped from
+protected var verticalSpeed : float = 0.0; // the current vertical speed
+protected var inAirVelocity : Vector3 = Vector3.zero;
 
 // MOVEMENT
-private var moveDirection = Vector3.zero; // the current move direction in x-z
-private var moveSpeed = 0.0; // the current x-z move speed
-private var isControllable = true;
-private var movingBack = false; // are we moving backwards?
-private var isMoving = false; // is the user pressing any keys?
-private var walkTimeStart = 0.0; // when did the user start walking (used for going into trot after a while)
+protected var moveDirection : Vector3 = Vector3.zero; // the current move direction in x-z
+protected var moveSpeed : float = 0.0; // the current x-z move speed
+protected var movingBack : boolean = false; // are we moving backwards?
+protected var isMoving : boolean = false; // is the user pressing any keys?
 
-function Awake() {
+function Start() {
 	moveDirection = transform.TransformDirection( Vector3.forward );
 	
-	playerLetter = this.name.Substring( (this.name.Length - 3), 3 ); // grab last 3 characters of name string
-	
-	avatars = GameObject.FindGameObjectsWithTag( 'Player' );
+	template = GetComponentInChildren( AvatarTemplate );
 }
 
-function UpdateSmoothedMovementDirection() {
-	var cameraTransform = Camera.main.transform;
-	var grounded = IsGrounded();
+function Update() {
+	if (!isControllable) Input.ResetInputAxes(); // kill all inputs if not controllable
 	
+	if (GetAxis( 'Vertical' ) >= 0.2) lastJumpButtonTime = Time.time; // jump
+
+	updateSmoothedMovementDirection();
+	
+	// apply gravity
+	verticalSpeed = (IsGrounded() ? 0.0 : (verticalSpeed - (gravity * Time.deltaTime)));
+
+	applyJumping();
+	
+	// move the controller
+	collisionFlags = GetComponent( CharacterController ).Move( 
+		((moveDirection * moveSpeed + Vector3( 0, verticalSpeed, 0 ) + inAirVelocity) * Time.deltaTime) );
+	
+	// we are in jump mode but just became grounded
+	if( IsGrounded() ) {
+		lastGroundedTime = Time.time;
+		inAirVelocity = Vector3.zero;
+		if( jumping ) {
+			jumping = false;
+			SendMessage( 'DidLand', SendMessageOptions.DontRequireReceiver );
+		}
+	}
+	
+	faceNearestEnemy();
+	
+	stateSetup();
+	
+	enforceBounds();
+} // Update()
+
+function updateSmoothedMovementDirection() {
 	// forward vector relative to the camera along the x-z plane	
-	var forward = cameraTransform.TransformDirection( Vector3.forward );
+	var forward = Camera.main.transform.TransformDirection( Vector3.forward );
 	forward.y = 0;
 	forward = forward.normalized;
 
-	// right vector relative to the camera
-	// always orthogonal to the forward vector
+	// right vector relative to the camera, always orthogonal to the forward vector
 	var right = Vector3( forward.z, 0, -forward.x );
 
 	var v = GetAxis( 'Vertical' );
 	var h = GetAxis( 'Horizontal' );
 
-	// are we moving backwards or looking backwards
-	if (v < -0.2)
-		movingBack = true;
-	else
-		movingBack = false;
+	movingBack = ((v < -0.2) ? true : false);
 	
 	var wasMoving = isMoving;
-	isMoving = Mathf.Abs( h ) > 0.1;// || Mathf.Abs( v ) > 0.1; // only need to track horizontal movement
+	isMoving = (Mathf.Abs( h ) > 0.1);
 	
-	//var targetDirection = h * right + v * forward; // target direction relative to the camera
-	var targetDirection = h * right; // only need to move left & right
+	var targetDirection = (h * right); // x-axis user input
 	
 	// grounded controls
-	if( grounded ) {
-		// we store speed and direction seperately,
-		// so that when the character stands still we still have a valid forward direction
+	if( IsGrounded() ) {
 		// moveDirection is always normalized, and we only update it if there is user input
 		if (targetDirection != Vector3.zero) moveDirection = targetDirection.normalized;
-		
-		// smooth the speed based on the current target direction
-		var curSmooth = speedSmoothing * Time.deltaTime;
-		
+				
 		// choose target speed
 		// - we want to support analog input but make sure you cant walk faster diagonally than just forward or sideways
-		var targetSpeed = Mathf.Min( targetDirection.magnitude, 1.0 );
+		var targetSpeed = Mathf.Min( targetDirection.magnitude, 1.0 ) * template.walkSpeed;
 		
-		// pick speed modifier
-		if( Input.GetKey( KeyCode.LeftShift ) | Input.GetKey( KeyCode.RightShift ) ) {
-			targetSpeed *= runSpeed;
-		} else if( Time.time - trotAfterSeconds > walkTimeStart ) {
-			targetSpeed *= trotSpeed;
-		} else {
-			targetSpeed *= walkSpeed;
-		}
-		
-		moveSpeed = Mathf.Lerp( moveSpeed, targetSpeed, curSmooth ); // interpolate moveSpeed -> targetSpeed
-		
-		if (moveSpeed < walkSpeed * 0.3) walkTimeStart = Time.time; // reset walk time start when we slow down
+		moveSpeed = Mathf.Lerp( moveSpeed, targetSpeed, (groundedAcceleration * Time.deltaTime) ); // interpolate moveSpeed -> targetSpeed
 	} else { // in air controls
 		if (isMoving)
-			inAirVelocity += targetDirection.normalized * Time.deltaTime * inAirControlAcceleration;
+			inAirVelocity += (targetDirection.normalized * Time.deltaTime * inAirAcceleration);
 	}
-}
+} // updateSmoothedMovementDirection()
 
-/////////////////// LOGIC ////////////////////////////////////////////////////////
-/*function ApplyAttacking() {
-	// prevent attacking too fast after each other
-	if (lastAttackTime + attackRepeatTime > Time.time) return;
-
-	if( IsGrounded() ) {
-		// attack
-		// - only when pressing the button down
-		// - with a timeout so you can press the button slightly before...	
-		if( canJump && Time.time < lastJumpButtonTime + attackTimeout ) {
-			audio.PlayOneShot( jumpSound ); // @TODO: change to attackSound
-			SendMessage( 'AttackBegin', SendMessageOptions.DontRequireReceiver );
-		}
-	}
-}*/
-
-function ApplyJumping() {
+function applyJumping() {
 	// prevent jumping too fast after each other
 	if (lastJumpTime + jumpRepeatTime > Time.time) return;
 
@@ -158,90 +131,30 @@ function ApplyJumping() {
 		// jump
 		// - only when pressing the button down
 		// - with a timeout so you can press the button slightly before landing		
-		if( canJump && Time.time < lastJumpButtonTime + jumpTimeout ) {
-			audio.PlayOneShot( jumpSound );
-			verticalSpeed = CalculateJumpVerticalSpeed( jumpHeight );
+		if( canJump && (Time.time < (lastJumpButtonTime + jumpTimeout)) ) {
+			audio.PlayOneShot( template.jumpSound );
+			verticalSpeed = Mathf.Sqrt( 2 * template.jumpHeight * gravity );
 			SendMessage( 'DidJump', SendMessageOptions.DontRequireReceiver );
 		}
 	}
 }
 
-function ApplyGravity() {
-	if (isControllable) { // don't move player at all if not controllable
-		var jumpButton = Input.GetButton( 'Jump ' + playerLetter ); // apply gravity
-		
-		// when we reach the apex of the jump we send out a message
-		if( jumping && !jumpingReachedApex && verticalSpeed <= 0.0 ) {
-			jumpingReachedApex = true;
-			SendMessage( 'DidJumpReachApex', SendMessageOptions.DontRequireReceiver );
-		}
-	
-		if (IsGrounded())
-			verticalSpeed = 0.0;
-		else
-			verticalSpeed -= gravity * Time.deltaTime;
-	}
-}
-/////////////////// END LOGIC ////////////////////////////////////////////////////
-
-
-/////////////////// HELPERS ////////////////////////////////////////////////////////
-function CalculateJumpVerticalSpeed( targetJumpHeight : float ) {
-	// from the jump height and gravity we deduce the upwards speed 
-	// for the character to reach at the apex
-	return Mathf.Sqrt( 2 * targetJumpHeight * gravity );
-}
-
-/*function AttackBegin() {
-	attacking = true;
-	lastAttackTime = Time.time;
-	lastAttackButtonTime = -10;
-}*/
-
 function DidJump() {
 	jumping = true;
-	jumpingReachedApex = false;
 	lastJumpTime = Time.time;
-	lastJumpStartHeight = transform.position.y;
 	lastJumpButtonTime = -10;
+	lastJumpStartHeight = transform.position.y;
 }
-/////////////////// END HELPERS ////////////////////////////////////////////////////
 
-function Update() {
-	if (!isControllable) Input.ResetInputAxes(); // kill all inputs if not controllable
-	
-	if (GetAxis( 'Vertical' ) >= 0.2) lastJumpButtonTime = Time.time; // jump
-	if (IsButtonDown( 'Fire1' )) attackNum = 1;
-	if (IsButtonDown( 'Fire2' )) attackNum = 2;
-	if (attackNum != 0) lastAttackButtonTime = Time.time;
-	blocking = (!isMoving && GetAxis( 'Vertical' ) <= -0.2) ? true : false; // block
+function IsGrounded() {
+	return ((collisionFlags & CollisionFlags.CollidedBelow) != 0);
+}
 
-	UpdateSmoothedMovementDirection();
-	
-	// apply gravity
-	// - extra power jump modifies gravity
-	// - controlledDescent mode modifies gravity
-	ApplyGravity();
-
-	// apply logic
-	//ApplyAttacking();
-	ApplyJumping();
-	
-	// calculate actual motion
-	var movement = moveDirection * moveSpeed + Vector3( 0, verticalSpeed, 0 ) + inAirVelocity;
-	movement *= Time.deltaTime;
-	
-	// move the controller
-	var controller : CharacterController = GetComponent( CharacterController );
-	collisionFlags = controller.Move( movement );
-	
+function faceNearestEnemy() {
 	var dist : float = 0.0;
 	var closestDist : float = 999.0;
-	for( var avatar : GameObject in avatars ) {
-		if (this.collider == avatar.collider) continue; // continue if self
-		
-		// ignore collision between player objects
-		Physics.IgnoreCollision( collider, avatar.collider, (jumping ? true : false) );
+	for( var avatar : GameObject in Manager.avatars ) {
+		if (collider == avatar.collider) continue; // continue if self
 		
 		// update closest dist
 		dist = transform.localPosition.x - avatar.transform.localPosition.x;
@@ -257,115 +170,102 @@ function Update() {
 		facing = 1;
 	}
 	
-	// set movingBack variable
-	movingBack = (moveDirection.x + facing == 0 ? true : false); // Warning: would be subtraction if x-axis were not flipped...
-	
-	/////////////////////////////////////////////////////////////////////
-	// we are in jump mode but just became grounded
-	if( IsGrounded() ) {
-		lastGroundedTime = Time.time;
-		inAirVelocity = Vector3.zero;
-		if( jumping ) {
-			jumping = false;
-			SendMessage( 'DidLand', SendMessageOptions.DontRequireReceiver );
-		}
-		if( attacking ) {
-			attacking = false;
-			SendMessage( 'AttackEnd', SendMessageOptions.DontRequireReceiver );
-		}		
-	} else {
-		attacking = false;
-	}
-	////////////////////////////////////////////////////////////////////
-	
-	// orb test
-	if( Input.GetButtonDown( 'Fire2 ' + playerLetter ) ) {
-		var orbClone : Rigidbody = Instantiate( orbPrefab, transform.position + Vector3( 0, 1, 0 ), transform.rotation );
-		orbClone.rigidbody.AddForce( Vector3( facing, 0, 0 ) * 1000.0 );
-		Physics.IgnoreCollision( orbClone.collider, collider );
-	}
+	// set movingBack variable TODO: does this really need to be set twice?
+	movingBack = (((moveDirection.x - facing) == 0) ? true : false);
+}
+
+function stateSetup() {	
+	var blocking : boolean = (!isMoving && (GetAxis( 'Vertical' ) <= -0.2)) ? true : false; // block
+	var knockback : boolean = false;
+	var fire1 : boolean = IsButton( 'Fire1' );
 	
 	switch( true ) {
 		case blocking:
 			state = states.block;
+			break;
+		case jumping:
+			state = states.jump; // forward/backwards
+			break;
+		case knockback:
+			state = states.jump; // forward/backwards
+			break;
+		case fire1:
+			template.Special2();
+			state = states.fire1;
 			break;
 		default:
 			state = states.idle;
 			break;
 	}
 	
-	// lock avatar movement along the z-axis (should always be at bottom of Update())
+	state = states.idle; // Debug.
+	
+	BroadcastMessage( 'TextureAtlasIndex', parseInt( state ), SendMessageOptions.DontRequireReceiver );
+}
+
+function enforceBounds() {
 	transform.position.z = Global.sharedZ;
 	if (transform.position.x > Global.sharedMaxX) transform.position.x = Global.sharedMaxX;
 	if (transform.position.x < Global.sharedMinX) transform.position.x = Global.sharedMinX;
 }
 
-////////
-function OnControllerColliderHit( hit : ControllerColliderHit ) {
-	// Debug.DrawRay( hit.point, hit.normal );
-	if (hit.moveDirection.y > 0.01) return;
+function addExplosionForce( pos : Vector3, force : float, damping : float ) {	
+	var dist : float = Mathf.Max( Vector3.Distance( pos, transform.position ), 1.0 );
+	
+	var dir : Vector3 = (transform.position - pos).normalized;
+	
+	var explosionForce : Vector3 = ((dir * force) / (dist));
+	if (explosionForce.y < 0.0) explosionForce.y = 0.0;
+	explosionForce.y += 0.1; // add upward bias
+	
+	var damage : float = ((force * damping) / dist);
+	health -= (damage * damage);
+	
+	// apply explosion force via co-routine
+	while( explosionForce != Vector3.zero ) {
+		explosionForce = Vector3.Slerp( explosionForce, Vector3.zero, (Time.deltaTime * damping) );
+		transform.GetComponent( CharacterController ).Move( explosionForce );
+		yield;
+	}
+}
+
+function SetPlayerLetter( letter : String ) {
+	playerLetter = letter;
+	gameObject.name = 'Avatar (' + letter + ')';
+}
+
+function IsButtonDown( button ) {
+	return Input.GetButtonDown( button + ' (' + playerLetter + ')' );
+}
+
+function IsButton( button ) {
+	return Input.GetButton( button + ' (' + playerLetter + ')' );
+}
+
+function GetAxis( axis ) {
+	return Input.GetAxisRaw( axis + ' (' + playerLetter + ')' );
 }
 
 function OutOfBounds() {
 	Debug.Log( 'Player out of bounds!' );
 }
 
-function GetPlayerLetter() {
-	return playerLetter;
-}
-
-function IsButtonDown( button ) {
-	return Input.GetButtonDown( button + ' ' + playerLetter );
-}
-
-function GetAxis( axis ) {
-	return Input.GetAxisRaw( axis + ' ' + playerLetter );
-}
-
-function GetSpeed() {
-	return moveSpeed;
-}
-
-function IsJumping() {
-	return jumping;
-}
-
-function IsBlocking() {
-	return blocking;
-}
-
-function IsAttacking() {
-	return attacking;
-}
-
-function GetAttack() {
-	return attackNum;
-}
-
-function IsGrounded() {
-	return ((collisionFlags & CollisionFlags.CollidedBelow) != 0);
-}
-
-function GetDirection() {
-	return moveDirection;
-}
-
-function IsMovingBackwards() {
-	return movingBack;
-}
-
-function IsMoving() {
-	return isMoving;
-}
-
-function HasJumpReachedApex() {
-	return jumpingReachedApex;
-}
-
-function IsGroundedWithTimeout() {
-	return lastGroundedTime + groundedTimeout > Time.time;
-}
-
 function Reset() {
 	gameObject.tag = 'Player';
+	gameObject.layer = 8;
+	transform.position = Vector3.zero;
+	transform.rotation = Quaternion.identity;
+	transform.localScale = Vector3( 1.0, 1.0, -1.0 );
+}
+
+// push props away
+function OnControllerColliderHit( hit : ControllerColliderHit ) {
+	if (!hit.gameObject.CompareTag( 'Prop' )) return; // only do so for props
+	var body : Rigidbody = hit.collider.attachedRigidbody;
+	if ((body == null) || body.isKinematic) return;
+	if (hit.moveDirection.y < -0.3) return; // dont push objects down
+	
+	var pushDir : Vector3 = Vector3( hit.moveDirection.x, 0, hit.moveDirection.z );
+	
+	body.velocity = pushDir; // possibility: incorporate body.mass
 }

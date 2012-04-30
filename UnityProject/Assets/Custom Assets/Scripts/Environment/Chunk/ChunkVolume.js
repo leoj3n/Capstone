@@ -53,7 +53,7 @@ function Start() {
 
 function Update() {
 	if( (Time.time - lastReset) > timeUntilReset ) {
-		for (var chunk : GameObject in chunks) chunk.SendMessage( 'Reset' );
+		for (var chunk : GameObject in chunks) chunk.SendMessage( 'Return' );
 		lastReset = Time.time;
 	}
 }

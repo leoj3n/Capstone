@@ -5,7 +5,6 @@ public var minimumSize : float = 8.0;
 public var padding : float = 2.0;
 public var maximumShake : float = 2.0;
 
-private var avatars : GameObject[];
 private var averagePosition : Vector3;
 private var largestDistance : float;
 static var largestX : float;
@@ -13,22 +12,18 @@ private var largestY : float;
 private var t : float;
 private var shake : float = 0.0;
 
-function Start() {
-	avatars = GameObject.FindGameObjectsWithTag( 'Player' );
-}
-
 function Update() {
 	largestDistance = largestX = largestY = 0.0;
 	averagePosition = Vector3.zero;
 	t = (damping * Time.deltaTime);
 	
-	for( var i = 0; i < avatars.Length; i++ ) {
-		var iPos : Vector3 = avatars[i].transform.position;
+	for( var i = 0; i < Manager.avatars.Length; i++ ) {
+		var iPos : Vector3 = Manager.avatars[i].transform.position;
 		
-		averagePosition += avatars[i].transform.position;
+		averagePosition += Manager.avatars[i].transform.position;
 		
-		for( var j = 0; j < avatars.Length; j++ ) {
-			var jPos : Vector3 = avatars[j].transform.position;
+		for( var j = 0; j < Manager.avatars.Length; j++ ) {
+			var jPos : Vector3 = Manager.avatars[j].transform.position;
 			
 			var distance : float = Vector3.Distance( iPos, jPos );
 			if (distance > largestDistance) largestDistance = distance;
@@ -41,7 +36,7 @@ function Update() {
 		}
 	}
 	
-	averagePosition /= avatars.Length;
+	averagePosition /= Manager.avatars.Length;
 	
 	if (averagePosition.y < minimumY) averagePosition.y = minimumY;
 	

@@ -19,6 +19,7 @@ function Awake() {
 	origLayer = gameObject.layer;
 	origVolume = audio.volume;
 	rigidbody.constraints = RigidbodyConstraints.FreezeAll;
+	rigidbody.isKinematic = true;
 	posOverTime = new ArrayList();
 	rotOverTime = new ArrayList();
 }
@@ -32,15 +33,17 @@ function Update() {
 			transform.position = origPos;
 			transform.rotation = origRot;
 			gameObject.layer = origLayer;
-			rigidbody.constraints = RigidbodyConstraints.FreezeAll;		
+			rigidbody.constraints = RigidbodyConstraints.FreezeAll;
+			rigidbody.isKinematic = true;
 			posOverTime.Clear();
 			rotOverTime.Clear();
 			dislodged = false;
 		}
-	} else if( dislodged && (rigidbody.velocity.magnitude > 2.0) && 
-		(Vector3.Distance( transform.position, origPos ) < 5.0) && (posOverTime.Count < 12) ) {
+	} else if( dislodged ) {
+		if( (posOverTime.Count < 1) || ((Vector3.Distance( transform.position, origPos ) < 5.0) && (posOverTime.Count < 12)) ) {
 			posOverTime.Add( transform.position );
 			rotOverTime.Add( transform.rotation );
+		}
 	}
 }
 
@@ -51,17 +54,18 @@ function OnCollisionEnter( collision : Collision ) {
 	}
 	
 	if( !dislodged && collision.collider.CompareTag( 'Meteor' ) ) {
+		rigidbody.constraints = RigidbodyConstraints.None;
+		rigidbody.isKinematic = false;
+		gameObject.layer = dislodgedLayer;
+		dislodged = true;
+		
 		debris = Instantiate( debrisPrefab, transform.position, transform.rotation );
 		debris.transform.parent = transform;
 		rigidbody.AddExplosionForce( (collision.impactForceSum.magnitude * 20), collision.transform.position, 0.0, 0.0, ForceMode.Acceleration );
-		
-		rigidbody.constraints = RigidbodyConstraints.None;
-		gameObject.layer = dislodgedLayer;
-		dislodged = true;
 	}
 }
 
-function Reset() {	
+function Return() {
 	if( dislodged ) {
 		frame = (posOverTime.Count - 1);
 		Destroy( debris );
@@ -70,4 +74,12 @@ function Reset() {
 
 function setTrigger( bool : boolean ) {
 	trigger = bool;
+}
+
+function OnTriggerStay( other : Collider ) {
+	if (other.collider.CompareTag( 'Meteor' )) rigidbody.isKinematic = false;
+}
+
+function OnTriggerExit( other : Collider ) {
+	if (!dislodged && other.collider.CompareTag( 'Meteor' )) rigidbody.isKinematic = true;
 }
