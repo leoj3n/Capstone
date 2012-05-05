@@ -8,7 +8,7 @@ static var avatars : GameObject[];
 function Awake() {	
 	avatars = new GameObject[numPlayers];
 	for( i = 0; i < numPlayers; i++ ) {
-		var avatar : GameObject = Instantiate( avatarPrefab, Vector3( (2.0 * i), 4.0, 0.0 ), Quaternion.identity );
+		var avatar : GameObject = Instantiate( avatarPrefab, Vector3( (2.0 * i), 4.0, 0.0 ), Quaternion.LookRotation( Vector3.back ) );
 		
 		switch( i ) {
 			case 0:
@@ -22,7 +22,7 @@ function Awake() {
 				break;
 		}
 		
-		var zipperFace : GameObject = Instantiate( zipperFacePrefab, avatar.transform.position, Quaternion.identity );
+		var zipperFace : GameObject = Instantiate( zipperFacePrefab, avatar.transform.position, avatar.transform.rotation );
 		zipperFace.transform.parent = avatar.transform;
 		
 		avatars[i] = avatar;

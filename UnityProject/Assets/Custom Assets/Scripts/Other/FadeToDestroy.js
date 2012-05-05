@@ -20,6 +20,6 @@ function Update() {
 		}
 	} else {
 		renderer.material.color.a = origAlpha * (1 - (timeSinceStart / timeUntilDestroy));
-		if (timeSinceStart > timeUntilDestroy) Destroy( this );
+		if (timeSinceStart > timeUntilDestroy) Destroy( gameObject );
 	}
 }

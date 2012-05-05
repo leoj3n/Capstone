@@ -3,41 +3,55 @@ import MiniJSON;
 
 public var texture : Texture2D[];
 public var atlas : TextAsset[];
+public var scaleAgainstPlaceholder : boolean = false;
 public var fps : float = 30.0; // should match After Effects render settings
+public var isStatic : boolean = false;
 public var staticFrame : int = 0;
-public var useTransformScale : boolean = false;
 
 private var textureAtlasArray : TextureAtlas[];
 private var textureAtlasIndex : int;
 private var origScale : Vector3;
-private var scaleFactor : float;
+private var scaleFactor : Vector2 = Vector2( 1.0, 1.0 );
 
-function Awake() {
+function Start() {
 	origScale = transform.localScale;
 	
-	 // (Placeholder-Image-Width / X-Axis-Scale)
-	if (useTransformScale) scaleFactor = Mathf.Abs(renderer.material.mainTexture.width / origScale.x);
+	/*
+	placeholder.width     frame.width
+	------------------ = -------------
+	   origScale.x        newScale.x
+	
+	newScale.x = (origScale.x * frame.width) / placeholder.width
+	newScale.x = frame.width * (origScale.x / placeholder.width)
+	*/
+	
+	 // Placeholder-Image / Axis-Scale
+	if( scaleAgainstPlaceholder )
+		scaleFactor = Vector2( (origScale.x / renderer.material.mainTexture.width), (origScale.y / renderer.material.mainTexture.height) );
+		
+	//Debug.Log( scaleFactor.ToString( 'F4' ) );
 	
 	textureAtlasArray = new TextureAtlas[texture.length];
 	for (var i = 0; i < texture.Length; i++)
 		textureAtlasArray[i] = new TextureAtlas( texture[i], atlas[i] );
-}
-
-function Update() {
+		
 	applyTextureAtlas( textureAtlasArray[textureAtlasIndex] );
 }
 
+function Update() {
+	if (!isStatic) applyTextureAtlas( textureAtlasArray[textureAtlasIndex] );
+}
+
 function applyTextureAtlas( ta : TextureAtlas ) {
-	var index : int = ((fps > 0.0) ? parseInt( (Time.timeSinceLevelLoad * fps) % (ta.frames.Length) ) : staticFrame);
+	var index : int = (isStatic ? staticFrame : parseInt( (Time.timeSinceLevelLoad * fps) % (ta.frames.Length) ));
 	var frame : Rect = ta.frames[index];
 	renderer.material.mainTexture = ta.texture;
 	renderer.material.mainTextureOffset = Vector2( (frame.x / ta.width), (1.0 - ((frame.y + frame.height) / ta.height)) );
 	renderer.material.mainTextureScale = Vector2( (frame.width / ta.width), (frame.height / ta.height) );
 	
-	if (!useTransformScale) scaleFactor = Mathf.Abs(frame.width / origScale.x);
+	if (!scaleAgainstPlaceholder) scaleFactor = Vector2( (origScale.x / frame.width), (origScale.y / frame.height) );
 	
-	transform.localScale = Vector3( ((frame.width / scaleFactor) * Mathf.Sign( origScale.x )), 
-		((frame.height / scaleFactor) * Mathf.Sign( origScale.y )), origScale.z );
+	transform.localScale = Vector3( (frame.width * scaleFactor.x), (frame.height * scaleFactor.y), origScale.z );
 }
 
 function TextureAtlasIndex( index : int ) {
