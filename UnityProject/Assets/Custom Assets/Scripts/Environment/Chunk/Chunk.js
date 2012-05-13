@@ -2,6 +2,8 @@
 public var dislodgedLayer : int = 10;
 public var debrisPrefab : GameObject;
 
+private var shaderSolid : Shader;
+private var shaderTransparent : Shader;
 private var origPos : Vector3;
 private var origRot : Quaternion;
 private var origLayer : int;
@@ -14,6 +16,8 @@ private var rotOverTime : ArrayList;
 private var frame : int = 0;
 
 function Awake() {
+	shaderSolid = Shader.Find( 'Diffuse' );
+	shaderTransparent = Shader.Find( 'Transparent/Diffuse' );
 	origPos = transform.position;
 	origRot = transform.rotation;
 	origLayer = gameObject.layer;
@@ -25,7 +29,14 @@ function Awake() {
 }
 
 function Update() {
-	renderer.material.color.a = ((!dislodged && trigger) ? 0.30 : 1.0);
+	if( !dislodged && trigger ) {
+		renderer.material.shader = shaderTransparent;
+		renderer.material.color.a = 0.3;
+	} else {
+		renderer.material.shader = shaderSolid;
+		renderer.material.color.a = 1.0;
+	}
+	
 	if( frame > 0 ) {
 		transform.position = posOverTime[frame];
 		transform.rotation = rotOverTime[frame--];

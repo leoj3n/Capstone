@@ -17,13 +17,13 @@ function Update() {
 	averagePosition = Vector3.zero;
 	t = (damping * Time.deltaTime);
 	
-	for( var i = 0; i < Manager.avatars.Length; i++ ) {
-		var iPos : Vector3 = Manager.avatars[i].transform.position;
+	for( var i = 0; i < AvatarManager.avatars.Length; i++ ) {
+		var iPos : Vector3 = AvatarManager.avatars[i].transform.position;
 		
-		averagePosition += Manager.avatars[i].transform.position;
+		averagePosition += AvatarManager.avatars[i].transform.position;
 		
-		for( var j = 0; j < Manager.avatars.Length; j++ ) {
-			var jPos : Vector3 = Manager.avatars[j].transform.position;
+		for( var j = 0; j < AvatarManager.avatars.Length; j++ ) {
+			var jPos : Vector3 = AvatarManager.avatars[j].transform.position;
 			
 			var distance : float = Vector3.Distance( iPos, jPos );
 			if (distance > largestDistance) largestDistance = distance;
@@ -36,7 +36,7 @@ function Update() {
 		}
 	}
 	
-	averagePosition /= Manager.avatars.Length;
+	averagePosition /= AvatarManager.avatars.Length;
 	
 	if (averagePosition.y < minimumY) averagePosition.y = minimumY;
 	
@@ -74,4 +74,6 @@ function Update() {
 function AddShake( amount : float ) {
 	shake += amount;
 	if (shake > maximumShake) shake = maximumShake;
+	
+	SendMessage( 'AddBlur', amount, SendMessageOptions.DontRequireReceiver );
 }

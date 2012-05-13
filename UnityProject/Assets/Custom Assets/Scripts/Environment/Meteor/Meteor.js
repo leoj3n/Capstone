@@ -16,7 +16,7 @@ private var additionalVelocity : Vector3;
 private var health : float = 100.0;
 private var dead : boolean = false;
 
-private var angleAmount : float = 0.05;
+private var angleAmount : float = 0.02;
 
 function Awake() {
 	origVolume = audio.volume;
@@ -29,7 +29,8 @@ function Awake() {
 function Update() {
 	rigidbody.velocity += additionalVelocity;
 	
-	var directionOfTravel : Vector3 = (transform.position - lastPos).normalized;
+	var directionOfTravel : Vector3 = (transform.position - lastPos);
+	directionOfTravel.Normalize();
 	
 	// spin around direction of travel
 	transform.RotateAroundLocal( directionOfTravel, Time.deltaTime * 3 );
@@ -67,7 +68,7 @@ function OnCollisionEnter( collision : Collision ) {
 		GameObject.Instantiate( detonatorPrefab, transform.position, Quaternion.identity );
 				
 		// add explosion force to avatars that are within 7 units
-		Global.avatarExplosion( Manager.avatars, transform.position, 7, 2, 6 );
+		Global.avatarExplosion( AvatarManager.avatars, transform.position, 7, 2, 6 );
 		
 		// add a crater decal to the floor
 		if (collision.collider.CompareTag( 'Floor' ))
@@ -89,42 +90,6 @@ function OnCollisionEnter( collision : Collision ) {
 	}
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-		
-		// apply an explosion force to nearby objects
-		/*var radius = 10.0;
-		var colliders : Collider[] = Physics.OverlapSphere( transform.position, radius );
-		for( var collider : Collider in colliders ) {
-			//if (collider.GetComponent( CharacterController )) collider.GetComponent( CharacterController ).enabled = false;
-			if (!collider) continue;
-			if (collider.rigidbody) collider.rigidbody.AddExplosionForce( 200.0 + (collision.impactForceSum.magnitude * 20), transform.position, radius, 8.0 );
-		}*/
-
-/*
-	// Check if the collider we hit has a rigidbody
-  	// Then apply the force		this.name.Substring( (this.name.Length - 3)
-    for (var contact : ContactPoint in collision.contacts) {
-		if (contact.otherCollider.tag == "Player") {   //and if it isnt a part of the level
-			var playerScript = contact.otherCollider.gameObject.GetComponent(Avatar);
-			
-			if (playerScript.facing == 'right')
-				dir = 1;
-			else
-				dir = -1;
-			playerScript.hitForceX = 5000 * dir * Time.deltaTime;
-			playerScript.health -= 50;
-		}
-	}
-*/
+function OutOfBounds() {
+	Destroy( gameObject );
+}

@@ -1,7 +1,27 @@
 
+enum AvatarEnum { ZipperFace, BlackMagic, KidCane, Dan, Mick }
+enum AvatarSound { AnnouncerName, Jump }
+enum ControllerID {	A, B, C, D, Count } // Unity supports a maximum of 4 controllers
+enum ControllerTeam { Green, Red, Blue, Orange, Count } // need at least 4 teams to support free-for-all
+
 static var sharedZ : float = 0.0;
-static var sharedMinX : float = -17.0;
-static var sharedMaxX : float = 17.0;
+static var sharedMinX : float = -22.0;
+static var sharedMaxX : float = 22.0;
+
+class Controller {
+	public var id : ControllerID;
+	public var team : ControllerTeam;
+	public var avatar : AvatarEnum;
+	
+	public var active : boolean;
+	public var ready : boolean;
+
+	function Controller( theId : ControllerID ) {
+		id = theId; // should match GameManager.controllers[ id ]
+		team = ControllerTeam.Green; // default to team Green
+		avatar = AvatarEnum.ZipperFace; // default to ZipperFace
+	}
+}
 
 static function getSize( object ) : Vector3 {
 	try {
@@ -42,4 +62,29 @@ static function spliceAvatar( avatars : GameObject[], avatarToRemove : System.Ob
 
 static function isAvatar( object : System.Object ) {
 	return (object.gameObject.CompareTag( 'Player' ) || object.gameObject.GetComponent( Avatar ));
+}
+
+static function bindAvatarToController( avatar : GameObject, ctlr : Controller ) {
+	avatar.SendMessage( 'SetController', ctlr );
+	avatar.name = 'Avatar (' + ctlr.id + ')'; // mainly for easier debugging
+}
+
+// returns an array of booleans of size ControllerID.Count
+static function isButtonDown( button : String ) : boolean[] {
+	var values : boolean[] = new boolean[ControllerID.Count];
+	
+	for (var i = 0; i < ControllerID.Count; i++) values[i] = Global.isButtonDown( button, i );
+
+	return values;
+}
+static function isButtonDown( button : String, cid : ControllerID ) : boolean {
+	return Input.GetButtonDown( button + ' (' + cid + ')' );
+}
+
+static function isButton( button : String, cid : ControllerID ) : boolean {
+	return Input.GetButton( button + ' (' + cid + ')' );
+}
+
+static function getAxis( axis : String, cid : ControllerID ) : float {
+	return Input.GetAxisRaw( axis + ' (' + cid + ')' );
 }

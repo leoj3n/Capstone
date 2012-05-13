@@ -1,10 +1,9 @@
 
 @script RequireComponent( CharacterController )
-@script RequireComponent( AudioSource )
 
 // STATIC
+private var controller : Controller;
 private var template : AvatarTemplate;
-private var playerLetter : String = 'A';
 private var collisionFlags : CollisionFlags;
 protected var gravity : float = 50.0;
 protected var groundedAcceleration : float = 6.0;
@@ -58,7 +57,7 @@ function Start() {
 function Update() {
 	if (!isControllable) Input.ResetInputAxes(); // kill all inputs if not controllable
 	
-	if (GetAxis( 'Vertical' ) >= 0.2) lastJumpButtonTime = Time.time; // jump
+	if (Global.getAxis( 'Vertical', controller.id ) >= 0.2) lastJumpButtonTime = Time.time; // jump
 
 	updateSmoothedMovementDirection();
 	
@@ -67,7 +66,7 @@ function Update() {
 
 	applyJumping();
 	
-	// move the controller
+	// move the character controller
 	collisionFlags = GetComponent( CharacterController ).Move( 
 		((moveDirection * moveSpeed + Vector3( 0, verticalSpeed, 0 ) + inAirVelocity) * Time.deltaTime) );
 	
@@ -97,8 +96,8 @@ function updateSmoothedMovementDirection() {
 	// right vector relative to the camera, always orthogonal to the forward vector
 	var right = Vector3( forward.z, 0, -forward.x );
 
-	var v = GetAxis( 'Vertical' );
-	var h = GetAxis( 'Horizontal' );
+	var v = Global.getAxis( 'Vertical', controller.id );
+	var h = Global.getAxis( 'Horizontal', controller.id );
 
 	movingBack = ((v < -0.2) ? true : false);
 	
@@ -132,7 +131,7 @@ function applyJumping() {
 		// - only when pressing the button down
 		// - with a timeout so you can press the button slightly before landing		
 		if( canJump && (Time.time < (lastJumpButtonTime + jumpTimeout)) ) {
-			audio.PlayOneShot( template.jumpSound );
+			template.AudioPlay( AvatarSound.Jump );
 			verticalSpeed = Mathf.Sqrt( 2 * template.jumpHeight * gravity );
 			SendMessage( 'DidJump', SendMessageOptions.DontRequireReceiver );
 		}
@@ -153,7 +152,7 @@ function IsGrounded() {
 function faceNearestEnemy() {
 	var dist : float = 0.0;
 	var closestDist : float = 999.0;
-	for( var avatar : GameObject in Manager.avatars ) {
+	for( var avatar : GameObject in AvatarManager.avatars ) {
 		if (collider == avatar.collider) continue; // continue if self
 		
 		// update closest dist
@@ -175,9 +174,9 @@ function faceNearestEnemy() {
 }
 
 function stateSetup() {	
-	var blocking : boolean = (!isMoving && (GetAxis( 'Vertical' ) <= -0.2)) ? true : false; // block
+	var blocking : boolean = (!isMoving && (Global.getAxis( 'Vertical', controller.id ) <= -0.2)) ? true : false; // block
 	var knockback : boolean = false;
-	var fire1 : boolean = IsButton( 'Fire1' );
+	var fire1 : boolean = Global.isButton( 'A', controller.id );
 	
 	switch( true ) {
 		case blocking:
@@ -229,21 +228,8 @@ function addExplosionForce( pos : Vector3, force : float, damping : float ) {
 	}
 }
 
-function SetPlayerLetter( letter : String ) {
-	playerLetter = letter;
-	gameObject.name = 'Avatar (' + letter + ')';
-}
-
-function IsButtonDown( button ) {
-	return Input.GetButtonDown( button + ' (' + playerLetter + ')' );
-}
-
-function IsButton( button ) {
-	return Input.GetButton( button + ' (' + playerLetter + ')' );
-}
-
-function GetAxis( axis ) {
-	return Input.GetAxisRaw( axis + ' (' + playerLetter + ')' );
+function SetController( ctlr : Controller ) {
+	controller = ctlr;
 }
 
 function OutOfBounds() {
@@ -267,5 +253,5 @@ function OnControllerColliderHit( hit : ControllerColliderHit ) {
 	
 	var pushDir : Vector3 = Vector3( hit.moveDirection.x, 0, hit.moveDirection.z );
 	
-	body.velocity = pushDir; // possibility: incorporate body.mass
+	body.velocity = (2 * (pushDir + (pushDir / body.mass)));
 }

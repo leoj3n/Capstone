@@ -78,16 +78,9 @@ class TextureAtlas {
 		readData();
 	}
 	
-	function readData() {
-		var path = AssetDatabase.GetAssetPath( data );
-		
+	function readData() {		
 		// detect type of data
-		if (path.Contains( '.bytes' ))
-			type = atlasType.binary;
-		else if (path.Contains( '.txt' ))
-			type = atlasType.json;
-		else
-			type = atlasType.none;
+		type = ((data.text.Length > 0) ? atlasType.json : atlasType.binary);
 		
 		frameList = new ArrayList();
 		

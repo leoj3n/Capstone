@@ -30,10 +30,11 @@ function Awake() {
 		}
 	}
 	
-	// order matters, do this second
+	// order matters, do this after adding a TextureAtlasRenderer
 	clone = Instantiate( characterPrefab );
 	clone.transform.parent = transform;
-	clone.transform.localPosition = Vector3( 0, 1.8, -11.5 );
+	clone.transform.localPosition = Vector3( 0.0, 2.4, -11.5 );
+	//clone.GetComponent( AvatarTemplate ).anchorAtFeet = false;
 	clone.AddComponent( BillBoard );
 	clone.SendMessage( 'TextureAtlasIndex', parseInt( states.idle ) );
 }
