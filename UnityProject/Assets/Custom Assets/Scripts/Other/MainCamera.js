@@ -74,6 +74,4 @@ function Update() {
 function AddShake( amount : float ) {
 	shake += amount;
 	if (shake > maximumShake) shake = maximumShake;
-	
-	SendMessage( 'AddBlur', amount, SendMessageOptions.DontRequireReceiver );
 }

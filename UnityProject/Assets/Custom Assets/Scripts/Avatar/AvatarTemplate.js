@@ -1,17 +1,21 @@
 
+/*@script RequireComponent( TextureAtlasRenderer )
+@script RequireComponent( MeshFilter )
+@script RequireComponent( MeshRenderer )
+@script RequireComponent( AudioSource )*/
+
 class AvatarTemplate extends Avatar {
 	public var walkSpeed : float = 6.0;
 	public var jumpHeight : float = 2.0;
 	public var orbPrefab : Rigidbody;
 	public var sound : AudioClip[];
-	public var expectedSounds : AvatarSound;
-	public var anchorAtFeet : boolean = true;
+	public var expectedSounds : AvatarSound; // just for exposing expected order of sounds in inspector
 	
 	function Awake() {}
 	function Start() {}
 	function Update() {
-		if (anchorAtFeet)
-			transform.localPosition.y = Mathf.Lerp( transform.localPosition.y, (Global.getSize( gameObject ).y / 2), (Time.deltaTime * 20) );
+		// move transform so the character prefab is anchored at the feet
+		transform.localPosition.y = Mathf.Lerp( transform.localPosition.y, (Global.getSize( gameObject ).y / 2), (Time.deltaTime * 20) );
 	}
 	function Reset() {}
 	
@@ -28,9 +32,7 @@ class AvatarTemplate extends Avatar {
 		audio.Stop();
 	}
 	
-	function attack1() {
-		
-	}
+	function Attack1() {}
 	
 	function Special1() {
 		Debug.LogWarning( 'You must override the default template function "Special1()"' );

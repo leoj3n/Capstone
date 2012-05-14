@@ -5,9 +5,9 @@ public var statsAtlas : TextAsset;
 public var statsLeftFrame : int = 0;
 public var statsRightFrame : int = 1;
 public var statsTopFrame : int = 2;
+public var selected : boolean = false;
 
 private var clone : GameObject;
-private var selected : boolean = false;
 
 function Awake() {
 	for( var child : Transform in transform ) {
@@ -30,15 +30,21 @@ function Awake() {
 		}
 	}
 	
-	// order matters, do this after adding a TextureAtlasRenderer
+	// order matters, do this after adding TextureAtlasRenderer components
 	clone = Instantiate( characterPrefab );
 	clone.transform.parent = transform;
-	clone.transform.localPosition = Vector3( 0.0, 2.4, -11.5 );
-	//clone.GetComponent( AvatarTemplate ).anchorAtFeet = false;
+	clone.transform.localPosition = Vector3( 0.0, 2.4, -12.6 );
+	clone.GetComponent( TextureAtlasRenderer ).fps = 16.0; // override fps
 	clone.AddComponent( BillBoard );
-	clone.SendMessage( 'TextureAtlasIndex', parseInt( states.idle ) );
+	clone.SendMessage( 'TextureAtlasIndex', parseInt( AvatarState.SelectIdle ) );
 }
 
 function Update() {
-	if (selected) clone.SendMessage( 'TextureAtlasIndex', parseInt( states.select ) );
+	if (selected) clone.SendMessage( 'TextureAtlasIndex', parseInt( AvatarState.Selected ) );
+	
+	if( selected && (clone.GetComponent( TextureAtlasRenderer ).loopCount == 2) ) {		
+		Debug.Log( 'DESELECT' );
+		selected = false;
+		SendMessageUpwards( 'SelectionComplete' );
+	}
 }

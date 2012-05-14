@@ -1,25 +1,34 @@
 
-private var countDownSeconds : int = 5;
+private var countDownSeconds : int = 3;
 private var startTime : float = 0.0;
 
-function Update() {	
-	for( var i = 0; i < ControllerID.Count; i++ ) {
+function Update() {
+	// loop through each controller to set state and team on button press
+	for( var i = 0; i < ControllerEnum.Count; i++ ) {
 		switch( true ) {
 			case Global.isButtonDown( 'Start', i ):
-				if (GameManager.controllers[i].active)
-					GameManager.controllers[i].ready = true;
-				else
-					GameManager.controllers[i].active = true;
+				switch( GameManager.controllers[i].state ) {
+					case ControllerState.SittingOut:
+						GameManager.controllers[i].state = ControllerState.TeamSelect;
+						break;
+					case ControllerState.TeamSelect:
+						GameManager.controllers[i].state = ControllerState.Ready;
+						break;
+				}
 				break;
 			case Global.isButtonDown( 'Back', i ):
-				if (GameManager.controllers[i].ready)
-					GameManager.controllers[i].ready = false;
-				else
-					GameManager.controllers[i].active = false;
+				switch( GameManager.controllers[i].state ) {
+					case ControllerState.Ready:
+						GameManager.controllers[i].state = ControllerState.TeamSelect;
+						break;
+					default:
+						GameManager.controllers[i].state = ControllerState.SittingOut;
+						break;
+				}
 				break;
 		}
 		
-		if( GameManager.controllers[i].active && !GameManager.controllers[i].ready ) {
+		if( GameManager.controllers[i].state == ControllerState.TeamSelect ) {
 			switch( true ) {
 				case Global.isButtonDown( 'A', i ):
 					GameManager.controllers[i].team = ControllerTeam.Green;
@@ -56,22 +65,18 @@ function OnGUI() {
 			
 		GUILayout.EndHorizontal();
 		
-		var activeCount : int = 0;
-		var readyCount : int = 0;
-		for( i = 0; i < ControllerID.Count; i++ ) {
-			if (GameManager.controllers[i].active) activeCount++;
-			if (GameManager.controllers[i].ready) readyCount++;
-		}
+		var selecting : ControllerEnum[] = GameManager.getControllerEnumsWithState( ControllerState.TeamSelect );
+		var ready : ControllerEnum[] = GameManager.getControllerEnumsWithState( ControllerState.Ready );
 		
-		if( activeCount > 0 ) {
-			if( activeCount == readyCount ) {
+		if( (selecting.Length + ready.Length) > 0 ) {
+			if( selecting.Length == 0 ) {
 				if (startTime == 0.0) startTime = Time.time;
 				var seconds : int = (Mathf.CeilToInt( countDownSeconds - (Time.time - startTime) ) % 60);
 				if (seconds == 1) Application.LoadLevel( 1 );
 				GUILayout.Box( 'Character select in ' + seconds );
 			} else {
 				startTime = 0.0;
-				GUILayout.Box( 'Waiting for ' + (activeCount - readyCount) + ' players to press Start' );
+				GUILayout.Box( 'Waiting for ' + selecting.Length + ' controllers to press Start' );
 			}
 		} else {
 			GUILayout.Box( 'No controllers added yet' );
@@ -85,9 +90,20 @@ function displayTeam( team : ControllerTeam ) {
 				
 		GUILayout.Box( team + ' Team' );
 	
-		for( var i = 0; i < ControllerID.Count; i++ ) {
-			if ((GameManager.controllers[i].team == team) && GameManager.controllers[i].active)
-				GUILayout.Box( 'Controller ' + i + '\n[' + (GameManager.controllers[i].ready ? 'READY' : 'Press Start') + ']' );
+		for( var i = 0; i < ControllerEnum.Count; i++ ) {
+			var text : String;
+			
+			switch( GameManager.controllers[i].state ) {
+				case ControllerState.TeamSelect:
+					text = 'Press Start';
+					break;
+				case ControllerState.Ready:
+					text = 'READY';
+					break;
+			}
+			
+			if (text && (GameManager.controllers[i].team == team))
+				GUILayout.Box( 'Controller ' + i + '\n[' + text + ']' );
 		}
 		
 	GUILayout.EndVertical();

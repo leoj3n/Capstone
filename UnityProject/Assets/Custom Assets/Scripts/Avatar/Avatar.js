@@ -2,7 +2,7 @@
 @script RequireComponent( CharacterController )
 
 // STATIC
-private var controller : Controller;
+private var boundController : ControllerEnum;
 private var template : AvatarTemplate;
 private var collisionFlags : CollisionFlags;
 protected var gravity : float = 50.0;
@@ -13,19 +13,7 @@ protected var inAirAcceleration : float = 3.0;
 protected var facing : int = 1;
 protected var canJump : boolean = true;
 protected var isControllable : boolean = true;
-private enum states {
-	intro,
-	idle,
-	jump,
-	jumpBackward,
-	jumpForward,
-	walkBackward,
-	walkForward,
-	fire1,
-	fire2,
-	block
-}
-public var state : states;
+public var state : AvatarState;
 
 // HEALTH
 protected var health : float = 100.0;
@@ -38,56 +26,37 @@ private var groundedTimeout : float = 0.25;
 private var lastJumpButtonTime : float = -10.0;
 private var lastJumpTime : float = -1.0;
 private var lastGroundedTime : float = 0.0;
-protected var lastJumpStartHeight : float = 0.0; // the height we jumped from
-protected var verticalSpeed : float = 0.0; // the current vertical speed
+protected var lastJumpStartHeight : float = 0.0;
+protected var verticalSpeed : float = 0.0;
 protected var inAirVelocity : Vector3 = Vector3.zero;
 
 // MOVEMENT
-protected var moveDirection : Vector3 = Vector3.zero; // the current move direction in x-z
-protected var moveSpeed : float = 0.0; // the current x-z move speed
-protected var movingBack : boolean = false; // are we moving backwards?
-protected var isMoving : boolean = false; // is the user pressing any keys?
+protected var moveDirection : Vector3 = Vector3.zero;
+protected var moveSpeed : float = 0.0;
+protected var movingBack : boolean = false;
+protected var isMoving : boolean = false;
 
 function Start() {
-	moveDirection = transform.TransformDirection( Vector3.forward );
-	
 	template = GetComponentInChildren( AvatarTemplate );
+	moveDirection = transform.TransformDirection( Vector3.forward );
 }
 
 function Update() {
 	if (!isControllable) Input.ResetInputAxes(); // kill all inputs if not controllable
 	
-	if (Global.getAxis( 'Vertical', controller.id ) >= 0.2) lastJumpButtonTime = Time.time; // jump
+	if (Global.getAxis( 'Vertical', boundController ) >= 0.2) lastJumpButtonTime = Time.time; // jump
 
-	updateSmoothedMovementDirection();
-	
-	// apply gravity
-	verticalSpeed = (IsGrounded() ? 0.0 : (verticalSpeed - (gravity * Time.deltaTime)));
-
-	applyJumping();
-	
-	// move the character controller
-	collisionFlags = GetComponent( CharacterController ).Move( 
-		((moveDirection * moveSpeed + Vector3( 0, verticalSpeed, 0 ) + inAirVelocity) * Time.deltaTime) );
-	
-	// we are in jump mode but just became grounded
-	if( IsGrounded() ) {
-		lastGroundedTime = Time.time;
-		inAirVelocity = Vector3.zero;
-		if( jumping ) {
-			jumping = false;
-			SendMessage( 'DidLand', SendMessageOptions.DontRequireReceiver );
-		}
-	}
+	setHorizontalMovement();
+	setVerticalMovement();
+	doMovement();
 	
 	faceNearestEnemy();
-	
 	stateSetup();
-	
 	enforceBounds();
-} // Update()
+}
 
-function updateSmoothedMovementDirection() {
+// sets movingBack, isMoving, moveDirection, moveSpeed and inAirVelocity
+function setHorizontalMovement() {
 	// forward vector relative to the camera along the x-z plane	
 	var forward = Camera.main.transform.TransformDirection( Vector3.forward );
 	forward.y = 0;
@@ -96,59 +65,97 @@ function updateSmoothedMovementDirection() {
 	// right vector relative to the camera, always orthogonal to the forward vector
 	var right = Vector3( forward.z, 0, -forward.x );
 
-	var v = Global.getAxis( 'Vertical', controller.id );
-	var h = Global.getAxis( 'Horizontal', controller.id );
-
-	movingBack = ((v < -0.2) ? true : false);
+	var h = Global.getAxis( 'Horizontal', boundController );
 	
 	var wasMoving = isMoving;
-	isMoving = (Mathf.Abs( h ) > 0.1);
+	isMoving = (Mathf.Abs( h ) > 0.1); // check for any lateral joystick movement
 	
 	var targetDirection = (h * right); // x-axis user input
 	
 	// grounded controls
-	if( IsGrounded() ) {
+	if( isGrounded() ) {
 		// moveDirection is always normalized, and we only update it if there is user input
 		if (targetDirection != Vector3.zero) moveDirection = targetDirection.normalized;
 				
 		// choose target speed
-		// - we want to support analog input but make sure you cant walk faster diagonally than just forward or sideways
 		var targetSpeed = Mathf.Min( targetDirection.magnitude, 1.0 ) * template.walkSpeed;
 		
-		moveSpeed = Mathf.Lerp( moveSpeed, targetSpeed, (groundedAcceleration * Time.deltaTime) ); // interpolate moveSpeed -> targetSpeed
-	} else { // in air controls
-		if (isMoving)
-			inAirVelocity += (targetDirection.normalized * Time.deltaTime * inAirAcceleration);
+		// interpolate moveSpeed -> targetSpeed
+		moveSpeed = Mathf.Lerp( moveSpeed, targetSpeed, (groundedAcceleration * Time.deltaTime) );
+	} else if (isMoving) { // in air controls
+		inAirVelocity += (targetDirection.normalized * Time.deltaTime * inAirAcceleration);
 	}
-} // updateSmoothedMovementDirection()
+}
 
-function applyJumping() {
+// sets verticalSpeed, jumping, lastJumpTime, lastJumpButtonTime and lastJumpStartHeight
+function setVerticalMovement() {
+	// apply gravity
+	verticalSpeed = (isGrounded() ? 0.0 : (verticalSpeed - (gravity * Time.deltaTime)));
+	
 	// prevent jumping too fast after each other
 	if (lastJumpTime + jumpRepeatTime > Time.time) return;
 
-	if( IsGrounded() ) {
-		// jump
-		// - only when pressing the button down
-		// - with a timeout so you can press the button slightly before landing		
+	if( isGrounded() ) {
+		// jump only when pressing the button down with a timeout so you can press the button slightly before landing		
 		if( canJump && (Time.time < (lastJumpButtonTime + jumpTimeout)) ) {
 			template.AudioPlay( AvatarSound.Jump );
 			verticalSpeed = Mathf.Sqrt( 2 * template.jumpHeight * gravity );
-			SendMessage( 'DidJump', SendMessageOptions.DontRequireReceiver );
+			jumping = true;
+			lastJumpTime = Time.time;
+			lastJumpButtonTime = -10;
+			lastJumpStartHeight = transform.position.y;
 		}
 	}
 }
 
-function DidJump() {
-	jumping = true;
-	lastJumpTime = Time.time;
-	lastJumpButtonTime = -10;
-	lastJumpStartHeight = transform.position.y;
+// move the character controller
+function doMovement() {
+	collisionFlags = GetComponent( CharacterController ).Move( 
+		((moveDirection * moveSpeed + Vector3( 0, verticalSpeed, 0 ) + inAirVelocity) * Time.deltaTime) );
+	
+	if( isGrounded() ) {
+		lastGroundedTime = Time.time;
+		inAirVelocity = Vector3.zero;
+		jumping = false;
+	}
 }
 
-function IsGrounded() {
+// determine the state of this avatar
+function stateSetup() {	
+	var blocking : boolean = (!isMoving && (Global.getAxis( 'Vertical', boundController ) <= -0.2)) ? true : false; // block
+	var knockback : boolean = false;
+	var fire1 : boolean = Global.isButton( 'A', boundController );
+	
+	switch( true ) {
+		case blocking:
+			state = AvatarState.Block;
+			break;
+		case jumping:
+			state = AvatarState.Jump; // forward/backwards
+			break;
+		case knockback:
+			state = AvatarState.Jump; // forward/backwards
+			break;
+		case fire1:
+			template.Special2();
+			state = AvatarState.Attack1;
+			break;
+		default:
+			state = AvatarState.Attack2;
+			break;
+	}
+	
+	state = AvatarState.SelectIdle; // Debug.
+	
+	BroadcastMessage( 'TextureAtlasIndex', parseInt( state ), SendMessageOptions.DontRequireReceiver );
+}
+
+// utility function for determining if this avatar is grounded
+function isGrounded() {
 	return ((collisionFlags & CollisionFlags.CollidedBelow) != 0);
 }
 
+// utility function to cause this avatar to face the nearest avatar
 function faceNearestEnemy() {
 	var dist : float = 0.0;
 	var closestDist : float = 999.0;
@@ -169,45 +176,17 @@ function faceNearestEnemy() {
 		facing = 1;
 	}
 	
-	// set movingBack variable TODO: does this really need to be set twice?
 	movingBack = (((moveDirection.x - facing) == 0) ? true : false);
 }
 
-function stateSetup() {	
-	var blocking : boolean = (!isMoving && (Global.getAxis( 'Vertical', controller.id ) <= -0.2)) ? true : false; // block
-	var knockback : boolean = false;
-	var fire1 : boolean = Global.isButton( 'A', controller.id );
-	
-	switch( true ) {
-		case blocking:
-			state = states.block;
-			break;
-		case jumping:
-			state = states.jump; // forward/backwards
-			break;
-		case knockback:
-			state = states.jump; // forward/backwards
-			break;
-		case fire1:
-			template.Special2();
-			state = states.fire1;
-			break;
-		default:
-			state = states.idle;
-			break;
-	}
-	
-	state = states.idle; // Debug.
-	
-	BroadcastMessage( 'TextureAtlasIndex', parseInt( state ), SendMessageOptions.DontRequireReceiver );
-}
-
+// utility function to enforce the bounds set in Global
 function enforceBounds() {
 	transform.position.z = Global.sharedZ;
 	if (transform.position.x > Global.sharedMaxX) transform.position.x = Global.sharedMaxX;
 	if (transform.position.x < Global.sharedMinX) transform.position.x = Global.sharedMinX;
 }
 
+// utility function to add an explosion force to this avatar
 function addExplosionForce( pos : Vector3, force : float, damping : float ) {	
 	var dist : float = Mathf.Max( Vector3.Distance( pos, transform.position ), 1.0 );
 	
@@ -228,22 +207,6 @@ function addExplosionForce( pos : Vector3, force : float, damping : float ) {
 	}
 }
 
-function SetController( ctlr : Controller ) {
-	controller = ctlr;
-}
-
-function OutOfBounds() {
-	Debug.Log( 'Player out of bounds!' );
-}
-
-function Reset() {
-	gameObject.tag = 'Player';
-	gameObject.layer = 8;
-	transform.position = Vector3.zero;
-	transform.rotation = Quaternion.identity;
-	transform.localScale = Vector3( 1.0, 1.0, -1.0 );
-}
-
 // push props away
 function OnControllerColliderHit( hit : ControllerColliderHit ) {
 	if (!hit.gameObject.CompareTag( 'Prop' )) return; // only do so for props
@@ -254,4 +217,24 @@ function OnControllerColliderHit( hit : ControllerColliderHit ) {
 	var pushDir : Vector3 = Vector3( hit.moveDirection.x, 0, hit.moveDirection.z );
 	
 	body.velocity = (2 * (pushDir + (pushDir / body.mass)));
+}
+
+// use SendMessage to call this
+function SetController( ce : ControllerEnum ) {
+	boundController = ce;
+}
+
+// use SendMessage to call this
+function OutOfBounds() {
+	transform.position = Vector3( 0.0, 4.0, Global.sharedZ );
+	Debug.Log( 'Avatar has been returned from out of bounds.' );
+}
+
+// this is called when using the Reset command in the inspector
+function Reset() {
+	gameObject.tag = 'Player';
+	gameObject.layer = 8;
+	transform.position = Vector3.zero;
+	transform.rotation = Quaternion.identity;
+	transform.localScale = Vector3( 1.0, 1.0, -1.0 );
 }

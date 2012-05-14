@@ -7,6 +7,7 @@ public var scaleAgainstPlaceholder : boolean = false;
 public var fps : float = 30.0; // should match After Effects render settings
 public var isStatic : boolean = false;
 public var staticFrame : int = 0;
+public var loopCount : int = 0;
 
 private var textureAtlasArray : TextureAtlas[];
 private var textureAtlasIndex : int;
@@ -44,6 +45,9 @@ function Update() {
 
 function applyTextureAtlas( ta : TextureAtlas ) {
 	var index : int = (isStatic ? staticFrame : parseInt( (Time.timeSinceLevelLoad * fps) % (ta.frames.Length) ));
+	
+	if (!isStatic && (index == 0)) loopCount++;
+	
 	var frame : Rect = ta.frames[index];
 	renderer.material.mainTexture = ta.texture;
 	renderer.material.mainTextureOffset = Vector2( (frame.x / ta.width), (1.0 - ((frame.y + frame.height) / ta.height)) );
@@ -55,7 +59,10 @@ function applyTextureAtlas( ta : TextureAtlas ) {
 }
 
 function TextureAtlasIndex( index : int ) {
-	textureAtlasIndex = index;
+	if( index != textureAtlasIndex ) {		
+		loopCount = 0;
+		textureAtlasIndex = index;
+	}
 }
 
 class TextureAtlas {
