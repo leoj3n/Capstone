@@ -4,11 +4,15 @@ public var characterPrefabs : GameObject[];
 public var expectedOrder : AvatarEnum; // just to expose the expected order in the Inspector
 public var rotator : GameObject;
 public var selectHudPrefab : GameObject;
+public var chooseYourFighter : AudioClip;
+public var swoosh : AudioClip;
 
 static var avatars : GameObject[];
 
-private var current : float = 0;
+private var current : int = 0;
 private var degreesOfSeparation : float;
+private var newRotation : float;
+private var activeControllers : Array;
 
 function Awake() {
 	switch( Application.loadedLevel ) {
@@ -36,8 +40,11 @@ function setupSelect() {
 	for( var character : GameObject in characterPrefabs ) {
 		var clone : GameObject = Instantiate( selectHudPrefab, Vector3.zero, Quaternion.Euler( 0.0, (degreesOfSeparation * i++), 0.0 ) );
 		clone.GetComponent( CharacterSelectHUD ).characterPrefab = character;
+		Debug.Log( character );
 		clone.transform.parent = rotator.transform;
 	}
+	
+	activeControllers = new Array( GameManager.getControllerEnumsWithState( ControllerState.Ready ) );
 }
 
 function updateSelect() {
@@ -47,23 +54,28 @@ function updateSelect() {
 	if( leftArrow ) {
 		current = ((current + 1) % characterPrefabs.Length);
 		
-		rotator.SendMessage( 'AddRotation', degreesOfSeparation );
+		newRotation = -degreesOfSeparation;
 	} else if( rightArrow ) {
 		current = ((current - 1) % characterPrefabs.Length);
 		if (current < 0) current = (characterPrefabs.Length - 1);
 		
-		rotator.SendMessage( 'AddRotation', -degreesOfSeparation );
+		newRotation = degreesOfSeparation;
 	}
 	
 	if( leftArrow || rightArrow ) {
-		//audioPlay( templates[current].sound[AvatarSound.AnnouncerName] );
-		//audio.PlayOneShot( swoosh, 1.0 );
+		rotator.transform.Rotate( Vector3.up, newRotation );
+		audioPlay( characterPrefabs[current].GetComponent( AvatarTemplate ).sound[AvatarSound.AnnouncerName] );
+		audio.PlayOneShot( swoosh, 1.0 );
 	}
 	
-	/*if( Input.GetKeyDown( KeyCode.Space ) ) {
+	if( Input.GetKeyDown( KeyCode.Space ) ) {
 		GameManager.controllers[activeControllers.Pop()].avatar = current;
-		selectHUDs[current].selected = true;
-	}*/
+		//selectHUDs[current].selected = true;
+		if (activeControllers.Count == 0) Application.LoadLevel( 2 );
+		audioPlay( chooseYourFighter );
+		rotator.transform.rotation.y = 0;
+		current = 0;
+	}
 }
 
 function instantiateAvatars() {
@@ -85,4 +97,9 @@ function instantiateAvatars() {
 	}
 	
 	avatars = avatarsTemp.ToBuiltin( GameObject ); // convert to builtin for speed
+}
+
+function audioPlay( clip : AudioClip ) {
+	audio.clip = clip;
+	audio.Play();
 }

@@ -9,7 +9,7 @@ public var selected : boolean = false;
 
 private var clone : GameObject;
 
-function Awake() {
+function Start() {
 	for( var child : Transform in transform ) {
 		var tar : Component = child.gameObject.AddComponent( TextureAtlasRenderer );
 		

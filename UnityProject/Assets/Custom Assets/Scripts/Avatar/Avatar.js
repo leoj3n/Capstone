@@ -145,7 +145,7 @@ function stateSetup() {
 			break;
 	}
 	
-	state = AvatarState.SelectIdle; // Debug.
+	state = AvatarState.Idle; // Debug.
 	
 	BroadcastMessage( 'TextureAtlasIndex', parseInt( state ), SendMessageOptions.DontRequireReceiver );
 }
