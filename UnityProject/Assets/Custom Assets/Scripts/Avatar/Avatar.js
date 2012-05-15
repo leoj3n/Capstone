@@ -3,7 +3,7 @@
 
 // STATIC
 private var boundController : ControllerEnum;
-private var template : AvatarTemplate;
+private var template : CharacterTemplate;
 private var collisionFlags : CollisionFlags;
 protected var gravity : float = 50.0;
 protected var groundedAcceleration : float = 6.0;
@@ -13,7 +13,7 @@ protected var inAirAcceleration : float = 3.0;
 protected var facing : int = 1;
 protected var canJump : boolean = true;
 protected var isControllable : boolean = true;
-public var state : AvatarState;
+public var state : CharacterState;
 
 // HEALTH
 protected var health : float = 100.0;
@@ -37,7 +37,7 @@ protected var movingBack : boolean = false;
 protected var isMoving : boolean = false;
 
 function Start() {
-	template = GetComponentInChildren( AvatarTemplate );
+	template = GetComponentInChildren( CharacterTemplate );
 	moveDirection = transform.TransformDirection( Vector3.forward );
 }
 
@@ -98,7 +98,7 @@ function setVerticalMovement() {
 	if( isGrounded() ) {
 		// jump only when pressing the button down with a timeout so you can press the button slightly before landing		
 		if( canJump && (Time.time < (lastJumpButtonTime + jumpTimeout)) ) {
-			template.AudioPlay( AvatarSound.Jump );
+			template.AudioPlay( CharacterSound.Jump );
 			verticalSpeed = Mathf.Sqrt( 2 * template.jumpHeight * gravity );
 			jumping = true;
 			lastJumpTime = Time.time;
@@ -128,24 +128,24 @@ function stateSetup() {
 	
 	switch( true ) {
 		case blocking:
-			state = AvatarState.Block;
+			state = CharacterState.Block;
 			break;
 		case jumping:
-			state = AvatarState.Jump; // forward/backwards
+			state = CharacterState.Jump; // forward/backwards
 			break;
 		case knockback:
-			state = AvatarState.Jump; // forward/backwards
+			state = CharacterState.Jump; // forward/backwards
 			break;
 		case fire1:
 			template.Special2();
-			state = AvatarState.Attack1;
+			state = CharacterState.Attack1;
 			break;
 		default:
-			state = AvatarState.Attack2;
+			state = CharacterState.Attack2;
 			break;
 	}
 	
-	state = AvatarState.Idle; // Debug.
+	state = CharacterState.Idle; // Debug.
 	
 	BroadcastMessage( 'TextureAtlasIndex', parseInt( state ), SendMessageOptions.DontRequireReceiver );
 }

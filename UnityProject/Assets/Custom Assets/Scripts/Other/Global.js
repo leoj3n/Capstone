@@ -1,8 +1,8 @@
 
 // all shared enums are here
-enum AvatarEnum { ZipperFace, BlackMagic, KidCane, Dan, Mick }
-enum AvatarSound { AnnouncerName, Jump }
-enum AvatarState {
+enum CharacterEnum { ZipperFace, BlackMagic, KidCane, Dan, Mick }
+enum CharacterSound { AnnouncerName, Selected, Jump }
+enum CharacterState {
 	SelectIdle,
 	Selected,
 	Intro,
@@ -32,14 +32,8 @@ static var sharedMaxX : float = 22.0;
 // an array of game controllers gets stored in GameManager
 class Controller {
 	public var team : ControllerTeam;
-	public var avatar : AvatarEnum;
 	public var state : ControllerState;
-
-	function Controller( theId : ControllerEnum ) {
-		team = ControllerTeam.Green; // default to Green team
-		avatar = AvatarEnum.ZipperFace; // default to ZipperFace
-		state = ControllerState.SittingOut;
-	}
+	public var character : CharacterEnum;
 }
 
 // utility function for getting the size of an objects' geometry

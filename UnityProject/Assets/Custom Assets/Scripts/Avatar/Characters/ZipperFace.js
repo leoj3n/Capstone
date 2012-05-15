@@ -1,5 +1,5 @@
 
-class ZipperFace extends AvatarTemplate {
+class ZipperFace extends CharacterTemplate {
 	function Awake() {
 		Debug.Log( 'ZipperFace is alive!' );
 	}

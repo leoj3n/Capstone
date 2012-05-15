@@ -13,6 +13,7 @@ private var textureAtlasArray : TextureAtlas[];
 private var textureAtlasIndex : int;
 private var origScale : Vector3;
 private var scaleFactor : Vector2 = Vector2( 1.0, 1.0 );
+private var fpsTimer : float = 0.0;
 
 function Start() {
 	origScale = transform.localScale;
@@ -44,10 +45,8 @@ function Update() {
 }
 
 function applyTextureAtlas( ta : TextureAtlas ) {
-	var index : int = (isStatic ? staticFrame : parseInt( (Time.timeSinceLevelLoad * fps) % (ta.frames.Length) ));
-	
-	if (!isStatic && (index == 0)) loopCount++;
-	
+	fpsTimer += Time.deltaTime;
+	var index : int = (isStatic ? staticFrame : parseInt( (fpsTimer * fps) % (ta.frames.Length) ));	
 	var frame : Rect = ta.frames[index];
 	renderer.material.mainTexture = ta.texture;
 	renderer.material.mainTextureOffset = Vector2( (frame.x / ta.width), (1.0 - ((frame.y + frame.height) / ta.height)) );
@@ -56,12 +55,15 @@ function applyTextureAtlas( ta : TextureAtlas ) {
 	if (!scaleAgainstPlaceholder) scaleFactor = Vector2( (origScale.x / frame.width), (origScale.y / frame.height) );
 	
 	transform.localScale = Vector3( (frame.width * scaleFactor.x), (frame.height * scaleFactor.y), origScale.z );
+	
+	if (!isStatic && (index == (ta.frames.Length - 1))) loopCount++;
 }
 
 function TextureAtlasIndex( index : int ) {
-	if( index != textureAtlasIndex ) {		
-		loopCount = 0;
+	if( index != textureAtlasIndex ) {
 		textureAtlasIndex = index;
+		loopCount = 0;
+		fpsTimer = 0.0;
 	}
 }
 

@@ -7,7 +7,7 @@ function Awake() {
 	// ControllerEnum is used to build and access the controllers array
 	controllers = new Controller[ControllerEnum.Count];
 	for (var i = 0; i < ControllerEnum.Count; i++)
-		controllers[i] = new Controller( i );
+		controllers[i] = new Controller();
 	
 	setBackgroundMusic();
 }
@@ -30,6 +30,6 @@ static function getControllerEnumsWithState( state : ControllerState ) : Control
 	return enumArray.ToBuiltin( ControllerEnum );
 }
 
-static function getController( ce : ControllerEnum ) : Controller {
+/*static function getController( ce : ControllerEnum ) : Controller {
 	return controllers[ce];
-}
+}*/
