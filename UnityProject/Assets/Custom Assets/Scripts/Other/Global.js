@@ -40,7 +40,6 @@ interface ISceneManager {
 	function OnLevelWasLoaded();
 	function Update();
 	function OnGUI();
-	
 }
 
 // utility function for getting the size of an objects' geometry
@@ -95,11 +94,18 @@ static function bindAvatarToController( avatar : GameObject, ce : ControllerEnum
 static function isButtonDown( button : String, ce : ControllerEnum ) : boolean {
 	return Input.GetButtonDown( button + ' (' + ce + ')' );
 }
-
 // similar to isButtonDown() but tests against all controllers
-static function isButtonDown( button : String ) : boolean {	
+static function isButtonDown( button : String ) : boolean {
 	for( var i = 0; i < ControllerEnum.Count; i++ ) {
 		if (Global.isButtonDown( button, i )) return true;
+	}
+	
+	return false;
+}
+// similar to isButtonDown() but tests against passed controllers
+static function isButtonDown( button : String, controllers : ControllerEnum[] ) : boolean {
+	for( var controller : ControllerEnum in controllers ) {
+		if (Global.isButtonDown( button, controller )) return true;
 	}
 	
 	return false;

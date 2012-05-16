@@ -37,6 +37,10 @@ class GameManager extends MonoBehaviour {
 	public function get readyControllers() : ControllerEnum[] { return _readyControllers; }
 	private function set readyControllers( value : ControllerEnum[] ) { _readyControllers = value; }
 	
+	private var _paused : boolean = false;
+	public function get paused() : boolean { return _paused; }
+	private function set paused( value : boolean ) { _paused = value; }
+	
 	// private variables not accessible outside of this class
 	private var bgAudioSource : AudioSource;
 	private var managers : ISceneManager[];
@@ -90,6 +94,16 @@ class GameManager extends MonoBehaviour {
 	}
 	
 	// PUBLIC FUNCTIONS
+	
+	public function togglePause() {
+		if( paused ) {
+			Time.timeScale = 1.0;
+			paused = false;
+		} else {
+			Time.timeScale = 0.0;
+			paused = true;
+		}
+	}
 	
 	public function instantiateAvatars() {
 		var avatarsTemp : Array = new Array(); // expandable arrays are easy to work with (but slow)
