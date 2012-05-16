@@ -36,6 +36,13 @@ class Controller {
 	public var character : CharacterEnum;
 }
 
+interface ISceneManager {
+	function OnLevelWasLoaded();
+	function Update();
+	function OnGUI();
+	
+}
+
 // utility function for getting the size of an objects' geometry
 static function getSize( object ) : Vector3 {
 	try {
@@ -89,13 +96,13 @@ static function isButtonDown( button : String, ce : ControllerEnum ) : boolean {
 	return Input.GetButtonDown( button + ' (' + ce + ')' );
 }
 
-// similar to isButtonDown() but tests against and returns for all controllers
-static function isButtonDown( button : String ) : boolean[] {
-	var values : boolean[] = new boolean[ControllerEnum.Count];
+// similar to isButtonDown() but tests against all controllers
+static function isButtonDown( button : String ) : boolean {	
+	for( var i = 0; i < ControllerEnum.Count; i++ ) {
+		if (Global.isButtonDown( button, i )) return true;
+	}
 	
-	for (var i = 0; i < ControllerEnum.Count; i++) values[i] = Global.isButtonDown( button, i );
-
-	return values; // returns an array of booleans of size ControllerEnum.Count
+	return false;
 }
 
 // utility function to check if a button is being held down for a given controller

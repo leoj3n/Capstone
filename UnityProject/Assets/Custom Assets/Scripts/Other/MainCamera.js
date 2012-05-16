@@ -17,13 +17,13 @@ function Update() {
 	averagePosition = Vector3.zero;
 	t = (damping * Time.deltaTime);
 	
-	for( var i = 0; i < AvatarManager.avatars.Length; i++ ) {
-		var iPos : Vector3 = AvatarManager.avatars[i].transform.position;
+	for( var i = 0; i < GameManager.instance.avatars.Length; i++ ) {
+		var iPos : Vector3 = GameManager.instance.avatars[i].transform.position;
 		
-		averagePosition += AvatarManager.avatars[i].transform.position;
+		averagePosition += GameManager.instance.avatars[i].transform.position;
 		
-		for( var j = 0; j < AvatarManager.avatars.Length; j++ ) {
-			var jPos : Vector3 = AvatarManager.avatars[j].transform.position;
+		for( var j = 0; j < GameManager.instance.avatars.Length; j++ ) {
+			var jPos : Vector3 = GameManager.instance.avatars[j].transform.position;
 			
 			var distance : float = Vector3.Distance( iPos, jPos );
 			if (distance > largestDistance) largestDistance = distance;
@@ -36,7 +36,7 @@ function Update() {
 		}
 	}
 	
-	averagePosition /= AvatarManager.avatars.Length;
+	averagePosition /= GameManager.instance.avatars.Length;
 	
 	if (averagePosition.y < minimumY) averagePosition.y = minimumY;
 	

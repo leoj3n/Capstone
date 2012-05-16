@@ -159,7 +159,7 @@ function isGrounded() {
 function faceNearestEnemy() {
 	var dist : float = 0.0;
 	var closestDist : float = 999.0;
-	for( var avatar : GameObject in AvatarManager.avatars ) {
+	for( var avatar : GameObject in GameManager.instance.avatars ) {
 		if (collider == avatar.collider) continue; // continue if self
 		
 		// update closest dist

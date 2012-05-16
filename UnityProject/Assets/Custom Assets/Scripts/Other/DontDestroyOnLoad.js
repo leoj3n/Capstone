@@ -1,4 +1,0 @@
-
-function Awake() {
-    DontDestroyOnLoad( gameObject );
-}
