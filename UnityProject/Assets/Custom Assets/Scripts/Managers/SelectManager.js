@@ -10,6 +10,11 @@ class SelectManager implements ISceneManager  {
 	private var selectedIndex : int;
 	private var lastSelectTime : float;
 	
+	function SimulateScene() {
+		GameManager.instance.controllers[0].character = CharacterEnum.ZipperFace;
+		GameManager.instance.controllers[1].character = CharacterEnum.BlackMagic;
+	}
+	
 	function OnLevelWasLoaded() {
 		rotator = GameObject.Find( 'Rotator' );
 	
@@ -28,7 +33,7 @@ class SelectManager implements ISceneManager  {
 			
 			rotations.Push( rot );
 			selectHUDs.Push( clone );
-		}
+		}		
 		
 		GameManager.instance.audioPlay( GameManager.instance.chooseYourFighter, true );
 	}
@@ -87,7 +92,7 @@ class SelectManager implements ISceneManager  {
 					break;
 				case Global.isButtonDown( 'B' ):
 					if( selectingController == 0 ) {
-						Debug.Log( 'Load Last level' );
+						Debug.Log( 'Load previous level' );
 					} else {
 						selectingController--;
 						newSelect();

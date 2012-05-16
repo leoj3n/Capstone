@@ -47,7 +47,7 @@ function Update() {
 		Debug.DrawLine( transform.position, (transform.position + (directionOfTravel * dist.magnitude)) );
 		
 		if( Physics.Raycast( transform.position, directionOfTravel, dist.magnitude, layerMask ) ) {
-			Camera.main.audio.PlayOneShot( impactSound ); // play on camera because this gets destroyed
+			GameManager.instance.audio.PlayOneShot( impactSound ); // play on camera because this gets destroyed
 			playedOnce = true;
 		}
 	}
@@ -61,8 +61,8 @@ function OnCollisionEnter( collision : Collision ) {
 	// do the following if out of health OR if other object has a tag (any tag at all)
 	if( !dead && ((health < 0) || !collision.collider.CompareTag( 'Untagged' )) ) {
 		Camera.main.SendMessage( 'AddShake', 0.5 );
-		Camera.main.audio.PlayOneShot( explodeSound );
-		Camera.main.audio.PlayOneShot( audio.clip, 0.5 ); // crackle
+		GameManager.instance.audio.PlayOneShot( explodeSound );
+		GameManager.instance.audio.PlayOneShot( audio.clip, 0.5 ); // crackle
 		
 		// instantiate a detonator
 		GameObject.Instantiate( detonatorPrefab, transform.position, Quaternion.identity );

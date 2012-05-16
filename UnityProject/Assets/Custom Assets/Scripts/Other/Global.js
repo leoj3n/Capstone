@@ -28,6 +28,7 @@ enum ControllerState { SittingOut, TeamSelect, Ready }
 static var sharedZ : float = 0.0;
 static var sharedMinX : float = -22.0;
 static var sharedMaxX : float = 22.0;
+static var debugScene : int = 0;
 
 // an array of game controllers gets stored in GameManager
 class Controller {
@@ -37,10 +38,28 @@ class Controller {
 }
 
 interface ISceneManager {
+	function SimulateScene();
 	function OnLevelWasLoaded();
 	function Update();
 	function OnGUI();
 }
+
+/*class MySingleton {
+	public var debugScene : int = 0;
+
+	private static var _instance : MySingleton;
+	
+	private function MySingleton() {
+		Debug.Log( 'yo!' );
+    }
+    
+    public static function instance() : MySingleton {
+        if (_instance == null)
+            _instance = new MySingleton();
+        
+        return _instance;
+    }
+}*/
 
 // utility function for getting the size of an objects' geometry
 static function getSize( object ) : Vector3 {

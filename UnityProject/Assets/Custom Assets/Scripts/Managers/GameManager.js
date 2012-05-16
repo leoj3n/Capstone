@@ -19,6 +19,7 @@ class GameManager extends MonoBehaviour {
 	public var chooseYourFighter : AudioClip;
 	public var swoosh : AudioClip;
 	public var sceneManagers : MonoScript[];
+	public var defaultSceneManager : MonoScript;
 	
 	// private variables (accessible via GameManager.instance)
 	private var _controllers : Controller[];
@@ -52,17 +53,20 @@ class GameManager extends MonoBehaviour {
 	}
 	
 	function Awake() {
-		// do singleton stuff
-		instance = FindObjectOfType( GameManager );
-		if (instance == null) Debug.Log( 'Could not locate a GameManager object.' );
-		DontDestroyOnLoad( gameObject );
+		if( instance == null ) {
+			instance = this;
+			DontDestroyOnLoad( gameObject );
+		} else {
+			Destroy( gameObject );
+			return;
+		}
 		
 		// ControllerEnum is used to build and access the controllers array
 		controllers = new Controller[ControllerEnum.Count];
 		for (var i = 0; i < ControllerEnum.Count; i++)
 			controllers[i] = new Controller();
 		
-		bgAudioSource = GameObject.Find( 'Background Music' ).GetComponent( AudioSource );
+		bgAudioSource = gameObject.Find( 'Background Music' ).GetComponent( AudioSource );
 		
 		// make sure every scene has a manager
 		managers = new ISceneManager[Application.levelCount];
@@ -70,10 +74,10 @@ class GameManager extends MonoBehaviour {
 			if ((i < sceneManagers.Length) && (sceneManagers[i].GetClass().GetInterface( 'ISceneManager' ) == ISceneManager))
 				managers[i] = System.Activator.CreateInstance( sceneManagers[i].GetClass() );
 			else
-				managers[i] = new LevelManager();
+				managers[i] = System.Activator.CreateInstance( defaultSceneManager.GetClass() );
 		}
 		
-		OnLevelWasLoaded( 0 ); // simulate load for initial level
+		OnLevelWasLoaded( 0 ); // simulate load for initial level (Unity doesn't call OnLevelWasLoaded for level 0)
 	}
 	
 	function OnLevelWasLoaded( loadedLevel : int ) {
@@ -87,6 +91,13 @@ class GameManager extends MonoBehaviour {
 		if (!audio.isPlaying) audioWaitFinish = false;
 		
 		managers[Application.loadedLevel].Update();
+		
+		if( (Global.debugScene > 0) && 
+			(Global.debugScene < Application.levelCount) && (Global.debugScene > Application.loadedLevel) ) {
+			// simulate this scene, then skip ahead to the next
+			managers[Application.loadedLevel].SimulateScene();
+			Application.LoadLevel( Application.loadedLevel + 1 );
+		}
 	}
 	
 	function OnGUI() {

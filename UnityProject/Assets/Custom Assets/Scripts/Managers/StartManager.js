@@ -2,6 +2,11 @@
 class StartManager implements ISceneManager  {
 	private var countdownStartTime : float = 0.0;
 	
+	function SimulateScene() {
+		GameManager.instance.controllers[0].state = ControllerState.Ready;
+		GameManager.instance.controllers[1].state = ControllerState.Ready;
+	}
+	
 	function OnLevelWasLoaded() {}
 	
 	function Update() {

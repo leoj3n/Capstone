@@ -1,5 +1,9 @@
 
-class LevelManager implements ISceneManager  {	
+class LevelManager implements ISceneManager {
+	function SimulateScene() {
+		// nothing needs to be simulated
+	}
+
 	function OnLevelWasLoaded() {
 		GameManager.instance.instantiateAvatars();
 	}
@@ -9,7 +13,7 @@ class LevelManager implements ISceneManager  {
 			GameManager.instance.togglePause();
 	}
 	
-	function OnGUI() {		
+	function OnGUI() {
 		if (!GameManager.instance.paused) return;
 		
 		var halfScreenWidth : float = (Screen.width / 2);
