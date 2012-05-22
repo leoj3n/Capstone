@@ -1,9 +1,15 @@
 
 @script RequireComponent( CharacterController )
 
+public var walkSpeed : float = 6.0;
+public var jumpHeight : float = 2.0;
+public var sound : AudioClip[];
+public var expectedSounds : CharacterSound; // just for exposing expected order of sounds in inspector
+public var statsTexture : Texture2D;
+public var statsAtlas : TextAsset;
+
 // STATIC
 private var boundController : ControllerEnum;
-private var template : CharacterTemplate;
 private var collisionFlags : CollisionFlags;
 protected var gravity : float = 50.0;
 protected var groundedAcceleration : float = 6.0;
@@ -37,7 +43,9 @@ protected var movingBack : boolean = false;
 protected var isMoving : boolean = false;
 
 function Start() {
-	template = GetComponentInChildren( CharacterTemplate );
+	//var shadow : GameObject = GameObject.Instantiate( GameObject.Find( 'Character Shadow' ) );
+	//shadow.transform.parent = transform;
+	
 	moveDirection = transform.TransformDirection( Vector3.forward );
 }
 
@@ -50,7 +58,7 @@ function Update() {
 	setVerticalMovement();
 	doMovement();
 	
-	faceNearestEnemy();
+	//faceNearestEnemy();
 	stateSetup();
 	enforceBounds();
 }
@@ -78,7 +86,7 @@ function setHorizontalMovement() {
 		if (targetDirection != Vector3.zero) moveDirection = targetDirection.normalized;
 				
 		// choose target speed
-		var targetSpeed = Mathf.Min( targetDirection.magnitude, 1.0 ) * template.walkSpeed;
+		var targetSpeed = Mathf.Min( targetDirection.magnitude, 1.0 ) * walkSpeed;
 		
 		// interpolate moveSpeed -> targetSpeed
 		moveSpeed = Mathf.Lerp( moveSpeed, targetSpeed, (groundedAcceleration * Time.deltaTime) );
@@ -98,8 +106,8 @@ function setVerticalMovement() {
 	if( isGrounded() ) {
 		// jump only when pressing the button down with a timeout so you can press the button slightly before landing		
 		if( canJump && (Time.time < (lastJumpButtonTime + jumpTimeout)) ) {
-			template.AudioPlay( CharacterSound.Jump );
-			verticalSpeed = Mathf.Sqrt( 2 * template.jumpHeight * gravity );
+			AudioPlay( CharacterSound.Jump );
+			verticalSpeed = Mathf.Sqrt( 2 * jumpHeight * gravity );
 			jumping = true;
 			lastJumpTime = Time.time;
 			lastJumpButtonTime = -10;
@@ -110,6 +118,10 @@ function setVerticalMovement() {
 
 // move the character controller
 function doMovement() {
+	// move transform so the character prefab is anchored at the feet
+	//transform.position.y = Mathf.Lerp( transform.position.y, (Global.getSize( gameObject ).y / 2), (Time.deltaTime * 20) );
+	//GetComponent( CharacterController ).center.y = Mathf.Lerp( GetComponent( CharacterController ).center.y, (Global.getSize( gameObject ).y / 2), (Time.deltaTime * 20) );
+	
 	collisionFlags = GetComponent( CharacterController ).Move( 
 		((moveDirection * moveSpeed + Vector3( 0, verticalSpeed, 0 ) + inAirVelocity) * Time.deltaTime) );
 	
@@ -137,7 +149,7 @@ function stateSetup() {
 			state = CharacterState.Jump; // forward/backwards
 			break;
 		case fire1:
-			template.Special2();
+			Special2();
 			state = CharacterState.Attack1;
 			break;
 		default:
@@ -194,7 +206,7 @@ function addExplosionForce( pos : Vector3, force : float, damping : float ) {
 	
 	var explosionForce : Vector3 = ((dir * force) / (dist));
 	if (explosionForce.y < 0.0) explosionForce.y = 0.0;
-	explosionForce.y += 0.1; // add upward bias
+	explosionForce.y *= 2;//+= 0.2; // add upward bias
 	
 	var damage : float = ((force * damping) / dist);
 	health -= (damage * damage);
@@ -228,6 +240,33 @@ function SetController( ce : ControllerEnum ) {
 function OutOfBounds() {
 	transform.position = Vector3( 0.0, 4.0, Global.sharedZ );
 	Debug.Log( 'Avatar has been returned from out of bounds.' );
+}
+
+function AudioPlay( clip : CharacterSound ) {
+	audio.clip = sound[clip];
+	audio.Play();
+}
+
+function AudioPlayOneShot( clip : CharacterSound ) {
+	audio.PlayOneShot( sound[clip] );
+}
+
+function AudioStop() {
+	audio.Stop();
+}
+
+function Attack1() {}
+
+function Special1() {
+	Debug.LogWarning( 'You must override the default template function "Special1()"' );
+}
+
+function Special2() {
+	Debug.LogWarning( 'You must override the default template function "Special2()"' );
+}
+
+function Ultimate() {
+	Debug.LogWarning( 'You must override the default template function "Ultimate()"' );
 }
 
 // this is called when using the Reset command in the inspector

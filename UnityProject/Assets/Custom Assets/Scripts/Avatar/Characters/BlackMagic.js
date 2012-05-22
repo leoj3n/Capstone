@@ -1,5 +1,5 @@
 
-class BlackMagic extends CharacterTemplate {
+class BlackMagic extends Avatar {
 	function Awake() {
 		Debug.Log( 'BlackMagic is alive!' );
 	}

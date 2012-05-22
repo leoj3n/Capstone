@@ -10,8 +10,8 @@ private var clone : GameObject;
 function Start() {
 	clone = Instantiate( characterPrefab );
 	
-	var statsTexture : Texture2D = clone.GetComponent( CharacterTemplate ).statsTexture;
-	var statsAtlas : TextAsset = clone.GetComponent( CharacterTemplate ).statsAtlas;
+	var statsTexture : Texture2D = clone.GetComponent( Avatar ).statsTexture;
+	var statsAtlas : TextAsset = clone.GetComponent( Avatar ).statsAtlas;
 	
 	for( var child : Transform in transform ) {
 		var tar : Component = child.gameObject.AddComponent( TextureAtlasRenderer );

@@ -35,7 +35,7 @@ class SelectManager implements ISceneManager  {
 			selectHUDs.Push( clone );
 		}		
 		
-		GameManager.instance.audioPlay( GameManager.instance.chooseYourFighter, true );
+		GameManager.instance.audioPlay( 'chooseYourFighter', true );
 	}
 	
 	function Update() {
@@ -45,7 +45,7 @@ class SelectManager implements ISceneManager  {
 		var left : boolean;
 		var right : boolean;
 		
-		if( playingSelected || GameManager.instance.audioWaitFinish || ((Time.time - lastSelectTime) < GameManager.instance.selectTimeout) ) {
+		if( playingSelected || GameManager.instance.audioIsPlaying( 'chooseYourFighter' ) || ((Time.time - lastSelectTime) < GameManager.instance.selectTimeout) ) {
 			left = false;
 			right = false;
 		} else {
@@ -70,9 +70,10 @@ class SelectManager implements ISceneManager  {
 			lastSelectTime = Time.time;
 			
 			// play audio effects
-			GameManager.instance.audioPlay( GameManager.instance.characterPrefabs[currentCharacter].GetComponent( 
-				CharacterTemplate ).sound[CharacterSound.AnnouncerName] );
-			GameManager.instance.audio.PlayOneShot( GameManager.instance.swoosh );
+			GameManager.instance.audioBind( 'announcerName',
+				GameManager.instance.characterPrefabs[currentCharacter].GetComponent( Avatar ).sound[CharacterSound.AnnouncerName] );
+			GameManager.instance.audioPlay( 'announcerName', true );
+			GameManager.instance.audioPlay( 'swoosh', true );
 		}
 		
 		// do the rotation to the currentCharacter select HUD
@@ -80,11 +81,11 @@ class SelectManager implements ISceneManager  {
 			Quaternion.Inverse( rotations[currentCharacter] ), (Time.deltaTime * 6) );
 		
 		// if not playing a selection animation and a selection has been made...
-		if( !playingSelected && !GameManager.instance.audioWaitFinish ) {
+		if( !playingSelected && !GameManager.instance.audioIsPlaying( 'chooseYourFighter' ) ) {
 			switch( true ) {
 				case Global.isButtonDown( 'A', GameManager.instance.readyControllers[selectingController] ):
 					GameManager.instance.audio.PlayOneShot( GameManager.instance.characterPrefabs[currentCharacter].GetComponent( 
-						CharacterTemplate ).sound[CharacterSound.Selected] );
+						Avatar ).sound[CharacterSound.Selected] );
 					selectHUDs[currentCharacter].GetComponent( SelectHUD ).playSelected = true;
 					selectedIndex = currentCharacter;
 					waitingForTurn = true;
@@ -142,7 +143,7 @@ class SelectManager implements ISceneManager  {
 			
 		GUILayout.EndArea();
 	
-		if( GameManager.instance.audioWaitFinish ) {
+		if( GameManager.instance.audioIsPlaying( 'chooseYourFighter' ) ) {
 			width = 300.0;
 			height = 50.0;
 		

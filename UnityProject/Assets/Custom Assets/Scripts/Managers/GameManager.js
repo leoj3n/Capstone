@@ -30,10 +30,6 @@ class GameManager extends MonoBehaviour {
 	public function get avatars() : GameObject[] { return _avatars; }
 	private function set avatars( value : GameObject[] ) { _avatars = value; }
 	
-	private var _audioWaitFinish : boolean = false;
-	public function get audioWaitFinish() : boolean { return _audioWaitFinish; }
-	private function set audioWaitFinish( value : boolean ) { _audioWaitFinish = value; }
-	
 	private var _readyControllers : ControllerEnum[];
 	public function get readyControllers() : ControllerEnum[] { return _readyControllers; }
 	private function set readyControllers( value : ControllerEnum[] ) { _readyControllers = value; }
@@ -43,7 +39,7 @@ class GameManager extends MonoBehaviour {
 	private function set paused( value : boolean ) { _paused = value; }
 	
 	// private variables not accessible outside of this class
-	private var bgAudioSource : AudioSource;
+	private var audioSources : Hashtable;
 	private var managers : ISceneManager[];
 	
 	// MAIN FUNCTIONS
@@ -61,12 +57,14 @@ class GameManager extends MonoBehaviour {
 			return;
 		}
 		
-		// ControllerEnum is used to build and access the controllers array
+		// ControllerEnum is used to build the controllers array
 		controllers = new Controller[ControllerEnum.Count];
 		for (var i = 0; i < ControllerEnum.Count; i++)
 			controllers[i] = new Controller();
 		
-		bgAudioSource = gameObject.Find( 'Background Music' ).GetComponent( AudioSource );
+		audioSources = new Hashtable();
+		audioBind( 'swoosh', swoosh );
+		audioBind( 'chooseYourFighter', chooseYourFighter );
 		
 		// make sure every scene has a manager
 		managers = new ISceneManager[Application.levelCount];
@@ -81,15 +79,14 @@ class GameManager extends MonoBehaviour {
 	}
 	
 	function OnLevelWasLoaded( loadedLevel : int ) {
-		setBackgroundMusic( backgroundMusic[loadedLevel] );
+		audioBind( 'backgroundMusic', backgroundMusic[loadedLevel] );
+		audioPlay( 'backgroundMusic', true, true );
 		readyControllers = getControllerEnumsWithState( ControllerState.Ready );
 		
 		managers[loadedLevel].OnLevelWasLoaded();
 	}
 	
-	function Update() {
-		if (!audio.isPlaying) audioWaitFinish = false;
-		
+	function Update() {		
 		managers[Application.loadedLevel].Update();
 		
 		if( (Global.debugScene > 0) && 
@@ -117,36 +114,55 @@ class GameManager extends MonoBehaviour {
 	}
 	
 	public function instantiateAvatars() {
-		var avatarsTemp : Array = new Array(); // expandable arrays are easy to work with (but slow)
+		avatars = new GameObject[readyControllers.Length];
 		
-		var i : int = 0;
-		for( var ce : ControllerEnum in readyControllers ) {		
-			var avatar : GameObject = GameObject.Instantiate( avatarPrefab, Vector3( (2.0 * i++), 4.0, 0.0 ), Quaternion.LookRotation( Vector3.back ) );
+		for( var i = 0; i < avatars.Length; i++ ) {
+			var ce : ControllerEnum = readyControllers[i];
 			
-			var avatarChild : GameObject = GameObject.Instantiate( characterPrefabs[controllers[ce].character], 
-				avatar.transform.position, avatar.transform.rotation );
-			avatarChild.transform.parent = avatar.transform;
+			var avatar : GameObject = GameObject.Instantiate( characterPrefabs[controllers[ce].character], Vector3( (3.0 * i), 4.0, 0.0 ), Quaternion.LookRotation( Vector3.back ) );
 			
 			Global.bindAvatarToController( avatar, ce ); // set a reference to the Controller in Avatar
-			avatarsTemp.Push( avatar );
+			avatars[i] = avatar;
 		}
+	}
+	
+	public function audioBind( uid, clip : AudioClip ) {
+		if( !audioSources.ContainsKey( uid ) ) {
+			var a : AudioSource = gameObject.AddComponent( AudioSource );
+			a.clip = clip;
+			audioSources.Add( uid, a );
+		} else {
+			audioSources[uid].clip = clip;
+		}
+	}
+	
+	public function audioPlay( uid, force : boolean, loop : boolean, volume : float ) {
+		if( audioSources.ContainsKey( uid ) ) {
+			var a : AudioSource = audioSources[uid];
+			
+			if( !a.isPlaying || force ) {
+				a.loop = loop;
+				a.volume = volume;
+				a.Play();
+			}
+		} else {
+			Debug.LogWarning( 'GameManager was asked to play ' + uid + ' but that ID has not been bound.' );
+		}
+	}
+	public function audioPlay( uid, force : boolean, loop : boolean ) {
+		audioPlay( uid, force, loop, 1.0 );
+	}
+	public function audioPlay( uid, force : boolean ) {
+		audioPlay( uid, force, false );
+	}
+	public function audioPlay( uid ) {
+		audioPlay( uid, false );
+	}
+	
+	public function audioIsPlaying( uid ) : boolean {
+		if (audioSources.ContainsKey( uid ) && audioSources[uid].isPlaying ) return true;
 		
-		avatars = avatarsTemp.ToBuiltin( GameObject ); // convert to builtin for speed
-	}
-	
-	public function setBackgroundMusic( clip : AudioClip ) {
-		bgAudioSource.clip = clip;
-	}
-	
-	public function audioPlay( clip : AudioClip, waitFinish : boolean ) {
-		if( !audioWaitFinish ) {
-			audio.clip = clip;
-			audio.Play();
-			audioWaitFinish = waitFinish;
-		}
-	}
-	public function audioPlay( clip : AudioClip ) {
-		audioPlay( clip, false );
+		return false;
 	}
 	
 	public function getControllerEnumsWithState( state : ControllerState ) : ControllerEnum[] {

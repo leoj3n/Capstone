@@ -1,9 +1,12 @@
 
 import MiniJSON;
 
+enum ScaleAnchor { Center, Top, Bottom, Left, Right }
+
 public var texture : Texture2D[];
 public var atlas : TextAsset[];
 public var scaleAgainstPlaceholder : boolean = false;
+public var scaleAnchor : ScaleAnchor;
 public var fps : float = 30.0; // should match After Effects render settings
 public var isStatic : boolean = false;
 public var staticFrame : int = 0;
@@ -12,11 +15,16 @@ public var loopCount : int = 0;
 private var textureAtlasArray : TextureAtlas[];
 private var textureAtlasIndex : int;
 private var origScale : Vector3;
+private var attachedController : CharacterController;
+private var origRadius : float;
 private var scaleFactor : Vector2 = Vector2( 1.0, 1.0 );
 private var fpsTimer : float = 0.0;
 
 function Start() {
 	origScale = transform.localScale;
+	
+	attachedController = GetComponent( CharacterController );
+	if (attachedController) origRadius = attachedController.radius;
 	
 	/*
 	placeholder.width     frame.width
@@ -54,7 +62,31 @@ function applyTextureAtlas( ta : TextureAtlas ) {
 	
 	if (!scaleAgainstPlaceholder) scaleFactor = Vector2( (origScale.x / frame.width), (origScale.y / frame.height) );
 	
+	var scaleFromSide : boolean = (scaleAnchor != ScaleAnchor.Center);
+	if (scaleFromSide) var sizeBeforeScale : Vector3 = Global.getSize( gameObject );
+	
 	transform.localScale = Vector3( (frame.width * scaleFactor.x), (frame.height * scaleFactor.y), origScale.z );
+	
+	if( scaleFromSide ) {
+		var sizeDiff : Vector3 = ((Global.getSize( gameObject ) - sizeBeforeScale) / 2);
+		switch( scaleAnchor ) {
+			case ScaleAnchor.Top:
+				if (sizeDiff.y < 0) transform.position.y += sizeDiff.y;
+				break;
+			case ScaleAnchor.Bottom:
+				if (sizeDiff.y > 0) transform.position.y += sizeDiff.y;
+				break;
+			case ScaleAnchor.Left:
+				if (sizeDiff.x > 0) transform.position.x += sizeDiff.x;
+				break;
+			case ScaleAnchor.Right:
+				if (sizeDiff.x < 0) transform.position.x += sizeDiff.x;
+				break;
+		}
+	}
+	
+	if (scaleAgainstPlaceholder)
+		attachedController.radius = (origRadius * (origScale.x / transform.localScale.x));
 	
 	if (!isStatic && (index == (ta.frames.Length - 1))) loopCount++;
 }
