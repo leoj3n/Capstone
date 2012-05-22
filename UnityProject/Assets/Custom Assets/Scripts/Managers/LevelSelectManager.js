@@ -92,7 +92,7 @@ class LevelSelectManager implements ISceneManager {
 		
 		GUILayout.BeginArea( Rect( (halfScreenWidth - halfWidth), (Screen.height - height), width, height ) );
 						
-					GUILayout.Box( 'Press "A" to return to play selected level.' );
+					GUILayout.Box( 'Press "A" to play ' + GameManager.instance.level + '.' );
 					GUILayout.Box( 'Press "B" to return to Character Select.' );
 					GUILayout.Box( 'Press "Back" to return to the Main Menu.' );
 			

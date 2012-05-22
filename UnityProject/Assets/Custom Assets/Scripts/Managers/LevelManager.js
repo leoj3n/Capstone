@@ -26,15 +26,35 @@ class LevelManager implements ISceneManager {
 		}
 	}
 	
-	function OnGUI() {
-		if (!GameManager.instance.paused) return;
-		
+	function OnGUI() {		
 		var halfScreenWidth : float = (Screen.width / 2);
 		var halfScreenHeight : float = (Screen.height / 2);
 		var width : float = 300.0;
 		var height : float = 200.0;
 		var halfWidth : float = (width / 2);
 		var halfHeight : float = (height / 2);
+		
+		//GUILayout.BeginArea( Rect( 20.0, 20.0, width, height ) );
+		
+			GUILayout.BeginVertical( 'box' );
+				
+				//GUILayout.Box( 'Red Team' );
+				
+				GUILayout.BeginHorizontal();
+				
+					GUILayout.Box( 'Player 1' );
+					GUILayout.Box( 'Player 2' );
+				
+				GUILayout.BeginHorizontal();
+				
+			GUILayout.EndVertical();
+		
+		//GUILayout.EndArea();
+		
+		if (!GameManager.instance.paused) return;
+		
+		width = 300.0;
+		height = 200.0;
 		
 		GUILayout.BeginArea( Rect( (halfScreenWidth - halfWidth), (halfScreenHeight - halfHeight), width, height ) );
 		
