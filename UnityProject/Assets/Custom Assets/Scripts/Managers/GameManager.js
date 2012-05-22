@@ -10,6 +10,7 @@ class GameManager extends MonoBehaviour {
 	
 	// variables available in the inspector (accessible via GameManager.instance)
 	public var backgroundMusic : AudioClip[];
+	public var backgroundMusicVolume : float = 0.60;
 	public var avatarPrefab : GameObject;
 	public var characterPrefabs : GameObject[];
 	public var expectedOrder : CharacterEnum; // just to expose the expected order in the Inspector
@@ -80,7 +81,7 @@ class GameManager extends MonoBehaviour {
 	
 	function OnLevelWasLoaded( loadedLevel : int ) {
 		audioBind( 'backgroundMusic', backgroundMusic[loadedLevel] );
-		audioPlay( 'backgroundMusic', true, true );
+		audioPlay( 'backgroundMusic', true, true, backgroundMusicVolume );
 		readyControllers = getControllerEnumsWithState( ControllerState.Ready );
 		
 		managers[loadedLevel].OnLevelWasLoaded();
@@ -140,6 +141,20 @@ class GameManager extends MonoBehaviour {
 		a.clip = clip;
 	}
 	
+	public function audioStop( uid ) : boolean {		
+		if( audioSources.ContainsKey( uid ) ) {
+			audioSources[uid].Stop();
+			return true;
+		}
+		
+		Debug.LogWarning( 'GameManager was asked to stop ' + uid + ' but that ID is not bound.' );
+		return false; // audio source not in the hashtable
+	}
+	
+	public function audioUnbind( uid ) {		
+		if (audioStop( uid )) audioSources.Remove( uid );
+	}
+	
 	public function audioPlay( uid, force : boolean, loop : boolean, volume : float ) : AudioSource {
 		var a : AudioSource;
 		
@@ -180,21 +195,38 @@ class GameManager extends MonoBehaviour {
 		var origVolume : float = a.volume;
 		
 		while( Time.time < endTime ) {
-			a.volume = (Time.time - startTime) / duration;
-			yield;		
+			a.volume = (origVolume * ((Time.time - startTime) / duration));
+			yield;
 		}
 	}
 	
 	// utility function for fading out audio
-	public function audioFadeOut( a : AudioSource, duration : float ) {
-		var endTime : float = (Time.time + a.clip.length);
+	public function audioFadeOut( a : AudioSource, duration : float, delay : float ) {
+		var endTime : float = (Time.time + (a.clip.length - a.time));
 		var startTime : float = (endTime - duration);
 		var origVolume : float = a.volume;
 		
-		while( Time.time < endTime ) {
-			a.volume = (Time.time - startTime) / duration; // need to work on this
-			yield;		
+		// delay only used for looping audio
+		if( a.loop ) {
+			endTime = (delay + Time.time + duration);
+			startTime = (delay + Time.time);
 		}
+		
+		while( Time.time < endTime ) {
+			if( Time.time > startTime ) {			
+				a.volume = (origVolume * (1.0 - ((Time.time - startTime) / duration)));
+				
+				//a.volume = Mathf.Lerp( a.volume, (origVolume * (1.0 - ((Time.time - startTime) / duration))), (Time.deltaTime * 20) );
+				
+				//a.volume = Mathf.Lerp( a.volume, 0.0, ((Time.time - startTime) / duration) );
+			}
+			
+			Debug.Log( a.volume );
+			yield;
+		}
+	}
+	public function audioFadeOut( a : AudioSource, duration : float ) {
+		audioFadeOut( a, duration, 0 );
 	}
 	
 	public function getControllerEnumsWithState( state : ControllerState ) : ControllerEnum[] {

@@ -70,7 +70,8 @@ function OnCollisionEnter( collision : Collision ) {
 		Camera.main.SendMessage( 'AddShake', 0.5 );
 		GameManager.instance.audioPlay( 'meteorExplode' );
 		
-		GameManager.instance.audioFadeOut( GameManager.instance.audioPlay( 'meteorDebris', true, false, 1.0 ), 1.0 );
+		var a : AudioSource = GameManager.instance.audioPlay( 'meteorDebris', true, true, 1.0 );
+		GameManager.instance.audioFadeOut( a, 3.0, 1.0 ); //a.clip.length
 		
 		// instantiate a detonator
 		GameObject.Instantiate( detonatorPrefab, transform.position, Quaternion.identity );
@@ -92,6 +93,7 @@ function OnCollisionEnter( collision : Collision ) {
 			emitter.emit = false;
 		}
 		
+		GameManager.instance.audioStop( 'meteorCrackle' );
 		Destroy( gameObject ); // destroy this meteor
 		
 		dead = true;
