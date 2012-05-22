@@ -60,7 +60,7 @@ function Update() {
 }
 
 function OnCollisionEnter( collision : Collision ) {
-	GameManager.instance.audioPlay( GetInstanceID(), false, false, (collision.impactForceSum.magnitude / 20) );
+	GameManager.instance.audioPlay( GetInstanceID(), true, false, (collision.impactForceSum.magnitude / 10) );
 	
 	if( !dislodged && collision.collider.CompareTag( 'Meteor' ) ) {
 		rigidbody.constraints = RigidbodyConstraints.None;

@@ -67,6 +67,7 @@ function applyTextureAtlas( ta : TextureAtlas ) {
 	
 	transform.localScale = Vector3( (frame.width * scaleFactor.x), (frame.height * scaleFactor.y), origScale.z );
 	
+	// update position to compensate for scale
 	if( scaleFromSide ) {
 		var sizeDiff : Vector3 = ((Global.getSize( gameObject ) - sizeBeforeScale) / 2);
 		switch( scaleAnchor ) {
@@ -85,7 +86,8 @@ function applyTextureAtlas( ta : TextureAtlas ) {
 		}
 	}
 	
-	if (scaleAgainstPlaceholder)
+	// update radius to compensate for scale
+	if (scaleAgainstPlaceholder && attachedController)
 		attachedController.radius = (origRadius * (origScale.x / transform.localScale.x));
 	
 	if (!isStatic && (index == (ta.frames.Length - 1))) loopCount++;

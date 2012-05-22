@@ -12,6 +12,9 @@ private var largestY : float;
 private var t : float;
 private var shake : float = 0.0;
 
+private var averagePositionY_Save : float;
+private var largestY_Save : float;
+
 function Update() {
 	largestDistance = largestX = largestY = 0.0;
 	averagePosition = Vector3.zero;
@@ -39,6 +42,15 @@ function Update() {
 	averagePosition /= GameManager.instance.avatars.Length;
 	
 	if (averagePosition.y < minimumY) averagePosition.y = minimumY;
+	
+	// stop the camera from moving for tiny movements
+	if( Mathf.Abs( averagePositionY_Save - averagePosition.y ) > 0.1 ) {
+		averagePositionY_Save = averagePosition.y;
+		largestY_Save = largestY;
+	} else {
+		averagePosition.y = averagePositionY_Save;
+		largestY = largestY_Save;
+	}
 	
 	if( shake > 0 ) {
 		averagePosition += Vector3( Random.Range( -shake, shake ), Random.Range( -shake, shake ), 0.0 );
