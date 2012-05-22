@@ -43,7 +43,7 @@ class GameManager extends MonoBehaviour {
 	private var audioSources : Hashtable;
 	private var managers : ISceneManager[];
 	
-	// MAIN FUNCTIONS
+	// SINGLETON FUNCTIONS
 	
 	function OnApplicationQuit() {
 		instance = null; // unset singleton
@@ -57,12 +57,17 @@ class GameManager extends MonoBehaviour {
 			Destroy( gameObject );
 			return;
 		}
-		
+	}
+	
+	// MAIN FUNCTIONS
+	
+	function Start() {
 		// ControllerEnum is used to build the controllers array
 		controllers = new Controller[ControllerEnum.Count];
 		for (var i = 0; i < ControllerEnum.Count; i++)
 			controllers[i] = new Controller();
 		
+		// setup audio
 		audioSources = new Hashtable();
 		audioBind( 'swoosh', swoosh );
 		audioBind( 'chooseYourFighter', chooseYourFighter );
@@ -80,30 +85,30 @@ class GameManager extends MonoBehaviour {
 	}
 	
 	function OnLevelWasLoaded( loadedLevel : int ) {
-		audioBind( 'backgroundMusic', backgroundMusic[loadedLevel] );
-		audioFadeIn( audioPlay( 'backgroundMusic', true, true, backgroundMusicVolume ), 3.0 );
-		readyControllers = getControllerEnumsWithState( ControllerState.Ready );
-		
-		if( shouldSimulate() ) {
-			// simulate this scene, then skip ahead to the next
-			managers[Application.loadedLevel].SimulateScene();
-			Application.LoadLevel( Application.loadedLevel + 1 );
-		} else {
+		if( simulateCurrentLevel() ) { // simulate this scene, then skip ahead to the next
+			if (managers == null) return; // System.Activator.CreateInstance can take a while
+			managers[loadedLevel].SimulateScene();
+			Application.LoadLevel( loadedLevel + 1 );
+		} else { // this level is for real
+			audioBind( 'backgroundMusic', backgroundMusic[loadedLevel] );
+			audioFadeIn( audioPlay( 'backgroundMusic', true, true, backgroundMusicVolume ), 3.0 );
+			readyControllers = getControllerEnumsWithState( ControllerState.Ready );
+			
 			managers[loadedLevel].OnLevelWasLoaded();
 		}
 	}
 	
 	function Update() {
-		if (!shouldSimulate()) managers[Application.loadedLevel].Update();
+		if (!simulateCurrentLevel()) managers[Application.loadedLevel].Update();
 	}
 		
 	function OnGUI() {
-		if (!shouldSimulate()) managers[Application.loadedLevel].OnGUI();
+		if (!simulateCurrentLevel()) managers[Application.loadedLevel].OnGUI();
 	}
 	
-	private function shouldSimulate() : boolean {
+	private function simulateCurrentLevel() : boolean {
 		return ((Global.debugScene > 0) && 
-			(Global.debugScene < Application.levelCount) && (Global.debugScene > Application.loadedLevel));
+			(Global.debugScene < Application.levelCount) && (Application.loadedLevel < Global.debugScene));
 	}
 	
 	// PUBLIC FUNCTIONS

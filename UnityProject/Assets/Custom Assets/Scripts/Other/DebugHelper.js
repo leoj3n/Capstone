@@ -3,20 +3,23 @@ import System;
 import System.Reflection;
 
 public var muteAllSound : boolean = false;
-public var clearConsole : boolean = false;
+public var clearConsoleOnLoad : boolean = false;
 
-function Awake() {
+function OnEnable() {
 	if( GameManager.instance == null ) {
 		Global.debugScene = Application.loadedLevel;
 		Application.LoadLevel( 0 );
 	}
 }
 
-function Update() {
-	var listeners : AudioListener[] = GameObject.FindObjectsOfType( AudioListener );
-	
-	for( var listener : AudioListener in listeners ) {
-		listener.pause = muteAllSound;
+function FixedUpdate() {
+	var listener : AudioListener = GameObject.FindObjectOfType( AudioListener );
+	if( muteAllSound ) {
+		listener.pause = true;
+		listener.volume = 0.0;
+	} else {
+		listener.pause = false;
+		listener.volume = 1.0;
 	}
 }
 
@@ -24,7 +27,7 @@ function OnLevelWasLoaded( loadedLevel : int ) {
 	if( loadedLevel == Global.debugScene ) {
 		Global.debugScene = 0;
 		
-		if( clearConsole ) {
+		if( clearConsoleOnLoad ) {
 			var assembly : Assembly = Assembly.GetAssembly( typeof( SceneView ) );
 			var type : Type = assembly.GetType( 'UnityEditorInternal.LogEntries' );
 			var method : MethodInfo = type.GetMethod( 'Clear' );
@@ -32,6 +35,6 @@ function OnLevelWasLoaded( loadedLevel : int ) {
 			method.Invoke( object, null );
 		}
 		
-		Debug.Log( '* * * Debug Scene Loaded * * *' );
+		Debug.Log( 'Debug Helper: Scene ' + loadedLevel + ' has been fully loaded.' );
 	}
 }

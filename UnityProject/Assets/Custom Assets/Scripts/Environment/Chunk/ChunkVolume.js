@@ -7,7 +7,7 @@ private var lastReset : float;
 private var chunks : ArrayList;
 private var chunkScaleVector : Vector3;
 
-function Start() {
+function Start() {	
 	lastReset = Time.time;
 	chunkScaleVector = Vector3( chunkScale, chunkScale, chunkScale );
 	renderer.enabled = false; // hide the scene object
@@ -28,8 +28,6 @@ function Start() {
 		var zBegin : float = transform.position.z - (objectSize.z / 2) + (chunkSize.z / 2);
 		
 		chunks = new ArrayList();
-		
-		Debug.Log( GetInstanceID() + ' ... ' + GameManager.instance );
 		
 		// fill volume of this scene object with "chunks"
 		for( var i = 0; i < xNum; i++ ) {
