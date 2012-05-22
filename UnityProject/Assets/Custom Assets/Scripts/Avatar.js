@@ -242,17 +242,10 @@ function OutOfBounds() {
 	Debug.Log( 'Avatar has been returned from out of bounds.' );
 }
 
-function AudioPlay( clip : CharacterSound ) {
-	audio.clip = sound[clip];
-	audio.Play();
-}
-
-function AudioPlayOneShot( clip : CharacterSound ) {
-	audio.PlayOneShot( sound[clip] );
-}
-
-function AudioStop() {
-	audio.Stop();
+function AudioPlay( cs : int ) {
+	var uid : int = (GetInstanceID() + cs);
+	GameManager.instance.audioBind( uid, sound[cs] );
+	GameManager.instance.audioPlay( uid, true );
 }
 
 function Attack1() {}

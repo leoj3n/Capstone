@@ -3,10 +3,12 @@ public var avatarLayer : int = 8;
 public var impactSound : AudioClip;
 public var secondsUntilSoundClimax : float = 0.9;
 public var explodeSound : AudioClip;
+public var crackleSound : AudioClip;
+public var maxCrackleVolume : float = 1.0;
 public var detonatorPrefab : GameObject;
 public var craterPrefab : GameObject;
 
-private var origVolume : float;
+private var crackleAudioSource : AudioSource;
 private var startPos : Vector3;
 private var lastPos : Vector3;
 private var timeUntilExpire : float = 1.0;
@@ -19,15 +21,16 @@ private var dead : boolean = false;
 private var angleAmount : float = 0.02;
 
 function Awake() {
-	origVolume = audio.volume;
-	audio.volume = 0;
 	startPos = lastPos = transform.position;
 	layerMask = ~(1 << avatarLayer); // layer mask for use in raycast
 	additionalVelocity = Vector3( (Random.Range( 0.0, angleAmount ) * ((startPos.x < 0.0) ? -1 : 1 )), 0.0, 0.0 );
 	
 	GameManager.instance.audioBind( 'meteorImpact', impactSound );
 	GameManager.instance.audioBind( 'meteorExplode', explodeSound );
-	GameManager.instance.audioBind( 'meteorCrackle', audio.clip );
+	GameManager.instance.audioBind( 'meteorCrackle', crackleSound );
+	GameManager.instance.audioBind( 'meteorDebris', crackleSound );
+	
+	crackleAudioSource = GameManager.instance.audioPlay( 'meteorCrackle', true, true, maxCrackleVolume );
 }
 
 function Update() {
@@ -41,7 +44,7 @@ function Update() {
 	lastPos = transform.position;
 	
 	// volume is relative to distance from ground
-	audio.volume = origVolume - ((transform.position.y * 0.75) / startPos.y);
+	crackleAudioSource.volume = (maxCrackleVolume - ((transform.position.y * 0.75) / startPos.y));
 	
 	if( !playedOnce ) {
 		// distance = (initial velocity * t) + (1/2a * t^2)
@@ -67,7 +70,7 @@ function OnCollisionEnter( collision : Collision ) {
 		Camera.main.SendMessage( 'AddShake', 0.5 );
 		GameManager.instance.audioPlay( 'meteorExplode' );
 		
-		GameManager.instance.audioFadeOut( GameManager.instance.audioPlay( 'meteorCrackle', true, false, 1.0 ), 1.0 );
+		GameManager.instance.audioFadeOut( GameManager.instance.audioPlay( 'meteorDebris', true, false, 1.0 ), 1.0 );
 		
 		// instantiate a detonator
 		GameObject.Instantiate( detonatorPrefab, transform.position, Quaternion.identity );
