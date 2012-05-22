@@ -117,12 +117,12 @@ class CharacterSelectManager implements ISceneManager {
 	function OnGUI() {
 		var halfScreenWidth : float = (Screen.width / 2);
 		var halfScreenHeight : float = (Screen.height / 2);
-		var width : float = 200.0;
-		var height : float = 100.0;
+		var width : float = 300.0;
+		var height : float = 40.0;
 		var halfWidth : float = (width / 2);
 		var halfHeight : float = (height / 2);
 		
-		GUILayout.BeginArea( Rect( (halfScreenWidth - halfWidth), (Screen.height - halfHeight), width, height ) );
+		GUILayout.BeginArea( Rect( (halfScreenWidth - halfWidth), (Screen.height - height), width, height ) );
 		
 			GUILayout.BeginHorizontal();
 			

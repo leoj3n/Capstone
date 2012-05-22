@@ -9,6 +9,7 @@ class GameManager extends MonoBehaviour {
 	public static var instance : GameManager;
 	
 	// variables available in the inspector (accessible via GameManager.instance)
+	public var startBG : Texture2D;
 	public var backgroundMusic : AudioClip[];
 	public var backgroundMusicVolume : float = 0.60;
 	public var characterPrefabs : GameObject[];

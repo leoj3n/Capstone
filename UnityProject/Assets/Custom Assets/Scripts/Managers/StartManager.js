@@ -71,7 +71,9 @@ class StartManager implements ISceneManager  {
 		var halfWidth : float = (width / 2);
 		var halfHeight : float = (height / 2);
 		
-		GUILayout.BeginArea( Rect( (halfScreenWidth - halfWidth), (halfScreenHeight - halfHeight), width, height ) );
+		GUI.DrawTexture( Rect( 100, 200, Screen.width - 200, Screen.height - 200 ), GameManager.instance.startBG );
+		
+		GUILayout.BeginArea( Rect( (halfScreenWidth - halfWidth), 20.0, width, height ) );
 		
 			GUILayout.Box( 'Press Start or Back to add or remove your controller\nChange teams using A/B/X/Y (button colors correspond to team colors)' );
 			
