@@ -94,7 +94,9 @@ class SelectManager implements ISceneManager  {
 					break;
 				case Global.isButtonDown( 'B' ):
 					if( selectingController == 0 ) {
-						Debug.Log( 'Load previous level' );
+						//GameObject.DestroyImmediate( GameManager.instance );
+						//yield;
+						Application.LoadLevel( 0 );
 					} else {
 						selectingController--;
 						newSelect();

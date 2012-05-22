@@ -50,13 +50,19 @@ class GameManager extends MonoBehaviour {
 	}
 	
 	function Awake() {
+		verifySingleton();
+	}
+	
+	function verifySingleton() {
 		if( instance == null ) {
 			instance = this;
 			DontDestroyOnLoad( gameObject );
-		} else {
-			Destroy( gameObject );
-			return;
+		} else if (instance != this) {
+			DestroyImmediate( gameObject );
+			return false;
 		}
+		
+		return true;
 	}
 	
 	// MAIN FUNCTIONS
@@ -85,6 +91,8 @@ class GameManager extends MonoBehaviour {
 	}
 	
 	function OnLevelWasLoaded( loadedLevel : int ) {
+		if (!verifySingleton()) return; // sometimes OnLevelWasLoaded() comes before Awake() (Unity provides no guarantee)
+		
 		if( simulateCurrentLevel() ) { // simulate this scene, then skip ahead to the next
 			if (managers == null) return; // System.Activator.CreateInstance can take a while
 			managers[loadedLevel].SimulateScene();
@@ -142,6 +150,8 @@ class GameManager extends MonoBehaviour {
 	// utility function for binding audio
 	public function audioBind( uid, clip : AudioClip ) {
 		var a : AudioSource;
+		
+		if (audioSources == null) Debug.LogWarning( 'GameManager was asked to bind ' + clip.name + ' before audioSources was newed.' );
 		
 		if( !audioSources.ContainsKey( uid ) ) {
 			a = gameObject.AddComponent( AudioSource );

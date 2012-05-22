@@ -1,13 +1,20 @@
 
 class StartManager implements ISceneManager  {
-	private var countdownStartTime : float = 0.0;
+	private var countdownStartTime : float;
 	
 	function SimulateScene() {
 		GameManager.instance.controllers[0].state = ControllerState.Ready;
 		GameManager.instance.controllers[1].state = ControllerState.Ready;
 	}
 	
-	function OnLevelWasLoaded() {}
+	function OnLevelWasLoaded() {
+		countdownStartTime = 0.0;
+		
+		for( var i = 0; i < ControllerEnum.Count; i++ ) {
+			if (GameManager.instance.controllers[i].state == ControllerState.Ready)
+				GameManager.instance.controllers[i].state = ControllerState.TeamSelect;
+		}
+	}
 	
 	function Update() {
 		// loop through each controller to set state and team on button press
