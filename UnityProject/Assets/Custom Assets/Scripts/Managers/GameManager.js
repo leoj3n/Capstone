@@ -81,7 +81,7 @@ class GameManager extends MonoBehaviour {
 	
 	function OnLevelWasLoaded( loadedLevel : int ) {
 		audioBind( 'backgroundMusic', backgroundMusic[loadedLevel] );
-		audioPlay( 'backgroundMusic', true, true, backgroundMusicVolume );
+		audioFadeIn( audioPlay( 'backgroundMusic', true, true, backgroundMusicVolume ), 3.0 );
 		readyControllers = getControllerEnumsWithState( ControllerState.Ready );
 		
 		managers[loadedLevel].OnLevelWasLoaded();
@@ -120,7 +120,8 @@ class GameManager extends MonoBehaviour {
 		for( var i = 0; i < avatars.Length; i++ ) {
 			var ce : ControllerEnum = readyControllers[i];
 			
-			var avatar : GameObject = GameObject.Instantiate( characterPrefabs[controllers[ce].character], Vector3( (3.0 * i), 4.0, 0.0 ), Quaternion.LookRotation( Vector3.back ) );
+			var avatar : GameObject = GameObject.Instantiate( 
+				characterPrefabs[controllers[ce].character], Vector3( (3.0 * i), 4.0, 0.0 ), Quaternion.LookRotation( Vector3.back ) );
 			
 			Global.bindAvatarToController( avatar, ce ); // set a reference to the Controller in Avatar
 			avatars[i] = avatar;
@@ -213,15 +214,8 @@ class GameManager extends MonoBehaviour {
 		}
 		
 		while( Time.time < endTime ) {
-			if( Time.time > startTime ) {			
+			if (Time.time > startTime)
 				a.volume = (origVolume * (1.0 - ((Time.time - startTime) / duration)));
-				
-				//a.volume = Mathf.Lerp( a.volume, (origVolume * (1.0 - ((Time.time - startTime) / duration))), (Time.deltaTime * 20) );
-				
-				//a.volume = Mathf.Lerp( a.volume, 0.0, ((Time.time - startTime) / duration) );
-			}
-			
-			Debug.Log( a.volume );
 			yield;
 		}
 	}
