@@ -43,31 +43,9 @@ class GameManager extends MonoBehaviour {
 	private var audioSources : Hashtable;
 	private var managers : ISceneManager[];
 	
-	// SINGLETON FUNCTIONS
+	// PRIVATE FUNCTIONS
 	
-	function OnApplicationQuit() {
-		instance = null; // unset singleton
-	}
-	
-	function Awake() {
-		verifySingleton();
-	}
-	
-	function verifySingleton() {
-		if( instance == null ) {
-			instance = this;
-			DontDestroyOnLoad( gameObject );
-		} else if (instance != this) {
-			DestroyImmediate( gameObject );
-			return false;
-		}
-		
-		return true;
-	}
-	
-	// MAIN FUNCTIONS
-	
-	function Start() {
+	private function oneTimeSetup() {
 		// ControllerEnum is used to build the controllers array
 		controllers = new Controller[ControllerEnum.Count];
 		for (var i = 0; i < ControllerEnum.Count; i++)
@@ -86,37 +64,54 @@ class GameManager extends MonoBehaviour {
 			else
 				managers[i] = System.Activator.CreateInstance( defaultSceneManager.GetClass() );
 		}
-		
-		OnLevelWasLoaded( 0 ); // simulate load for initial level (Unity doesn't call OnLevelWasLoaded for level 0)
 	}
 	
-	function OnLevelWasLoaded( loadedLevel : int ) {
-		if (!verifySingleton()) return; // sometimes OnLevelWasLoaded() comes before Awake() (Unity provides no guarantee)
+	private function simulating() : boolean {
+		return ((Global.debugScene > 0) && 
+			(Global.debugScene < Application.levelCount) && (Application.loadedLevel < Global.debugScene));
+	}
+	
+	private function verifySingleton() {
+		if( instance == null ) {
+			instance = this;
+			DontDestroyOnLoad( gameObject );
+		} else if (instance != this) {
+			DestroyImmediate( gameObject );
+			return false;
+		}
 		
-		if( simulateCurrentLevel() ) { // simulate this scene, then skip ahead to the next
-			if (managers == null) return; // System.Activator.CreateInstance can take a while
-			managers[loadedLevel].SimulateScene();
-			Application.LoadLevel( loadedLevel + 1 );
+		return true;
+	}
+	
+	// MAIN FUNCTIONS
+	
+	function OnApplicationQuit() {
+		instance = null; // unset singleton
+	}
+	
+	function OnEnable() {
+		if (!verifySingleton()) return; // verify singleton
+		
+		if (!controllers) oneTimeSetup();
+		
+		if( simulating() ) { // if true, simulate this scene then skip ahead to the next
+			managers[Application.loadedLevel].SimulateScene();
+			Application.LoadLevel( Application.loadedLevel + 1 );
 		} else { // this level is for real
-			audioBind( 'backgroundMusic', backgroundMusic[loadedLevel] );
+			audioBind( 'backgroundMusic', backgroundMusic[Application.loadedLevel] );
 			audioFadeIn( audioPlay( 'backgroundMusic', true, true, backgroundMusicVolume ), 3.0 );
 			readyControllers = getControllerEnumsWithState( ControllerState.Ready );
 			
-			managers[loadedLevel].OnLevelWasLoaded();
+			managers[Application.loadedLevel].OnEnable();
 		}
 	}
 	
 	function Update() {
-		if (!simulateCurrentLevel()) managers[Application.loadedLevel].Update();
+		if (!simulating()) managers[Application.loadedLevel].Update();
 	}
 		
 	function OnGUI() {
-		if (!simulateCurrentLevel()) managers[Application.loadedLevel].OnGUI();
-	}
-	
-	private function simulateCurrentLevel() : boolean {
-		return ((Global.debugScene > 0) && 
-			(Global.debugScene < Application.levelCount) && (Application.loadedLevel < Global.debugScene));
+		if (!simulating()) managers[Application.loadedLevel].OnGUI();
 	}
 	
 	// PUBLIC FUNCTIONS

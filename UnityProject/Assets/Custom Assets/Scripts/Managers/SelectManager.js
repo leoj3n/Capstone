@@ -7,7 +7,6 @@ class SelectManager implements ISceneManager  {
 	private var rotations : Array;
 	private var selectHUDs : Array;
 	private var waitingForTurn : boolean;
-	private var selectedIndex : int;
 	private var lastSelectTime : float;
 	
 	function SimulateScene() {
@@ -15,12 +14,9 @@ class SelectManager implements ISceneManager  {
 		GameManager.instance.controllers[1].character = CharacterEnum.BlackMagic;
 	}
 	
-	function OnLevelWasLoaded() {
+	function OnEnable() {
 		rotator = GameObject.Find( 'Rotator' );
-	
 		degreesOfSeparation = (360 / GameManager.instance.characterPrefabs.Length);
-		
-		selectingController = 0;
 		
 		rotations = new Array();
 		selectHUDs = new Array();
@@ -33,14 +29,15 @@ class SelectManager implements ISceneManager  {
 			
 			rotations.Push( rot );
 			selectHUDs.Push( clone );
-		}		
+		}
 		
-		GameManager.instance.audioPlay( 'chooseYourFighter' );
+		selectingController = 0;
+		newSelect();
 	}
 	
 	function Update() {
 		// capture input if not playing a selection animation or intro audio
-		var playingSelected : boolean = selectHUDs[selectedIndex].GetComponent( SelectHUD ).playSelected;	
+		var playingSelected : boolean = selectHUDs[currentCharacter].GetComponent( SelectHUD ).playSelected;	
 		
 		var left : boolean;
 		var right : boolean;
@@ -88,14 +85,11 @@ class SelectManager implements ISceneManager  {
 						GameManager.instance.characterPrefabs[currentCharacter].GetComponent( Avatar ).sound[CharacterSound.Selected] );
 					GameManager.instance.audioPlay( 'selected' );
 					selectHUDs[currentCharacter].GetComponent( SelectHUD ).playSelected = true;
-					selectedIndex = currentCharacter;
 					waitingForTurn = true;
 					playingSelected = true;
 					break;
 				case Global.isButtonDown( 'B' ):
 					if( selectingController == 0 ) {
-						//GameObject.DestroyImmediate( GameManager.instance );
-						//yield;
 						Application.LoadLevel( 0 );
 					} else {
 						selectingController--;
@@ -106,7 +100,7 @@ class SelectManager implements ISceneManager  {
 		} 
 		
 		// upon selection animation end
-		if( waitingForTurn && !playingSelected ) {			
+		if( waitingForTurn && !playingSelected ) {
 			// set the character variable for the controller
 			GameManager.instance.controllers[selectingController++].character = currentCharacter;
 			
@@ -157,7 +151,7 @@ class SelectManager implements ISceneManager  {
 	}
 	
 	private function newSelect() {
-		currentCharacter = 0;
+		currentCharacter = GameManager.instance.controllers[selectingController].character;
 		waitingForTurn = false;
 		GameManager.instance.audioPlay( 'chooseYourFighter', true );
 	}

@@ -39,7 +39,7 @@ class Controller {
 
 interface ISceneManager {
 	function SimulateScene();
-	function OnLevelWasLoaded();
+	function OnEnable();
 	function Update();
 	function OnGUI();
 }

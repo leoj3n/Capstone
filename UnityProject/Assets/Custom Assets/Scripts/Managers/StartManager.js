@@ -7,7 +7,7 @@ class StartManager implements ISceneManager  {
 		GameManager.instance.controllers[1].state = ControllerState.Ready;
 	}
 	
-	function OnLevelWasLoaded() {
+	function OnEnable() {
 		countdownStartTime = 0.0;
 		
 		for( var i = 0; i < ControllerEnum.Count; i++ ) {

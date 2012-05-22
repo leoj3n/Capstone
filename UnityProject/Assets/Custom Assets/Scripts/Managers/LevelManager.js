@@ -4,13 +4,26 @@ class LevelManager implements ISceneManager {
 		// nothing needs to be simulated
 	}
 
-	function OnLevelWasLoaded() {
+	function OnEnable() {
 		GameManager.instance.instantiateAvatars();
 	}
 	
 	function Update() {
 		if (Global.isButtonDown( 'Start', GameManager.instance.readyControllers ))
 			GameManager.instance.togglePause();
+		
+		if( GameManager.instance.paused ) {
+			switch( true ) {
+				case Global.isButtonDown( 'B', GameManager.instance.readyControllers ):
+					GameManager.instance.togglePause();
+					Application.LoadLevel( 1 );
+					break;
+				case Global.isButtonDown( 'Back', GameManager.instance.readyControllers ):
+					GameManager.instance.togglePause();
+					Application.LoadLevel( 0 );
+					break;
+			}
+		}
 	}
 	
 	function OnGUI() {
