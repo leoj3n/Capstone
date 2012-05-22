@@ -5,6 +5,8 @@ class StartManager implements ISceneManager  {
 	function SimulateScene() {
 		GameManager.instance.controllers[0].state = ControllerState.Ready;
 		GameManager.instance.controllers[1].state = ControllerState.Ready;
+		
+		Application.LoadLevel( SceneEnum.CharacterSelect );
 	}
 	
 	function OnEnable() {

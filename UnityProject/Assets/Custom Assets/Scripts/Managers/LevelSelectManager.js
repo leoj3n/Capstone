@@ -8,6 +8,8 @@ class LevelSelectManager implements ISceneManager {
 	
 	function SimulateScene() {
 		GameManager.instance.level = LevelEnum.Rooftop;
+		
+		Application.LoadLevel( parseInt( SceneEnum.Count ) + GameManager.instance.level );
 	}
 	
 	function OnEnable() {

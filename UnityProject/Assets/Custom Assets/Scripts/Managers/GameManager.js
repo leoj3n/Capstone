@@ -102,7 +102,6 @@ class GameManager extends MonoBehaviour {
 		
 		if( simulating() ) { // if true, simulate this scene then skip ahead to the next
 			managers[Application.loadedLevel].SimulateScene();
-			Application.LoadLevel( Application.loadedLevel + 1 );
 		} else { // this level is for real
 			audioBind( 'backgroundMusic', backgroundMusic[Application.loadedLevel] );
 			audioFadeIn( audioPlay( 'backgroundMusic', true, true, backgroundMusicVolume ), 3.0 );
