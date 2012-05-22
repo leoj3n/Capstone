@@ -12,6 +12,7 @@ class CharacterSelectManager implements ISceneManager {
 	function SimulateScene() {
 		GameManager.instance.controllers[0].character = CharacterEnum.ZipperFace;
 		GameManager.instance.controllers[1].character = CharacterEnum.BlackMagic;
+		GameManager.instance.controllers[1].team = ControllerTeam.Red;
 		
 		Application.LoadLevel( SceneEnum.LevelSelect );
 	}
