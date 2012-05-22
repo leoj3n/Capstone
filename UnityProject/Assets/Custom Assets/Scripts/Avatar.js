@@ -206,7 +206,7 @@ function addExplosionForce( pos : Vector3, force : float, damping : float ) {
 	
 	var explosionForce : Vector3 = ((dir * force) / (dist));
 	if (explosionForce.y < 0.0) explosionForce.y = 0.0;
-	explosionForce.y *= 2;//+= 0.2; // add upward bias
+	explosionForce.y *= 1.5;//+= 0.2; // add upward bias
 	
 	var damage : float = ((force * damping) / dist);
 	health -= (damage * damage);
@@ -234,6 +234,14 @@ function OnControllerColliderHit( hit : ControllerColliderHit ) {
 // use SendMessage to call this
 function SetController( ce : ControllerEnum ) {
 	boundController = ce;
+}
+
+function getController() : ControllerEnum {
+	return boundController;
+}
+
+function getName() : String {
+	return typeof( this ).ToString();
 }
 
 // use SendMessage to call this

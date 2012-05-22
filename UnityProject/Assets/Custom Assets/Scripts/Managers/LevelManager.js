@@ -30,42 +30,27 @@ class LevelManager implements ISceneManager {
 		var halfScreenWidth : float = (Screen.width / 2);
 		var halfScreenHeight : float = (Screen.height / 2);
 		
-		/*GUILayout.BeginArea( Rect( 20.0, 20.0, (halfScreenWidth - 20.0), (halfScreenHeight - 20.0) ) );
-					
-			GUILayout.BeginHorizontal();
-			
-				GUILayout.Box( 'Red Team' );
-				GUILayout.Box( 'Player 1' );
-				GUILayout.Box( 'Player 2' );
-			
-			GUILayout.EndHorizontal();
-		
-		GUILayout.EndArea();*/
-		
-		GUI.BeginGroup( Rect( 20.0, 20.0, (Screen.width - 40.0), (Screen.height - 40.0) ) );
+		GUILayout.BeginArea( Rect( 20.0, 20.0, 100.0, (Screen.height - 40.0) ) );
 			
 			GUILayout.BeginVertical();
 				
-				var initialized;
-				for( var i = 0; i < ControllerTeam.Count; i++ ) {
-					initialized = false;
+				for( var i = 0; i < ControllerTeam.Count; i++ ) {					
+					var avatars : GameObject[] = GameManager.instance.getAvatarsOnTeam( i );
 					
-					for( var controller : ControllerEnum in GameManager.instance.readyControllers ) {
-						if( GameManager.instance.controllers[controller].team == i ) {
-							if( !initialized ) {
-								if (i != 0) GUILayout.Space( 20.0 );
-								GUILayout.Box( 'Team ' + i );
-								initialized = true;
-							}
-							
-							GUILayout.Box( 'Controller ' + controller );
+					if( avatars.Length > 0 ) {
+						if (i != 0) GUILayout.Space( 20.0 );
+						GUILayout.Box( 'Team ' + Enum.GetName( ControllerTeam, i ) );
+						
+						for( var avatar : GameObject in avatars ) {
+							var component : Component = avatar.GetComponent( Avatar );
+							GUILayout.Box( 'Controller ' + parseInt( component.getController() ) + '\n' + component.getName() + '\nHP: ' + parseInt( component.health ) );
 						}
 					}
 				}
 				
 			GUILayout.EndVertical();
 		
-		GUI.EndGroup();
+		GUILayout.EndArea();
 		
 		if (!GameManager.instance.paused) return;
 		

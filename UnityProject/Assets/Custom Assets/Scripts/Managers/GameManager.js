@@ -148,6 +148,18 @@ class GameManager extends MonoBehaviour {
 		}
 	}
 	
+	// utility function to get avatars on a specific team
+	public function getAvatarsOnTeam( team : ControllerTeam ) : GameObject[] {
+		var avatarArray : Array = new Array();
+		
+		for( var avatar : GameObject in avatars ) {
+			if (controllers[avatar.GetComponent( Avatar ).getController()].team == team)
+				avatarArray.Push( avatar );
+		}
+		
+		return avatarArray.ToBuiltin( GameObject );
+	}
+	
 	// utility function for binding audio
 	public function audioBind( uid, clip : AudioClip ) {
 		var a : AudioSource;
@@ -260,6 +272,20 @@ class GameManager extends MonoBehaviour {
 		return enumArray.ToBuiltin( ControllerEnum );
 	}
 	
+	// utility function for returning an array of ControllerEnum(s) on passed team
+	public function getControllerEnumsOnTeam( team : ControllerTeam ) : ControllerEnum[] {
+		enumArray = new Array();
+		
+		for( i = 0; i < ControllerEnum.Count; i++ ) {
+			if ((controllers[i].state == ControllerState.Ready) && (controllers[i].team == team))
+				enumArray.Push( i );
+		}
+		
+		return enumArray.ToBuiltin( ControllerEnum );
+	}
+	
+	// demonstrates how controllers can be accessed via enum
+	// the same as GameManager.instance.controllers[ControllerEnum]
 	public function getController( ce : ControllerEnum ) : Controller {
 		return controllers[ce];
 	}
