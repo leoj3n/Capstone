@@ -24,6 +24,10 @@ function Awake() {
 	startPos = lastPos = transform.position;
 	layerMask = ~(1 << avatarLayer); // layer mask for use in raycast
 	additionalVelocity = Vector3( (Random.Range( 0.0, angleAmount ) * ((startPos.x < 0.0) ? -1 : 1 )), 0.0, 0.0 );
+	
+	GameManager.instance.audioBind( 'meteorImpact', impactSound );
+	GameManager.instance.audioBind( 'meteorExplode', explodeSound );
+	GameManager.instance.audioBind( 'meteorCrackle', audio.clip );
 }
 
 function Update() {
@@ -47,7 +51,7 @@ function Update() {
 		Debug.DrawLine( transform.position, (transform.position + (directionOfTravel * dist.magnitude)) );
 		
 		if( Physics.Raycast( transform.position, directionOfTravel, dist.magnitude, layerMask ) ) {
-			GameManager.instance.audio.PlayOneShot( impactSound ); // play on camera because this gets destroyed
+			GameManager.instance.audioPlay( 'meteorImpact' );
 			playedOnce = true;
 		}
 	}
@@ -61,8 +65,9 @@ function OnCollisionEnter( collision : Collision ) {
 	// do the following if out of health OR if other object has a tag (any tag at all)
 	if( !dead && ((health < 0) || !collision.collider.CompareTag( 'Untagged' )) ) {
 		Camera.main.SendMessage( 'AddShake', 0.5 );
-		GameManager.instance.audio.PlayOneShot( explodeSound );
-		GameManager.instance.audio.PlayOneShot( audio.clip, 0.5 ); // crackle
+		GameManager.instance.audioPlay( 'meteorExplode' );
+		
+		GameManager.instance.audioFadeOut( GameManager.instance.audioPlay( 'meteorCrackle', true, false, 1.0 ), 1.0 );
 		
 		// instantiate a detonator
 		GameObject.Instantiate( detonatorPrefab, transform.position, Quaternion.identity );

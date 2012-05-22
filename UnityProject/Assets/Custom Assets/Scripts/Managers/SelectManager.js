@@ -35,7 +35,7 @@ class SelectManager implements ISceneManager  {
 			selectHUDs.Push( clone );
 		}		
 		
-		GameManager.instance.audioPlay( 'chooseYourFighter', true );
+		GameManager.instance.audioPlay( 'chooseYourFighter' );
 	}
 	
 	function Update() {
@@ -84,8 +84,9 @@ class SelectManager implements ISceneManager  {
 		if( !playingSelected && !GameManager.instance.audioIsPlaying( 'chooseYourFighter' ) ) {
 			switch( true ) {
 				case Global.isButtonDown( 'A', GameManager.instance.readyControllers[selectingController] ):
-					GameManager.instance.audio.PlayOneShot( GameManager.instance.characterPrefabs[currentCharacter].GetComponent( 
-						Avatar ).sound[CharacterSound.Selected] );
+					GameManager.instance.audioBind( 'selected',
+						GameManager.instance.characterPrefabs[currentCharacter].GetComponent( Avatar ).sound[CharacterSound.Selected] );
+					GameManager.instance.audioPlay( 'selected' );
 					selectHUDs[currentCharacter].GetComponent( SelectHUD ).playSelected = true;
 					selectedIndex = currentCharacter;
 					waitingForTurn = true;
@@ -156,6 +157,6 @@ class SelectManager implements ISceneManager  {
 	private function newSelect() {
 		currentCharacter = 0;
 		waitingForTurn = false;
-		GameManager.instance.audioPlay( GameManager.instance.chooseYourFighter, true );
+		GameManager.instance.audioPlay( 'chooseYourFighter', true );
 	}
 }

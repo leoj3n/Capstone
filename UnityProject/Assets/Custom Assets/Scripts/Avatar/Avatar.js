@@ -18,7 +18,7 @@ protected var inAirAcceleration : float = 3.0;
 // STATE
 protected var facing : int = 1;
 protected var canJump : boolean = true;
-protected var isControllable : boolean = true;
+public var isControllable : boolean = true;
 public var state : CharacterState;
 
 // HEALTH
@@ -50,17 +50,17 @@ function Start() {
 }
 
 function Update() {
-	if (!isControllable) Input.ResetInputAxes(); // kill all inputs if not controllable
+	if( isControllable ) {
+		if (Global.getAxis( 'Vertical', boundController ) >= 0.2) lastJumpButtonTime = Time.time; // jump
 	
-	if (Global.getAxis( 'Vertical', boundController ) >= 0.2) lastJumpButtonTime = Time.time; // jump
-
-	setHorizontalMovement();
-	setVerticalMovement();
-	doMovement();
-	
-	//faceNearestEnemy();
-	stateSetup();
-	enforceBounds();
+		setHorizontalMovement();
+		setVerticalMovement();
+		doMovement();
+		
+		//faceNearestEnemy();
+		stateSetup();
+		enforceBounds();
+	}
 }
 
 // sets movingBack, isMoving, moveDirection, moveSpeed and inAirVelocity

@@ -33,6 +33,7 @@ function Start() {
 		}
 	}
 	
+	clone.GetComponent( Avatar ).isControllable = false;
 	clone.transform.parent = transform;
 	clone.transform.localPosition = Vector3( 0.0, 2.4, -12.6 );
 	clone.AddComponent( BillBoard );

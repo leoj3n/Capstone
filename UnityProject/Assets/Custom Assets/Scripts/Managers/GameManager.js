@@ -127,18 +127,24 @@ class GameManager extends MonoBehaviour {
 	}
 	
 	public function audioBind( uid, clip : AudioClip ) {
+		var a : AudioSource;
+		
 		if( !audioSources.ContainsKey( uid ) ) {
-			var a : AudioSource = gameObject.AddComponent( AudioSource );
-			a.clip = clip;
+			a = gameObject.AddComponent( AudioSource );
 			audioSources.Add( uid, a );
 		} else {
-			audioSources[uid].clip = clip;
+			a = audioSources[uid];
 		}
+		
+		a.playOnAwake = false;
+		a.clip = clip;
 	}
 	
-	public function audioPlay( uid, force : boolean, loop : boolean, volume : float ) {
+	public function audioPlay( uid, force : boolean, loop : boolean, volume : float ) : AudioSource {
+		var a : AudioSource;
+		
 		if( audioSources.ContainsKey( uid ) ) {
-			var a : AudioSource = audioSources[uid];
+			a = audioSources[uid];
 			
 			if( !a.isPlaying || force ) {
 				a.loop = loop;
@@ -148,21 +154,47 @@ class GameManager extends MonoBehaviour {
 		} else {
 			Debug.LogWarning( 'GameManager was asked to play ' + uid + ' but that ID has not been bound.' );
 		}
+		
+		return a;
 	}
-	public function audioPlay( uid, force : boolean, loop : boolean ) {
-		audioPlay( uid, force, loop, 1.0 );
+	public function audioPlay( uid, force : boolean, loop : boolean ) : AudioSource {
+		return audioPlay( uid, force, loop, 1.0 );
 	}
-	public function audioPlay( uid, force : boolean ) {
-		audioPlay( uid, force, false );
+	public function audioPlay( uid, force : boolean ) : AudioSource {
+		return audioPlay( uid, force, false );
 	}
-	public function audioPlay( uid ) {
-		audioPlay( uid, false );
+	public function audioPlay( uid ) : AudioSource {
+		return audioPlay( uid, false );
 	}
 	
 	public function audioIsPlaying( uid ) : boolean {
 		if (audioSources.ContainsKey( uid ) && audioSources[uid].isPlaying ) return true;
 		
 		return false;
+	}
+	
+	// utility function for fading in audio
+	public function audioFadeIn( a : AudioSource, duration : float ) {
+		var startTime : float = Time.time;
+		var endTime : float = (startTime + duration);
+		var origVolume : float = a.volume;
+		
+		while( Time.time < endTime ) {
+			a.volume = (Time.time - startTime) / duration;
+			yield;		
+		}
+	}
+	
+	// utility function for fading out audio
+	public function audioFadeOut( a : AudioSource, duration : float ) {
+		var endTime : float = (Time.time + a.clip.length);
+		var startTime : float = (endTime - duration);
+		var origVolume : float = a.volume;
+		
+		while( Time.time < endTime ) {
+			a.volume = (Time.time - startTime) / duration; // need to work on this
+			yield;		
+		}
 	}
 	
 	public function getControllerEnumsWithState( state : ControllerState ) : ControllerEnum[] {

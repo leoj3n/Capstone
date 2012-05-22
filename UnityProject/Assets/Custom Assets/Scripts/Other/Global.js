@@ -73,17 +73,6 @@ static function getSize( object ) : Vector3 {
 	return Vector3.Scale( size, object.transform.localScale ); // apply scaling to get final size
 }
 
-// utility function for fading in audio
-static function audioFadeIn( a : AudioSource, duration : float ) {
-	var startTime : float = Time.time;
-	var endTime : float = startTime + duration;
-	
-	while( Time.time < endTime ) {
-		a.volume = (Time.time - startTime) / duration;
-		yield;		
-	}
-}
-
 // GLOBAL AVATAR FUNCTIONS
 
 // utility function add explosion force to one or multiple avatars

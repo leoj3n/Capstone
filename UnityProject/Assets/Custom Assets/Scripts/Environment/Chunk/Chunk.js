@@ -1,13 +1,13 @@
 
 public var dislodgedLayer : int = 10;
 public var debrisPrefab : GameObject;
+public var hitSound : AudioClip;
 
 private var shaderSolid : Shader;
 private var shaderTransparent : Shader;
 private var origPos : Vector3;
 private var origRot : Quaternion;
 private var origLayer : int;
-private var origVolume : float;
 private var dislodged : boolean = false;
 private var trigger : boolean = false;
 private var debris : GameObject;
@@ -21,11 +21,12 @@ function Awake() {
 	origPos = transform.position;
 	origRot = transform.rotation;
 	origLayer = gameObject.layer;
-	origVolume = audio.volume;
 	rigidbody.constraints = RigidbodyConstraints.FreezeAll;
 	rigidbody.isKinematic = true;
 	posOverTime = new ArrayList();
 	rotOverTime = new ArrayList();
+	
+	GameManager.instance.audioBind( GetInstanceID(), hitSound );
 }
 
 function Update() {
@@ -59,10 +60,7 @@ function Update() {
 }
 
 function OnCollisionEnter( collision : Collision ) {
-	if( !audio.isPlaying ) {
-		audio.volume = origVolume * (collision.impactForceSum.magnitude / 20);
-		audio.Play();
-	}
+	GameManager.instance.audioPlay( GetInstanceID(), false, false, (collision.impactForceSum.magnitude / 20) );
 	
 	if( !dislodged && collision.collider.CompareTag( 'Meteor' ) ) {
 		rigidbody.constraints = RigidbodyConstraints.None;
