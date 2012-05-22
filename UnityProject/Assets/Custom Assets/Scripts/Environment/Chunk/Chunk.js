@@ -15,7 +15,7 @@ private var posOverTime : ArrayList;
 private var rotOverTime : ArrayList;
 private var frame : int = 0;
 
-function Awake() {
+function Start() {
 	shaderSolid = Shader.Find( 'Diffuse' );
 	shaderTransparent = Shader.Find( 'Transparent/Diffuse' );
 	origPos = transform.position;

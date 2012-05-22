@@ -84,26 +84,31 @@ class GameManager extends MonoBehaviour {
 		audioFadeIn( audioPlay( 'backgroundMusic', true, true, backgroundMusicVolume ), 3.0 );
 		readyControllers = getControllerEnumsWithState( ControllerState.Ready );
 		
-		managers[loadedLevel].OnLevelWasLoaded();
-	}
-	
-	function Update() {		
-		managers[Application.loadedLevel].Update();
-		
-		if( (Global.debugScene > 0) && 
-			(Global.debugScene < Application.levelCount) && (Global.debugScene > Application.loadedLevel) ) {
+		if( shouldSimulate() ) {
 			// simulate this scene, then skip ahead to the next
 			managers[Application.loadedLevel].SimulateScene();
 			Application.LoadLevel( Application.loadedLevel + 1 );
+		} else {
+			managers[loadedLevel].OnLevelWasLoaded();
 		}
 	}
 	
+	function Update() {
+		if (!shouldSimulate()) managers[Application.loadedLevel].Update();
+	}
+		
 	function OnGUI() {
-		managers[Application.loadedLevel].OnGUI();
+		if (!shouldSimulate()) managers[Application.loadedLevel].OnGUI();
+	}
+	
+	private function shouldSimulate() : boolean {
+		return ((Global.debugScene > 0) && 
+			(Global.debugScene < Application.levelCount) && (Global.debugScene > Application.loadedLevel));
 	}
 	
 	// PUBLIC FUNCTIONS
 	
+	// utility function for toggling the pause state of the game
 	public function togglePause() {
 		if( paused ) {
 			Time.timeScale = 1.0;
@@ -114,6 +119,7 @@ class GameManager extends MonoBehaviour {
 		}
 	}
 	
+	// utility function for instantiating avatars
 	public function instantiateAvatars() {
 		avatars = new GameObject[readyControllers.Length];
 		
@@ -128,6 +134,7 @@ class GameManager extends MonoBehaviour {
 		}
 	}
 	
+	// utility function for binding audio
 	public function audioBind( uid, clip : AudioClip ) {
 		var a : AudioSource;
 		
@@ -142,6 +149,7 @@ class GameManager extends MonoBehaviour {
 		a.clip = clip;
 	}
 	
+	// utility function for stopping audio
 	public function audioStop( uid ) : boolean {		
 		if( audioSources.ContainsKey( uid ) ) {
 			audioSources[uid].Stop();
@@ -152,10 +160,12 @@ class GameManager extends MonoBehaviour {
 		return false; // audio source not in the hashtable
 	}
 	
+	// utility function for unbinding audio
 	public function audioUnbind( uid ) {		
 		if (audioStop( uid )) audioSources.Remove( uid );
 	}
 	
+	// utility function for playing audio
 	public function audioPlay( uid, force : boolean, loop : boolean, volume : float ) : AudioSource {
 		var a : AudioSource;
 		
@@ -223,6 +233,7 @@ class GameManager extends MonoBehaviour {
 		audioFadeOut( a, duration, 0 );
 	}
 	
+	// utility function for returning an array of ControllerEnum(s) with the passed state
 	public function getControllerEnumsWithState( state : ControllerState ) : ControllerEnum[] {
 		enumArray = new Array();
 		

@@ -22,6 +22,8 @@ function Update() {
 
 function OnLevelWasLoaded( loadedLevel : int ) {
 	if( loadedLevel == Global.debugScene ) {
+		Global.debugScene = 0;
+		
 		if( clearConsole ) {
 			var assembly : Assembly = Assembly.GetAssembly( typeof( SceneView ) );
 			var type : Type = assembly.GetType( 'UnityEditorInternal.LogEntries' );

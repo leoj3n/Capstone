@@ -29,6 +29,8 @@ function Start() {
 		
 		chunks = new ArrayList();
 		
+		Debug.Log( GetInstanceID() + ' ... ' + GameManager.instance );
+		
 		// fill volume of this scene object with "chunks"
 		for( var i = 0; i < xNum; i++ ) {
 			for( var j = 0; j < yNum; j++ ) {
