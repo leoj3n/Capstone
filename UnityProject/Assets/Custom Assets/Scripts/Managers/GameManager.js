@@ -11,7 +11,6 @@ class GameManager extends MonoBehaviour {
 	// variables available in the inspector (accessible via GameManager.instance)
 	public var backgroundMusic : AudioClip[];
 	public var backgroundMusicVolume : float = 0.60;
-	public var avatarPrefab : GameObject;
 	public var characterPrefabs : GameObject[];
 	public var expectedOrder : CharacterEnum; // just to expose the expected order in the Inspector
 	public var selectTimeout : float = 1.0;
@@ -21,6 +20,9 @@ class GameManager extends MonoBehaviour {
 	public var swoosh : AudioClip;
 	public var sceneManagers : MonoScript[];
 	public var defaultSceneManager : MonoScript;
+	public var levelsTexture : Texture2D;
+	public var levelsAtlas : TextAsset;
+	public var levelHudPrefab : GameObject;
 	
 	// private variables (accessible via GameManager.instance)
 	private var _controllers : Controller[];
@@ -34,6 +36,10 @@ class GameManager extends MonoBehaviour {
 	private var _readyControllers : ControllerEnum[];
 	public function get readyControllers() : ControllerEnum[] { return _readyControllers; }
 	private function set readyControllers( value : ControllerEnum[] ) { _readyControllers = value; }
+	
+	private var _level : LevelEnum = LevelEnum.Rooftop;
+	public function get level() : LevelEnum { return _level; }
+	public function set level( value : LevelEnum ) { _level = value; }
 	
 	private var _paused : boolean = false;
 	public function get paused() : boolean { return _paused; }

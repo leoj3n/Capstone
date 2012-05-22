@@ -1,0 +1,101 @@
+
+class LevelSelectManager implements ISceneManager {
+	private var rotator : GameObject;
+	private var degreesOfSeparation : float;
+	private var rotations : Array;
+	private var levelHUDs : Array;
+	private var lastSelectTime : float;
+	
+	function SimulateScene() {
+		GameManager.instance.level = LevelEnum.Rooftop;
+	}
+	
+	function OnEnable() {
+		rotator = GameObject.Find( 'Rotator' );
+		degreesOfSeparation = (360 / parseInt( LevelEnum.Count ));
+		
+		rotations = new Array();
+		levelHUDs = new Array();
+		for( var i = 0; i < LevelEnum.Count; i++ ) {
+			var rot : Quaternion = Quaternion.Euler( (degreesOfSeparation * i), 0.0, 0.0 );
+			var clone : GameObject = GameObject.Instantiate( GameManager.instance.levelHudPrefab, Vector3.zero, rot );
+			clone.transform.parent = rotator.transform;
+			
+			var child : GameObject = clone.GetComponentInChildren( MeshFilter ).gameObject;
+			var tar : Component = child.AddComponent( TextureAtlasRenderer );
+			
+			tar.texture = [GameManager.instance.levelsTexture];
+			tar.atlas = [GameManager.instance.levelsAtlas];
+			tar.isStatic = true;
+			tar.staticFrame = i;
+			
+			rotations.Push( rot );
+			levelHUDs.Push( clone );
+		}
+	}
+	
+	function Update() {
+		var up : boolean;
+		var down : boolean;
+		
+		if( (Time.time - lastSelectTime) < GameManager.instance.selectTimeout ) {
+			up = down = false;
+		} else {
+			var v : float = Global.getAxis( 'Vertical', GameManager.instance.readyControllers );
+			up = (v > 0.1);
+			down = (v < -0.1);
+		}
+		
+		// set the current level levelHUD
+		switch( true ) {
+			case up:
+				GameManager.instance.level = ((parseInt( GameManager.instance.level ) + 1) % parseInt( LevelEnum.Count ));
+				break;
+			case down:
+				GameManager.instance.level = ((parseInt( GameManager.instance.level ) - 1) % parseInt( LevelEnum.Count ));
+				if (GameManager.instance.level < 0) GameManager.instance.level = (parseInt( LevelEnum.Count ) - 1);
+				break;
+		}
+		
+		// do this AFTER setting the current level levelHUD
+		if( up || down ) {
+			lastSelectTime = Time.time;
+			
+			// play audio effects
+			GameManager.instance.audioPlay( 'swoosh', true );
+		}
+		
+		// do the rotation to the current level levelHUD
+		rotator.transform.rotation = Quaternion.Slerp( rotator.transform.rotation, 
+			Quaternion.Inverse( rotations[GameManager.instance.level] ), (Time.deltaTime * 6) );
+		
+		// continue to current level or go back to Character Select
+		switch( true ) {
+			case Global.isButtonDown( 'A', GameManager.instance.readyControllers ):
+				Application.LoadLevel( parseInt( SceneEnum.Count ) + GameManager.instance.level );
+				break;
+			case Global.isButtonDown( 'B', GameManager.instance.readyControllers ):
+				Application.LoadLevel( SceneEnum.CharacterSelect );
+				break;
+		}
+	}
+	
+	function OnGUI() {
+		var halfScreenWidth : float = (Screen.width / 2);
+		var halfScreenHeight : float = (Screen.height / 2);
+		var width : float = 200.0;
+		var height : float = 100.0;
+		var halfWidth : float = (width / 2);
+		var halfHeight : float = (height / 2);
+		
+		GUILayout.BeginArea( Rect( (halfScreenWidth - halfWidth), (Screen.height - halfHeight), width, height ) );
+		
+			GUILayout.BeginHorizontal();
+						
+					GUILayout.Box( 'SOME TEXT' );
+			
+			GUILayout.EndHorizontal();
+			
+		GUILayout.EndArea();
+	}
+}

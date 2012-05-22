@@ -16,11 +16,11 @@ class LevelManager implements ISceneManager {
 			switch( true ) {
 				case Global.isButtonDown( 'B', GameManager.instance.readyControllers ):
 					GameManager.instance.togglePause();
-					Application.LoadLevel( 1 );
+					Application.LoadLevel( SceneEnum.CharacterSelect );
 					break;
 				case Global.isButtonDown( 'Back', GameManager.instance.readyControllers ):
 					GameManager.instance.togglePause();
-					Application.LoadLevel( 0 );
+					Application.LoadLevel( SceneEnum.Start );
 					break;
 			}
 		}

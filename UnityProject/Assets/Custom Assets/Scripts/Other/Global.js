@@ -23,6 +23,8 @@ enum CharacterState {
 enum ControllerEnum { A, B, C, D, Count } // Unity supports a maximum of 4 controllers
 enum ControllerTeam { Green, Red, Blue, Orange, Count } // need at least 4 teams to support free-for-all
 enum ControllerState { SittingOut, TeamSelect, Ready }
+enum SceneEnum { Start, CharacterSelect, LevelSelect, Count }
+enum LevelEnum { Rooftop, Bridge, Fountain, Count }
 
 // use these bounds to restrict avatar movement
 static var sharedZ : float = 0.0;
@@ -127,4 +129,24 @@ static function isButton( button : String, ce : ControllerEnum ) : boolean {
 // utility function to get horizontal or vertical axis data for a given controller
 static function getAxis( axis : String, ce : ControllerEnum ) : float {
 	return Input.GetAxisRaw( axis + ' (' + ce + ')' );
+}
+// similar to getAxis() but tests against all controllers
+static function getAxis( axis : String ) : float {
+	var largest : float;
+	for( var i = 0; i < ControllerEnum.Count; i++ ) {
+		var amount : float = Global.getAxis( axis, i );
+		if (Mathf.Abs( amount ) > Mathf.Abs( largest )) largest = amount;
+	}
+	
+	return largest;
+}
+// similar to getAxis() but tests against passed controllers
+static function getAxis( axis : String, controllers : ControllerEnum[] ) : float {
+	var largest : float;
+	for( var controller : ControllerEnum in controllers ) {
+		var amount : float = Global.getAxis( axis, controller );
+		if (Mathf.Abs( amount ) > Mathf.Abs( largest )) largest = amount;
+	}
+	
+	return largest;
 }

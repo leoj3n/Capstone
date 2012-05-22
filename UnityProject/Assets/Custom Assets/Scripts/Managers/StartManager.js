@@ -86,7 +86,7 @@ class StartManager implements ISceneManager  {
 				if( selecting.Length == 0 ) {
 					if (countdownStartTime == 0.0) countdownStartTime = Time.time;
 					var seconds : int = (Mathf.CeilToInt( GameManager.instance.countDownSeconds - (Time.time - countdownStartTime) ) % 60);
-					if (seconds == 1) Application.LoadLevel( 1 );
+					if (seconds == 1) Application.LoadLevel( SceneEnum.CharacterSelect );
 					GUILayout.Box( 'Character select in ' + seconds );
 				} else {
 					countdownStartTime = 0.0;

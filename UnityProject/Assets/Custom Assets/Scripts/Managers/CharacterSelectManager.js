@@ -1,5 +1,5 @@
 
-class SelectManager implements ISceneManager  {
+class CharacterSelectManager implements ISceneManager {
 	private var currentCharacter : int = 0;
 	private var rotator : GameObject;
 	private var degreesOfSeparation : float;
@@ -43,8 +43,7 @@ class SelectManager implements ISceneManager  {
 		var right : boolean;
 		
 		if( playingSelected || GameManager.instance.audioIsPlaying( 'chooseYourFighter' ) || ((Time.time - lastSelectTime) < GameManager.instance.selectTimeout) ) {
-			left = false;
-			right = false;
+			left = right = false;
 		} else {
 			var h : float = Global.getAxis( 'Horizontal', GameManager.instance.readyControllers[selectingController] );
 			left = (h < -0.1);
@@ -88,9 +87,9 @@ class SelectManager implements ISceneManager  {
 					waitingForTurn = true;
 					playingSelected = true;
 					break;
-				case Global.isButtonDown( 'B' ):
+				case Global.isButtonDown( 'B', GameManager.instance.readyControllers ):
 					if( selectingController == 0 ) {
-						Application.LoadLevel( 0 );
+						Application.LoadLevel( SceneEnum.Start );
 					} else {
 						selectingController--;
 						newSelect();
@@ -104,9 +103,9 @@ class SelectManager implements ISceneManager  {
 			// set the character variable for the controller
 			GameManager.instance.controllers[selectingController++].character = currentCharacter;
 			
-			// continue to the level if no more controllers need to select a character
+			// continue to level select if no more controllers need to select a character
 			if ( selectingController == GameManager.instance.readyControllers.Length ) {
-				Application.LoadLevel( 2 );
+				Application.LoadLevel( SceneEnum.LevelSelect );
 			} else { // otherwise let the next controller select a character
 				newSelect();
 			}
