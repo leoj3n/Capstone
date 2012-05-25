@@ -7,10 +7,13 @@ public var sound : AudioClip[];
 public var expectedSounds : CharacterSound; // just for exposing expected order of sounds in inspector
 public var statsTexture : Texture2D;
 public var statsAtlas : TextAsset;
+public var shadowPrefab : GameObject;
+public var shadowOffset : Vector3;
 
 // STATIC
 private var boundController : ControllerEnum;
 private var collisionFlags : CollisionFlags;
+private var shadow : GameObject;
 protected var gravity : float = 50.0;
 protected var groundedAcceleration : float = 6.0;
 protected var inAirAcceleration : float = 3.0;
@@ -43,8 +46,7 @@ protected var movingBack : boolean = false;
 protected var isMoving : boolean = false;
 
 function Start() {
-	//var shadow : GameObject = GameObject.Instantiate( GameObject.Find( 'Character Shadow' ) );
-	//shadow.transform.parent = transform;
+	shadow = GameObject.Instantiate( shadowPrefab );	
 	
 	moveDirection = transform.TransformDirection( Vector3.forward );
 }
@@ -56,6 +58,8 @@ function Update() {
 		setHorizontalMovement();
 		setVerticalMovement();
 		doMovement();
+		
+		updateShadow();
 		
 		//faceNearestEnemy();
 		stateSetup();
@@ -130,6 +134,11 @@ function doMovement() {
 		inAirVelocity = Vector3.zero;
 		jumping = false;
 	}
+}
+
+function updateShadow() {
+	shadow.transform.position = (transform.position + shadowOffset);
+	shadow.transform.position.x += GetComponent( CharacterController ).center.x;
 }
 
 // determine the state of this avatar

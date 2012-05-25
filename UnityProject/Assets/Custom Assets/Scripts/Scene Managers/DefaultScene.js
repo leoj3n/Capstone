@@ -26,7 +26,7 @@ class DefaultScene extends SceneManager {
 		var halfScreenWidth : float = (Screen.width / 2);
 		var halfScreenHeight : float = (Screen.height / 2);
 		
-		GUILayout.BeginArea( Rect( 20.0, 20.0, 100.0, (Screen.height - 40.0) ) );
+		GUILayout.BeginArea( Rect( 20.0, 20.0, 120.0, (Screen.height - 40.0) ) );
 			
 			GUILayout.BeginVertical();
 				
@@ -39,7 +39,7 @@ class DefaultScene extends SceneManager {
 						
 						for( var avatar : GameObject in avatars ) {
 							var component : Component = avatar.GetComponent( Avatar );
-							GUILayout.Box( 'Controller ' + parseInt( component.getController() ) + '\n' + component.getName() + '\nHP: ' + parseInt( component.health ) );
+							GUILayout.Box( component.getName() + '\n(Controller ' + parseInt( component.getController() ) + ')\nHP [' + parseInt( component.health ) + '] PM [0%]' );
 						}
 					}
 				}
