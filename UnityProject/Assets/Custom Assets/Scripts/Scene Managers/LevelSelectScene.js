@@ -1,18 +1,17 @@
 
-class LevelSelectManager implements ISceneManager {
+class LevelSelectScene extends SceneManager {
+	public var hudPrefab : GameObject;
+	public var buttonTimeout : float = 1.0;
+	public var texture : Texture2D;
+	public var atlas : TextAsset;
+	
 	private var rotator : GameObject;
 	private var degreesOfSeparation : float;
 	private var rotations : Array;
 	private var levelHUDs : Array;
 	private var lastSelectTime : float;
 	
-	function SimulateScene() {
-		GameManager.instance.level = LevelEnum.Rooftop;
-		
-		Application.LoadLevel( parseInt( SceneEnum.Count ) + GameManager.instance.level );
-	}
-	
-	function OnEnable() {
+	function SceneLoaded() {
 		rotator = GameObject.Find( 'Rotator' );
 		degreesOfSeparation = (360 / parseInt( LevelEnum.Count ));
 		
@@ -20,14 +19,14 @@ class LevelSelectManager implements ISceneManager {
 		levelHUDs = new Array();
 		for( var i = 0; i < LevelEnum.Count; i++ ) {
 			var rot : Quaternion = Quaternion.Euler( (degreesOfSeparation * i), 0.0, 0.0 );
-			var clone : GameObject = GameObject.Instantiate( GameManager.instance.levelHudPrefab, Vector3.zero, rot );
+			var clone : GameObject = GameObject.Instantiate( hudPrefab, Vector3.zero, rot );
 			clone.transform.parent = rotator.transform;
 			
 			var child : GameObject = clone.GetComponentInChildren( MeshFilter ).gameObject;
 			var tar : Component = child.AddComponent( TextureAtlasRenderer );
 			
-			tar.texture = [GameManager.instance.levelsTexture];
-			tar.atlas = [GameManager.instance.levelsAtlas];
+			tar.texture = [texture];
+			tar.atlas = [atlas];
 			tar.isStatic = true;
 			tar.staticFrame = i;
 			
@@ -40,7 +39,7 @@ class LevelSelectManager implements ISceneManager {
 		var up : boolean;
 		var down : boolean;
 		
-		if( (Time.time - lastSelectTime) < GameManager.instance.selectTimeout ) {
+		if( (Time.time - lastSelectTime) < buttonTimeout ) {
 			up = down = false;
 		} else {
 			var v : float = Global.getAxis( 'Vertical', GameManager.instance.readyControllers );
@@ -92,9 +91,9 @@ class LevelSelectManager implements ISceneManager {
 		
 		GUILayout.BeginArea( Rect( (halfScreenWidth - halfWidth), (Screen.height - height), width, height ) );
 						
-					GUILayout.Box( 'Press "A" to play ' + GameManager.instance.level + '.' );
-					GUILayout.Box( 'Press "B" to return to Character Select.' );
-					GUILayout.Box( 'Press "Back" to return to the Main Menu.' );
+			GUILayout.Box( 'Press "A" to play ' + GameManager.instance.level + '.' );
+			GUILayout.Box( 'Press "B" to return to Character Select.' );
+			GUILayout.Box( 'Press "Back" to return to the Main Menu.' );
 			
 		GUILayout.EndArea();
 	}

@@ -1,15 +1,11 @@
 
-class StartManager implements ISceneManager  {
+class StartScene extends SceneManager {	
+	public var backgroundImage : Texture2D;
+	public var countDownSeconds : int = 3;
+	
 	private var countdownStartTime : float;
 	
-	function SimulateScene() {
-		GameManager.instance.controllers[0].state = ControllerState.Ready;
-		GameManager.instance.controllers[1].state = ControllerState.Ready;
-		
-		Application.LoadLevel( SceneEnum.CharacterSelect );
-	}
-	
-	function OnEnable() {
+	function SceneLoaded() {		
 		countdownStartTime = 0.0;
 		
 		for( var i = 0; i < ControllerEnum.Count; i++ ) {
@@ -71,7 +67,7 @@ class StartManager implements ISceneManager  {
 		var halfWidth : float = (width / 2);
 		var halfHeight : float = (height / 2);
 		
-		GUI.DrawTexture( Rect( 100, 200, Screen.width - 200, Screen.height - 200 ), GameManager.instance.startBG );
+		GUI.DrawTexture( Rect( 100, 200, Screen.width - 200, Screen.height - 200 ), backgroundImage );
 		
 		GUILayout.BeginArea( Rect( (halfScreenWidth - halfWidth), 20.0, width, height ) );
 		
@@ -89,7 +85,7 @@ class StartManager implements ISceneManager  {
 			if( (selecting.Length + ready.Length) > 0 ) {
 				if( selecting.Length == 0 ) {
 					if (countdownStartTime == 0.0) countdownStartTime = Time.time;
-					var seconds : int = (Mathf.CeilToInt( GameManager.instance.countDownSeconds - (Time.time - countdownStartTime) ) % 60);
+					var seconds : int = (Mathf.CeilToInt( countDownSeconds - (Time.time - countdownStartTime) ) % 60);
 					if (seconds == 1) Application.LoadLevel( SceneEnum.CharacterSelect );
 					GUILayout.Box( 'Character select in ' + seconds );
 				} else {

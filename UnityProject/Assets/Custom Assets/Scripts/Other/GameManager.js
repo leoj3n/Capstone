@@ -9,22 +9,9 @@ class GameManager extends MonoBehaviour {
 	public static var instance : GameManager;
 	
 	// variables available in the inspector (accessible via GameManager.instance)
-	public var startBG : Texture2D;
-	public var backgroundMusic : AudioClip[];
-	public var backgroundMusicVolume : float = 0.60;
 	public var characterPrefabs : GameObject[];
 	public var expectedOrder : CharacterEnum; // just to expose the expected order in the Inspector
-	public var selectTimeout : float = 1.0;
-	public var countDownSeconds : int = 3;
-	public var selectHudPrefab : GameObject;
-	public var chooseYourFighter : AudioClip;
-	public var swoosh : AudioClip;
-	public var sceneManagers : MonoScript[];
-	public var defaultSceneManager : MonoScript;
-	public var levelsTexture : Texture2D;
-	public var levelsAtlas : TextAsset;
-	public var levelHudPrefab : GameObject;
-	
+		
 	// private variables (accessible via GameManager.instance)
 	private var _controllers : Controller[];
 	public function get controllers() : Controller[] { return _controllers; }
@@ -48,35 +35,24 @@ class GameManager extends MonoBehaviour {
 	
 	// private variables not accessible outside of this class
 	private var audioSources : Hashtable;
-	private var managers : ISceneManager[];
+	
+	// MAIN FUNCTIONS
+	
+	function OnEnable() {
+		readyControllers = getControllerEnumsWithState( ControllerState.Ready );
+	}
+	
+	function Awake() {
+		verifySingleton(); // verify singleton
+		
+		oneTimeSetup();
+	}
+	
+	function OnApplicationQuit() {
+		instance = null; // unset singleton
+	}
 	
 	// PRIVATE FUNCTIONS
-	
-	private function oneTimeSetup() {
-		// ControllerEnum is used to build the controllers array
-		controllers = new Controller[ControllerEnum.Count];
-		for (var i = 0; i < ControllerEnum.Count; i++)
-			controllers[i] = new Controller();
-		
-		// setup audio
-		audioSources = new Hashtable();
-		audioBind( 'swoosh', swoosh );
-		audioBind( 'chooseYourFighter', chooseYourFighter );
-		
-		// make sure every scene has a manager
-		managers = new ISceneManager[Application.levelCount];
-		for( i = 0; i < Application.levelCount; i++ ) {
-			if ((i < sceneManagers.Length) && (sceneManagers[i].GetClass().GetInterface( 'ISceneManager' ) == ISceneManager))
-				managers[i] = System.Activator.CreateInstance( sceneManagers[i].GetClass() );
-			else
-				managers[i] = System.Activator.CreateInstance( defaultSceneManager.GetClass() );
-		}
-	}
-	
-	private function simulating() : boolean {
-		return ((Global.debugScene > 0) && 
-			(Global.debugScene < Application.levelCount) && (Application.loadedLevel < Global.debugScene));
-	}
 	
 	private function verifySingleton() {
 		if( instance == null ) {
@@ -90,37 +66,24 @@ class GameManager extends MonoBehaviour {
 		return true;
 	}
 	
-	// MAIN FUNCTIONS
-	
-	function OnApplicationQuit() {
-		instance = null; // unset singleton
-	}
-	
-	function OnEnable() {
-		if (!verifySingleton()) return; // verify singleton
+	private function oneTimeSetup() {
+		// ControllerEnum is used to build the controllers array
+		controllers = new Controller[ControllerEnum.Count];
+		for (var i = 0; i < ControllerEnum.Count; i++)
+			controllers[i] = new Controller();
 		
-		if (!controllers) oneTimeSetup();
-		
-		if( simulating() ) { // if true, simulate this scene then skip ahead to the next
-			managers[Application.loadedLevel].SimulateScene();
-		} else { // this level is for real
-			audioBind( 'backgroundMusic', backgroundMusic[Application.loadedLevel] );
-			audioFadeIn( audioPlay( 'backgroundMusic', true, true, backgroundMusicVolume ), 3.0 );
-			readyControllers = getControllerEnumsWithState( ControllerState.Ready );
-			
-			managers[Application.loadedLevel].OnEnable();
-		}
-	}
-	
-	function Update() {
-		if (!simulating()) managers[Application.loadedLevel].Update();
-	}
-		
-	function OnGUI() {
-		if (!simulating()) managers[Application.loadedLevel].OnGUI();
+		// setup audio
+		audioSources = new Hashtable();
 	}
 	
 	// PUBLIC FUNCTIONS
+	
+	// utility function for setting the background music
+	function setBackgroundMusic( clip : AudioClip, fade : boolean) {
+		audioBind( 'backgroundMusic', clip );
+		var a : AudioSource = audioPlay( 'backgroundMusic', true, true, 0.60 );
+		if (fade) audioFadeIn( a, 3.0 );
+	}
 	
 	// utility function for toggling the pause state of the game
 	public function togglePause() {

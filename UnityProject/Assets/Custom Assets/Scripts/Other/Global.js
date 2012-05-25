@@ -39,29 +39,42 @@ class Controller {
 	public var character : CharacterEnum;
 }
 
-interface ISceneManager {
-	function SimulateScene();
-	function OnEnable();
-	function Update();
-	function OnGUI();
-}
-
-/*class MySingleton {
-	public var debugScene : int = 0;
-
-	private static var _instance : MySingleton;
+class SceneManager extends MonoBehaviour {
+	public var gameManager : GameObject;
+	public var backgroundMusic : AudioClip;
+	public var backgroundMusicVolume : float = 0.60;
+	public var fadeInBackgroundMusic : boolean;
 	
-	private function MySingleton() {
-		Debug.Log( 'yo!' );
-    }
-    
-    public static function instance() : MySingleton {
-        if (_instance == null)
-            _instance = new MySingleton();
-        
-        return _instance;
-    }
-}*/
+	function OnEnable() {
+		if( GameManager.instance == null ) {
+			Instantiate( gameManager );
+			
+			// simulate start scene
+			if( Application.loadedLevel > 0 ) {
+				GameManager.instance.controllers[0].state = ControllerState.Ready;
+				GameManager.instance.controllers[1].state = ControllerState.Ready;
+				GameManager.instance.controllers[1].team = ControllerTeam.Red;
+			}
+			
+			// simulate character select
+			if( Application.loadedLevel > 1 ) {
+				GameManager.instance.controllers[0].character = CharacterEnum.ZipperFace;
+				GameManager.instance.controllers[1].character = CharacterEnum.BlackMagic;
+			}
+			
+			// simulate level select
+			if (Application.loadedLevel > 2) GameManager.instance.level = LevelEnum.Rooftop;
+		}
+	}
+	
+	function Start() {
+		GameManager.instance.setBackgroundMusic( backgroundMusic, fadeInBackgroundMusic );
+		
+		SceneLoaded();
+	}
+	
+	function SceneLoaded() { /* overload this function */ }
+}
 
 // utility function for getting the size of an objects' geometry
 static function getSize( object ) : Vector3 {

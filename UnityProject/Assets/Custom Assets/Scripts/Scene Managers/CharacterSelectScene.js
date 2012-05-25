@@ -1,38 +1,38 @@
 
-class CharacterSelectManager implements ISceneManager {
+class CharacterSelectScene extends SceneManager {
+	public var hudPrefab : GameObject;
+	public var buttonTimeout : float = 1.0;
+	public var chooseYourFighter : AudioClip;
+	public var swoosh : AudioClip;
+	
 	private var currentCharacter : int = 0;
 	private var rotator : GameObject;
 	private var degreesOfSeparation : float;
 	private var selectingController : int;
 	private var rotations : Array;
-	private var selectHUDs : Array;
+	private var hUDs : Array;
 	private var waitingForTurn : boolean;
 	private var lastSelectTime : float;
 	
-	function SimulateScene() {
-		GameManager.instance.controllers[0].character = CharacterEnum.ZipperFace;
-		GameManager.instance.controllers[1].character = CharacterEnum.BlackMagic;
-		GameManager.instance.controllers[1].team = ControllerTeam.Red;
-		
-		Application.LoadLevel( SceneEnum.LevelSelect );
-	}
-	
-	function OnEnable() {
+	function SceneLoaded() {
 		rotator = GameObject.Find( 'Rotator' );
 		degreesOfSeparation = (360 / GameManager.instance.characterPrefabs.Length);
 		
 		rotations = new Array();
-		selectHUDs = new Array();
+		hUDs = new Array();
 		var i : int = 0;
 		for( var character : GameObject in GameManager.instance.characterPrefabs ) {
 			var rot : Quaternion = Quaternion.Euler( 0.0, (degreesOfSeparation * i++), 0.0 );
-			var clone : GameObject = GameObject.Instantiate( GameManager.instance.selectHudPrefab, Vector3.zero, rot );
+			var clone : GameObject = GameObject.Instantiate( hudPrefab, Vector3.zero, rot );
 			clone.GetComponent( SelectHUD ).characterPrefab = character;
 			clone.transform.parent = rotator.transform;
 			
 			rotations.Push( rot );
-			selectHUDs.Push( clone );
+			hUDs.Push( clone );
 		}
+		
+		GameManager.instance.audioBind( 'swoosh', swoosh );
+		GameManager.instance.audioBind( 'chooseYourFighter', chooseYourFighter );
 		
 		selectingController = 0;
 		newSelect();
@@ -40,12 +40,12 @@ class CharacterSelectManager implements ISceneManager {
 	
 	function Update() {
 		// capture input if not playing a selection animation or intro audio
-		var playingSelected : boolean = selectHUDs[currentCharacter].GetComponent( SelectHUD ).playSelected;	
+		var playingSelected : boolean = hUDs[currentCharacter].GetComponent( SelectHUD ).playSelected;	
 		
 		var left : boolean;
 		var right : boolean;
 		
-		if( playingSelected || GameManager.instance.audioIsPlaying( 'chooseYourFighter' ) || ((Time.time - lastSelectTime) < GameManager.instance.selectTimeout) ) {
+		if( playingSelected || GameManager.instance.audioIsPlaying( 'chooseYourFighter' ) || ((Time.time - lastSelectTime) < buttonTimeout) ) {
 			left = right = false;
 		} else {
 			var h : float = Global.getAxis( 'Horizontal', GameManager.instance.readyControllers[selectingController] );
@@ -86,7 +86,7 @@ class CharacterSelectManager implements ISceneManager {
 					GameManager.instance.audioBind( 'selected',
 						GameManager.instance.characterPrefabs[currentCharacter].GetComponent( Avatar ).sound[CharacterSound.Selected] );
 					GameManager.instance.audioPlay( 'selected' );
-					selectHUDs[currentCharacter].GetComponent( SelectHUD ).playSelected = true;
+					hUDs[currentCharacter].GetComponent( SelectHUD ).playSelected = true;
 					waitingForTurn = true;
 					playingSelected = true;
 					break;

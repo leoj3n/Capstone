@@ -1,10 +1,6 @@
 
-class LevelManager implements ISceneManager {
-	function SimulateScene() {
-		// nothing needs to be simulated
-	}
-
-	function OnEnable() {
+class DefaultScene extends SceneManager {
+	function SceneLoaded() {
 		GameManager.instance.instantiateAvatars();
 	}
 	

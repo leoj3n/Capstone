@@ -1,0 +1,7 @@
+fileFormatVersion: 1
+guid: dd3d8fc67e596c7448be0a2a6d210e76
+MonoImporter:
+  importerVersion: 1
+  defaultReferences:
+    gameManager: {fileID: 100000, guid: 34446a2bfe961664f8dcc8dd4722c14e, type: 2}
+    backgroundMusic: {fileID: 8300000, guid: 77dd027f7c451364caba4f94f227d06e, type: 1}
