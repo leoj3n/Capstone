@@ -35,7 +35,7 @@ class DefaultScene extends SceneManager {
 					
 					if( avatars.Length > 0 ) {
 						if (i != 0) GUILayout.Space( 20.0 );
-						GUILayout.Box( 'Team ' + Enum.GetName( ControllerTeam, i ) );
+						GUILayout.Box( 'Team ' + ControllerTeam.GetName( ControllerTeam, i ) );
 						
 						for( var avatar : GameObject in avatars ) {
 							var component : Component = avatar.GetComponent( Avatar );

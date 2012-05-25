@@ -67,10 +67,13 @@ class SceneManager extends MonoBehaviour {
 		}
 	}
 	
+	// put anything you want to have happen at the beginning of every scene in this function
 	function Start() {
 		GameManager.instance.setBackgroundMusic( backgroundMusic, fadeInBackgroundMusic );
 		
-		SceneLoaded();
+		GameManager.instance.updateReadyControllers();
+		
+		SceneLoaded(); // call the overloaded function
 	}
 	
 	function SceneLoaded() { /* overload this function */ }

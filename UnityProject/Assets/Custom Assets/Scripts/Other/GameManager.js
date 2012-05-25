@@ -11,6 +11,7 @@ class GameManager extends MonoBehaviour {
 	// variables available in the inspector (accessible via GameManager.instance)
 	public var characterPrefabs : GameObject[];
 	public var expectedOrder : CharacterEnum; // just to expose the expected order in the Inspector
+	public var soundsBoundByName : AudioClip[]; // no order necessary
 		
 	// private variables (accessible via GameManager.instance)
 	private var _controllers : Controller[];
@@ -37,10 +38,6 @@ class GameManager extends MonoBehaviour {
 	private var audioSources : Hashtable;
 	
 	// MAIN FUNCTIONS
-	
-	function OnEnable() {
-		readyControllers = getControllerEnumsWithState( ControllerState.Ready );
-	}
 	
 	function Awake() {
 		verifySingleton(); // verify singleton
@@ -74,9 +71,16 @@ class GameManager extends MonoBehaviour {
 		
 		// setup audio
 		audioSources = new Hashtable();
+		for (var clip : AudioClip in soundsBoundByName)
+			GameManager.instance.audioBind( clip.name, clip );
 	}
 	
 	// PUBLIC FUNCTIONS
+	
+	// this function gets called at the start of every scene by SceneManager
+	function updateReadyControllers() {
+		readyControllers = getControllerEnumsWithState( ControllerState.Ready );
+	}
 	
 	// utility function for setting the background music
 	function setBackgroundMusic( clip : AudioClip, fade : boolean) {

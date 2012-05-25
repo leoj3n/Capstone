@@ -63,7 +63,7 @@ class LevelSelectScene extends SceneManager {
 			lastSelectTime = Time.time;
 			
 			// play audio effects
-			GameManager.instance.audioPlay( 'swoosh', true );
+			GameManager.instance.audioPlay( 'Swoosh', true );
 		}
 		
 		// do the rotation to the current level levelHUD

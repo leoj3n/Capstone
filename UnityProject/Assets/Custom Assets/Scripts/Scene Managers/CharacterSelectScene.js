@@ -2,8 +2,6 @@
 class CharacterSelectScene extends SceneManager {
 	public var hudPrefab : GameObject;
 	public var buttonTimeout : float = 1.0;
-	public var chooseYourFighter : AudioClip;
-	public var swoosh : AudioClip;
 	
 	private var currentCharacter : int = 0;
 	private var rotator : GameObject;
@@ -31,9 +29,6 @@ class CharacterSelectScene extends SceneManager {
 			hUDs.Push( clone );
 		}
 		
-		GameManager.instance.audioBind( 'swoosh', swoosh );
-		GameManager.instance.audioBind( 'chooseYourFighter', chooseYourFighter );
-		
 		selectingController = 0;
 		newSelect();
 	}
@@ -45,7 +40,7 @@ class CharacterSelectScene extends SceneManager {
 		var left : boolean;
 		var right : boolean;
 		
-		if( playingSelected || GameManager.instance.audioIsPlaying( 'chooseYourFighter' ) || ((Time.time - lastSelectTime) < buttonTimeout) ) {
+		if( playingSelected || GameManager.instance.audioIsPlaying( 'ChooseYourFighter' ) || ((Time.time - lastSelectTime) < buttonTimeout) ) {
 			left = right = false;
 		} else {
 			var h : float = Global.getAxis( 'Horizontal', GameManager.instance.readyControllers[selectingController] );
@@ -72,7 +67,7 @@ class CharacterSelectScene extends SceneManager {
 			GameManager.instance.audioBind( 'announcerName',
 				GameManager.instance.characterPrefabs[currentCharacter].GetComponent( Avatar ).sound[CharacterSound.AnnouncerName] );
 			GameManager.instance.audioPlay( 'announcerName', true );
-			GameManager.instance.audioPlay( 'swoosh', true );
+			GameManager.instance.audioPlay( 'Swoosh', true );
 		}
 		
 		// do the rotation to the currentCharacter select HUD
@@ -80,7 +75,7 @@ class CharacterSelectScene extends SceneManager {
 			Quaternion.Inverse( rotations[currentCharacter] ), (Time.deltaTime * 6) );
 		
 		// if not playing a selection animation and a selection has been made...
-		if( !playingSelected && !GameManager.instance.audioIsPlaying( 'chooseYourFighter' ) ) {
+		if( !playingSelected && !GameManager.instance.audioIsPlaying( 'ChooseYourFighter' ) ) {
 			switch( true ) {
 				case Global.isButtonDown( 'A', GameManager.instance.readyControllers[selectingController] ):
 					GameManager.instance.audioBind( 'selected',
@@ -142,7 +137,7 @@ class CharacterSelectScene extends SceneManager {
 			
 		GUILayout.EndArea();
 	
-		if( GameManager.instance.audioIsPlaying( 'chooseYourFighter' ) ) {
+		if( GameManager.instance.audioIsPlaying( 'ChooseYourFighter' ) ) {
 			width = 300.0;
 			height = 50.0;
 		
@@ -155,6 +150,6 @@ class CharacterSelectScene extends SceneManager {
 	private function newSelect() {
 		currentCharacter = GameManager.instance.controllers[selectingController].character;
 		waitingForTurn = false;
-		GameManager.instance.audioPlay( 'chooseYourFighter', true );
+		GameManager.instance.audioPlay( 'ChooseYourFighter', true );
 	}
 }

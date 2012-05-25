@@ -1,2 +1,10 @@
 fileFormatVersion: 1
 guid: 81d3ce7ef1ab57c488cf5a518ec281a6
+MonoImporter:
+  importerVersion: 1
+  defaultReferences:
+    gameManager: {fileID: 100000, guid: 34446a2bfe961664f8dcc8dd4722c14e, type: 2}
+    backgroundMusic: {fileID: 8300000, guid: 77dd027f7c451364caba4f94f227d06e, type: 1}
+    hudPrefab: {fileID: 100000, guid: f9a3893184298754b80fb11f193d890e, type: 2}
+    texture: {fileID: 2800000, guid: 78dec3facbe545e4ab59dad35e771522, type: 1}
+    atlas: {fileID: 4900000, guid: fd27781239b11124499815734309949b, type: 1}

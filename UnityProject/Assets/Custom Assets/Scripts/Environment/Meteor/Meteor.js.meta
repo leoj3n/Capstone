@@ -5,3 +5,6 @@ MonoImporter:
   defaultReferences:
     impactSound: {fileID: 8300000, guid: 70b4c37785fc9d947927c64080d794a5, type: 1}
     explodeSound: {fileID: 8300000, guid: 4c98e8eff22d9ff439f0122bdf31d6e9, type: 1}
+    crackleSound: {fileID: 8300000, guid: be914049f9de1d64f9c4087c4b4a68ca, type: 1}
+    detonatorPrefab: {fileID: 100000, guid: 26792368f0379a14396dfec841e30213, type: 2}
+    craterPrefab: {fileID: 100000, guid: 81d55bb902805a5478f7c8f09d141aeb, type: 2}
