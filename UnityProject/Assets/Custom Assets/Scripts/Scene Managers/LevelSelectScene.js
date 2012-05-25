@@ -78,6 +78,9 @@ class LevelSelectScene extends SceneManager {
 			case Global.isButtonDown( 'B', GameManager.instance.readyControllers ):
 				Application.LoadLevel( SceneEnum.CharacterSelect );
 				break;
+			case Global.isButtonDown( 'Back', GameManager.instance.readyControllers ):
+				Application.LoadLevel( SceneEnum.Start );
+				break;
 		}
 	}
 	
