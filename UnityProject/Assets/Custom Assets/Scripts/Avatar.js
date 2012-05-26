@@ -23,6 +23,7 @@ protected var taRenderer : TextureAtlasRenderer;
 // STATE
 protected var facing : int = 1;
 protected var canJump : boolean = true;
+protected var canMove : boolean = true;
 public var isControllable : boolean = true;
 protected var state : CharacterState;
 protected var stateForced : boolean = false;
@@ -70,7 +71,7 @@ function Start() {
 function Update() {
 	if( isControllable ) {
 		if (Global.getAxis( 'Vertical', boundController ) >= 0.2) lastJumpButtonTime = Time.time; // jump
-	
+		
 		setHorizontalMovement();
 		setVerticalMovement();
 		doMovement();
@@ -96,22 +97,29 @@ function setHorizontalMovement() {
 	var h = Global.getAxis( 'Horizontal', boundController );
 	
 	var wasMoving = isMoving;
-	isMoving = (Mathf.Abs( h ) > 0.1); // check for any lateral joystick movement
 	
-	var targetDirection = (h * right); // x-axis user input
-	
-	// grounded controls
-	if( characterController.isGrounded ) {
-		// moveDirection is always normalized, and we only update it if there is user input
-		if (targetDirection != Vector3.zero) moveDirection = targetDirection.normalized;
-				
-		// choose target speed
-		var targetSpeed = Mathf.Min( targetDirection.magnitude, 1.0 ) * walkSpeed;
+	if( canMove ) {
+		isMoving = (Mathf.Abs( h ) > 0.1); // check for any lateral joystick movement
 		
-		// interpolate moveSpeed -> targetSpeed
-		moveSpeed = Mathf.Lerp( moveSpeed, targetSpeed, (groundedAcceleration * Time.deltaTime) );
-	} else if (isMoving) { // in air controls
-		inAirVelocity += (targetDirection.normalized * Time.deltaTime * inAirAcceleration);
+		var targetDirection = (h * right); // x-axis user input
+		
+		// grounded controls
+		if( characterController.isGrounded ) {
+			// moveDirection is always normalized, and we only update it if there is user input
+			if (targetDirection != Vector3.zero) moveDirection = targetDirection.normalized;
+					
+			// choose target speed
+			var targetSpeed = Mathf.Min( targetDirection.magnitude, 1.0 ) * walkSpeed;
+			
+			// interpolate moveSpeed -> targetSpeed
+			moveSpeed = Mathf.Lerp( moveSpeed, targetSpeed, (groundedAcceleration * Time.deltaTime) );
+		} else if (isMoving) { // in air controls
+			inAirVelocity += (targetDirection.normalized * Time.deltaTime * inAirAcceleration);
+		}
+	} else {
+		isMoving = false;
+		moveSpeed = 0.0;
+		moveDirection = Vector3.zero;
 	}
 }
 
@@ -163,6 +171,8 @@ function stateDelegation() {
 	var stateBefore : CharacterState = state;
 	var staticFrame : int = -1;
 	var reverse : boolean = false;
+	canJump = true;
+	canMove = true;
 	shadowOffsetExtra = Vector3.zero;
 	shadowAspectRatioExtra = 0.0;
 	characterController.center = origCenter;
@@ -191,7 +201,8 @@ function stateDelegation() {
 	switch( true ) {
 		case (knockbackForce.magnitude > 0.1):
 			state = CharacterState.Fall;
-			//if (knockbackForce.magnitude < 1.6) staticFrame = 6;
+			
+			canJump = canMove = false;
 			
 			shadowAspectRatioExtra = Mathf.Max( (3.0 - knockbackForce.magnitude), origShadowAspectRatio );
 			
@@ -200,6 +211,9 @@ function stateDelegation() {
 			characterController.center += Vector3( 0.0, 0.2, 0.0 );
 			
 			if (taRenderer.loopCount == 1) staticFrame = 14;
+			break;
+		case (stateBefore == CharacterState.Fall):
+			transform.position += Vector3( 0.0, 0.2, 0.0 );
 			break;
 	}
 	
