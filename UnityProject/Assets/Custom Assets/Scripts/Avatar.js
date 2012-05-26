@@ -29,7 +29,11 @@ protected var stateForced : boolean = false;
 protected var stateTransition : boolean = false;
 
 // OTHER
+protected var origCenter : Vector3;
+protected var shadowProjector : Projector;
 protected var shadowOffsetExtra : Vector3;
+protected var origShadowAspectRatio : float;
+protected var shadowAspectRatioExtra : float;
 protected var knockbackForce : Vector3;
 
 // HEALTH
@@ -54,10 +58,13 @@ protected var movingBack : boolean = false;
 protected var isMoving : boolean = false;
 
 function Start() {
-	shadow = GameObject.Instantiate( shadowPrefab );	
-	moveDirection = transform.TransformDirection( Vector3.forward );
 	characterController = GetComponent( CharacterController );
+	origCenter = characterController.center;
 	taRenderer = GetComponent( TextureAtlasRenderer );
+	shadow = GameObject.Instantiate( shadowPrefab );
+	shadowProjector = shadow.GetComponent( Projector );
+	origShadowAspectRatio = shadowProjector.aspectRatio;
+	moveDirection = transform.TransformDirection( Vector3.forward );
 }
 
 function Update() {
@@ -145,6 +152,7 @@ function updateShadow() {
 	var newPos : Vector3 = (transform.position + shadowOffset + shadowOffsetExtra);
 	newPos.x += characterController.center.x;
 	shadow.transform.position = Vector3.Lerp( shadow.transform.position, newPos, (Time.deltaTime * 20) );
+	shadowProjector.aspectRatio = (origShadowAspectRatio + shadowAspectRatioExtra);
 }
 
 // determine the state of this avatar and apply it to the texture atlas renderer
@@ -154,7 +162,10 @@ function stateDelegation() {
 	// set dynamic variables to default state
 	var stateBefore : CharacterState = state;
 	var staticFrame : int = -1;
+	var reverse : boolean = false;
 	shadowOffsetExtra = Vector3.zero;
+	shadowAspectRatioExtra = 0.0;
+	characterController.center = origCenter;
 	
 	// joystick-activated states
 	switch( true ) {
@@ -166,6 +177,7 @@ function stateDelegation() {
 			break;
 		case isMoving:
 			state = CharacterState.Walk;
+			if (movingBack) reverse = true;
 			break;
 		default:
 			state = CharacterState.Idle;
@@ -180,6 +192,13 @@ function stateDelegation() {
 		case (knockbackForce.magnitude > 0.1):
 			state = CharacterState.Fall;
 			//if (knockbackForce.magnitude < 1.6) staticFrame = 6;
+			
+			shadowAspectRatioExtra = Mathf.Max( (3.0 - knockbackForce.magnitude), origShadowAspectRatio );
+			
+			shadowOffsetExtra = Vector3( 0.8, 0.0, 0.0 );
+			
+			characterController.center += Vector3( 0.0, 0.2, 0.0 );
+			
 			if (taRenderer.loopCount == 1) staticFrame = 14;
 			break;
 	}
@@ -193,7 +212,7 @@ function stateDelegation() {
 	
 	// apply all changes to the texture atlas renderer
 	taRenderer.setTextureAtlasIndex( parseInt( state ) );
-	taRenderer.reverse = (movingBack && (state == CharacterState.Walk));
+	taRenderer.reverse = reverse;
 	if( staticFrame > -1) {
 		taRenderer.isStatic = true;
 		taRenderer.staticFrame = staticFrame;
