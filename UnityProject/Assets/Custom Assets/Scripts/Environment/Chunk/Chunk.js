@@ -1,5 +1,5 @@
 
-public var dislodgedLayer : int = 10;
+public var dislodgedLayer : LayerMask = -1; // only select one!
 public var debrisPrefab : GameObject;
 public var hitSound : AudioClip;
 
@@ -65,7 +65,7 @@ function OnCollisionEnter( collision : Collision ) {
 	if( !dislodged && collision.collider.CompareTag( 'Meteor' ) ) {
 		rigidbody.constraints = RigidbodyConstraints.None;
 		rigidbody.isKinematic = false;
-		gameObject.layer = dislodgedLayer;
+		gameObject.layer = Mathf.Log( dislodgedLayer.value, 2 );
 		dislodged = true;
 		
 		debris = Instantiate( debrisPrefab, transform.position, transform.rotation );

@@ -1,5 +1,5 @@
 
-public var avatarLayer : int = 8;
+public var layerMask : LayerMask = -1;
 public var impactSound : AudioClip;
 public var secondsUntilSoundClimax : float = 0.9;
 public var explodeSound : AudioClip;
@@ -13,7 +13,6 @@ private var startPos : Vector3;
 private var lastPos : Vector3;
 private var timeUntilExpire : float = 1.0;
 private var playedOnce : boolean = false;
-private var layerMask : int;
 private var additionalVelocity : Vector3;
 private var health : float = 100.0;
 private var dead : boolean = false;
@@ -22,7 +21,6 @@ private var angleAmount : float = 0.02;
 
 function Awake() {
 	startPos = lastPos = transform.position;
-	layerMask = ~(1 << avatarLayer); // layer mask for use in raycast
 	additionalVelocity = Vector3( (Random.Range( 0.0, angleAmount ) * ((startPos.x < 0.0) ? -1 : 1 )), 0.0, 0.0 );
 	
 	GameManager.instance.audioBind( 'meteorImpact', impactSound );
@@ -53,7 +51,7 @@ function Update() {
 		
 		Debug.DrawLine( transform.position, (transform.position + (directionOfTravel * dist.magnitude)) );
 		
-		if( Physics.Raycast( transform.position, directionOfTravel, dist.magnitude, layerMask ) ) {
+		if( Physics.Raycast( transform.position, directionOfTravel, dist.magnitude, layerMask.value ) ) {
 			GameManager.instance.audioPlay( 'meteorImpact' );
 			playedOnce = true;
 		}
