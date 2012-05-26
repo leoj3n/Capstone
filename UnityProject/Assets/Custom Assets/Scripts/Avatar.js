@@ -13,17 +13,21 @@ public var shadowOffset : Vector3;
 
 // STATIC
 private var boundController : ControllerEnum;
-private var collisionFlags : CollisionFlags;
 private var shadow : GameObject;
 protected var gravity : float = 50.0;
 protected var groundedAcceleration : float = 6.0;
 protected var inAirAcceleration : float = 3.0;
+protected var taRenderer : TextureAtlasRenderer;
 
 // STATE
+private var collisionFlags : CollisionFlags;
 protected var facing : int = 1;
 protected var canJump : boolean = true;
 public var isControllable : boolean = true;
 protected var state : CharacterState;
+
+// OTHER
+protected var shadowOffsetExtra : Vector3;
 
 // HEALTH
 protected var health : float = 100.0;
@@ -48,8 +52,8 @@ protected var isMoving : boolean = false;
 
 function Start() {
 	shadow = GameObject.Instantiate( shadowPrefab );	
-	
 	moveDirection = transform.TransformDirection( Vector3.forward );
+	taRenderer = GetComponent( TextureAtlasRenderer );
 }
 
 function Update() {
@@ -63,7 +67,7 @@ function Update() {
 		updateShadow();
 		
 		//faceNearestEnemy();
-		stateSetup();
+		stateDelegation();
 		enforceBounds();
 	}
 }
@@ -138,17 +142,21 @@ function doMovement() {
 }
 
 function updateShadow() {
-	shadow.transform.position = (transform.position + shadowOffset);
-	shadow.transform.position.x += GetComponent( CharacterController ).center.x;
+	var newPos : Vector3 = (transform.position + shadowOffset + shadowOffsetExtra);
+	newPos.x += GetComponent( CharacterController ).center.x;
+	shadow.transform.position = Vector3.Lerp( shadow.transform.position, newPos, (Time.deltaTime * 20) );
 }
 
-// determine the state of this avatar
-function stateSetup() {	
+// determine the state of this avatar and apply it to the texture atlas renderer
+function stateDelegation() {	
 	var blocking : boolean = (!isMoving && (Global.getAxis( 'Vertical', boundController ) <= -0.2)) ? true : false; // block
 	var knockback : boolean = false;
 	var A : boolean = Global.isButton( 'A', boundController );
 	
+	// set dynamic variables to default state
 	var reverse : boolean = false;
+	var staticFrame : int = -1;
+	shadowOffsetExtra = Vector3.zero;
 	
 	switch( true ) {
 		case blocking:
@@ -176,11 +184,20 @@ function stateSetup() {
 			break;
 	}
 	
-	//state = CharacterState.Idle; // Debug.
+	StateUpdated();
 	
-	BroadcastMessage( 'TextureAtlasIndex', parseInt( state ), SendMessageOptions.DontRequireReceiver );
-	BroadcastMessage( 'Reverse', reverse, SendMessageOptions.DontRequireReceiver );
+	// apply all changes to the texture atlas renderer
+	taRenderer.setTextureAtlasIndex( parseInt( state ) );
+	taRenderer.reverse = reverse;
+	if( staticFrame > -1) {
+		taRenderer.isStatic = true;
+		taRenderer.staticFrame = staticFrame;
+	} else {
+		taRenderer.isStatic = false;
+	}
 }
+
+function StateUpdated() { /* override this function */ }
 
 // utility function for determining if this avatar is grounded
 function isGrounded() {
@@ -276,7 +293,9 @@ function AudioPlay( cs : int ) {
 	GameManager.instance.audioPlay( uid, true );
 }
 
-function Attack1() {}
+function Attack1() {
+	Debug.LogWarning( 'You must override the default template function "Attack1()"' );
+}
 
 function Special1() {
 	Debug.LogWarning( 'You must override the default template function "Special1()"' );

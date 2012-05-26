@@ -95,16 +95,12 @@ function applyTextureAtlas( ta : TextureAtlas ) {
 	if (!isStatic && (index == (ta.frames.Length - 1))) loopCount++;
 }
 
-function TextureAtlasIndex( index : int ) {
+function setTextureAtlasIndex( index : int ) {
 	if( index != textureAtlasIndex ) {
 		textureAtlasIndex = index;
 		loopCount = 0;
 		fpsTimer = 0.0;
 	}
-}
-
-function Reverse( bool : boolean ) {
-	reverse = bool;
 }
 
 class TextureAtlas {

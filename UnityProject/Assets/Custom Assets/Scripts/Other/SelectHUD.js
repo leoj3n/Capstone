@@ -6,6 +6,7 @@ public var statsTopFrame : int = 2;
 public var playSelected : boolean = false;
 
 private var clone : GameObject;
+private var taRenderer : TextureAtlasRenderer;
 
 function Start() {
 	clone = Instantiate( characterPrefab );
@@ -14,21 +15,21 @@ function Start() {
 	var statsAtlas : TextAsset = clone.GetComponent( Avatar ).statsAtlas;
 	
 	for( var child : Transform in transform ) {
-		var tar : Component = child.gameObject.AddComponent( TextureAtlasRenderer );
+		taRenderer = child.gameObject.AddComponent( TextureAtlasRenderer );
 		
-		tar.texture = [statsTexture];
-		tar.atlas = [statsAtlas];
-		tar.isStatic = true;
+		taRenderer.texture = [statsTexture];
+		taRenderer.atlas = [statsAtlas];
+		taRenderer.isStatic = true;
 		
-		switch( tar.name ) {
+		switch( taRenderer.name ) {
 			case 'Stats Left':
-				tar.staticFrame = statsLeftFrame;
+				taRenderer.staticFrame = statsLeftFrame;
 				break;
 			case 'Stats Right':
-				tar.staticFrame = statsRightFrame;
+				taRenderer.staticFrame = statsRightFrame;
 				break;
 			case 'Stats Top':
-				tar.staticFrame = statsTopFrame;
+				taRenderer.staticFrame = statsTopFrame;
 				break;
 		}
 	}
@@ -40,9 +41,9 @@ function Start() {
 }
 
 function Update() {
-	clone.GetComponent( TextureAtlasRenderer ).TextureAtlasIndex(
+	taRenderer.setTextureAtlasIndex(
 		parseInt( playSelected ? CharacterState.Selected : CharacterState.SelectIdle ) );
 	
-	if (playSelected && (clone.GetComponent( TextureAtlasRenderer ).loopCount == 1))
+	if (playSelected && (taRenderer.loopCount == 1))
 		playSelected = false;
 }

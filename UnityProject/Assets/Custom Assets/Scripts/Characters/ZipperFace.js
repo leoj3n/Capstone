@@ -4,6 +4,14 @@ class ZipperFace extends Avatar {
 		Debug.Log( 'ZipperFace is alive!' );
 	}
 	
+	function StateUpdated() {
+		switch( state ) {
+			case CharacterState.Walk:
+				shadowOffsetExtra = Vector3( -0.2, 0.0, 0.0 );
+				break;
+		}
+	}
+	
 	function Special1() {
 		Debug.Log( 'ZipperFace Special1() override called!' );
 		
