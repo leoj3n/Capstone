@@ -8,6 +8,7 @@ class StartScene extends SceneManager {
 	function SceneLoaded() {		
 		countdownStartTime = 0.0;
 		
+		// incase they hit back to re-select their characters
 		for( var i = 0; i < ControllerEnum.Count; i++ ) {
 			if (GameManager.instance.controllers[i].state == ControllerState.Ready)
 				GameManager.instance.controllers[i].state = ControllerState.TeamSelect;

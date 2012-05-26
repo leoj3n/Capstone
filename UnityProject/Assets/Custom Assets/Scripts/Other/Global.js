@@ -3,21 +3,21 @@
 enum CharacterEnum { ZipperFace, BlackMagic, KidCane, Dan, Mick }
 enum CharacterSound { AnnouncerName, Selected, Jump }
 enum CharacterState {
-	SelectIdle,
-	Selected,
-	Intro,
-	Idle,
-	Jump,
-	JumpBackward,
-	JumpForward,
-	Walk,
-	Attack1,
-	Attack2,
-	Special1,
-	Special2,
-	Ultimate,
-	Block,
-	KnockedBack
+	SelectIdle, // 0
+	Selected, // 1
+	Intro, // 2
+	Idle, // 3
+	Jump, // 4
+	JumpBackward, // 5
+	JumpForward, // 6
+	Walk, // 7
+	Fall, // 8
+	Block, // 9
+	Attack1, // 10
+	Attack2, // 11
+	Special1, // 12
+	Special2, // 13
+	Ultimate, // 14
 }
 enum ControllerEnum { A, B, C, D, Count } // Unity supports a maximum of 4 controllers
 enum ControllerTeam { Green, Red, Blue, Orange, Count } // need at least 4 teams to support free-for-all
@@ -58,7 +58,7 @@ class SceneManager extends MonoBehaviour {
 			// simulate character select
 			if( Application.loadedLevel > 1 ) {
 				GameManager.instance.controllers[0].character = CharacterEnum.ZipperFace;
-				GameManager.instance.controllers[1].character = CharacterEnum.BlackMagic;
+				GameManager.instance.controllers[1].character = CharacterEnum.ZipperFace;//BlackMagic;
 			}
 			
 			// simulate level select

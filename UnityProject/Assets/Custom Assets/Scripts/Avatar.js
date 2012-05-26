@@ -177,15 +177,14 @@ function stateDelegation() {
 	
 	// environment-activated states (overrides all)
 	switch( true ) {
-		case (knockbackForce != Vector3.zero):
-			state = CharacterState.Jump;
+		case (knockbackForce.magnitude > 0.1):
+			state = CharacterState.Fall;
+			//if (knockbackForce.magnitude < 1.6) staticFrame = 6;
+			if (taRenderer.loopCount == 1) staticFrame = 14;
 			break;
 	}
 	
 	StateFinal();
-	
-	//if (getName() == 'ZipperFace') Debug.Log( characterController.isGrounded );
-	//state = CharacterState.Selected;
 	
 	if (stateBefore != state)
 		stateTransition = true;
