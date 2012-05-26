@@ -1,14 +1,23 @@
 
 public var disable : boolean = false;
 
+private var chunkVolume : ChunkVolume;
+
+function Start() {
+	chunkVolume = transform.parent.GetComponent( 'ChunkVolume' );
+}
+
 function OnTriggerEnter( other : Collider ) {
-	if (!disable) transform.parent.GetComponent( 'ChunkVolume' ).ignoreAvatarCollision( other, true );
+	if (!disable) chunkVolume.ignoreAvatarCollision( other, true );
+	//Debug.Log( 'enter' );
 }
 
 function OnTriggerStay( other : Collider ) {
-	if (!disable) transform.parent.GetComponent( 'ChunkVolume' ).ignoreAvatarCollision( other, true );
+	if (!disable) chunkVolume.ignoreAvatarCollision( other, true );
+	//Debug.Log( 'stay' );
 }
 
 function OnTriggerExit( other : Collider ) {
-	if (!disable) transform.parent.GetComponent( 'ChunkVolume' ).ignoreAvatarCollision( other, false );
+	Debug.Log( 'exit' );
+	//if (!disable) chunkVolume.ignoreAvatarCollision( other, false );
 }

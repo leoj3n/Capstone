@@ -65,7 +65,7 @@ function OnCollisionEnter( collision : Collision ) {
 	if( !dislodged && collision.collider.CompareTag( 'Meteor' ) ) {
 		rigidbody.constraints = RigidbodyConstraints.None;
 		rigidbody.isKinematic = false;
-		gameObject.layer = Mathf.Log( dislodgedLayer.value, 2 );
+		gameObject.layer = parseInt( Mathf.Log( dislodgedLayer.value, 2 ) );
 		dislodged = true;
 		
 		debris = Instantiate( debrisPrefab, transform.position, transform.rotation );

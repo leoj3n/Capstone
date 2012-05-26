@@ -5,39 +5,41 @@ public var statsRightFrame : int = 1;
 public var statsTopFrame : int = 2;
 public var playSelected : boolean = false;
 
-private var clone : GameObject;
+private var character : GameObject;
 private var taRenderer : TextureAtlasRenderer;
 
 function Start() {
-	clone = Instantiate( characterPrefab );
+	character = Instantiate( characterPrefab );
 	
-	var statsTexture : Texture2D = clone.GetComponent( Avatar ).statsTexture;
-	var statsAtlas : TextAsset = clone.GetComponent( Avatar ).statsAtlas;
+	taRenderer = character.GetComponent( TextureAtlasRenderer );
+	
+	var statsTexture : Texture2D = character.GetComponent( Avatar ).statsTexture;
+	var statsAtlas : TextAsset = character.GetComponent( Avatar ).statsAtlas;
 	
 	for( var child : Transform in transform ) {
-		taRenderer = child.gameObject.AddComponent( TextureAtlasRenderer );
+		var tar : Component = child.gameObject.AddComponent( TextureAtlasRenderer );
 		
-		taRenderer.texture = [statsTexture];
-		taRenderer.atlas = [statsAtlas];
-		taRenderer.isStatic = true;
+		tar.texture = [statsTexture];
+		tar.atlas = [statsAtlas];
+		tar.isStatic = true;
 		
-		switch( taRenderer.name ) {
+		switch( tar.name ) {
 			case 'Stats Left':
-				taRenderer.staticFrame = statsLeftFrame;
+				tar.staticFrame = statsLeftFrame;
 				break;
 			case 'Stats Right':
-				taRenderer.staticFrame = statsRightFrame;
+				tar.staticFrame = statsRightFrame;
 				break;
 			case 'Stats Top':
-				taRenderer.staticFrame = statsTopFrame;
+				tar.staticFrame = statsTopFrame;
 				break;
 		}
 	}
 	
-	clone.GetComponent( Avatar ).isControllable = false;
-	clone.transform.parent = transform;
-	clone.transform.localPosition = Vector3( 0.0, 2.4, -12.6 );
-	clone.AddComponent( BillBoard );
+	character.GetComponent( Avatar ).isControllable = false;
+	character.transform.parent = transform;
+	character.transform.localPosition = Vector3( 0.0, 2.4, -12.6 );
+	character.AddComponent( BillBoard );
 }
 
 function Update() {
