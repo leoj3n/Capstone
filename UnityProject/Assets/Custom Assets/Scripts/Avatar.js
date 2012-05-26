@@ -110,7 +110,7 @@ function setHorizontalMovement() {
 // sets verticalSpeed, jumping, lastJumpTime, lastJumpButtonTime and lastJumpStartHeight
 function setVerticalMovement() {
 	// apply gravity
-	verticalSpeed = (isGrounded ? 0.0 : (verticalSpeed - (gravity * Time.deltaTime)));
+	verticalSpeed = (isGrounded ? -0.1 : (verticalSpeed - (gravity * Time.deltaTime)));
 	
 	// prevent jumping too fast after each other
 	if (lastJumpTime + jumpRepeatTime > Time.time) return;
@@ -134,26 +134,6 @@ function doMovement() {
 		((moveDirection * moveSpeed + Vector3( 0, verticalSpeed, 0 ) + inAirVelocity) * Time.deltaTime) );
 	
 	isGrounded = characterController.isGrounded;
-	
-	var tmpSize : Vector3 = Global.getSize( gameObject );
-	var hitInfo : RaycastHit;
-	var rayCast : boolean = Physics.Raycast( characterController.bounds.center, Vector3.down, hitInfo, ((tmpSize.y / 2) + 0.1) );
-	Debug.DrawRay( characterController.bounds.center, Vector3.down * (tmpSize.y / 2) );
-	if( rayCast ) {
-		//Debug.Log( hitInfo.transform.name );
-		switch( hitInfo.transform.gameObject.layer ) {
-			case 11:
-			case 31:
-				break;
-			default:
-				if (!jumping) isGrounded = rayCast;
-				break;
-		}
-	}
-	
-	/*var tmp : Vector3 = Vector3( characterController.bounds.center.x, characterController.bounds.min.y, characterController.bounds.center.z );
-	if (!jumping) isGrounded = Physics.Raycast( tmp, Vector3.down, 0.58, (~(1 << 8) | ~(1 << 11) | ~(1 << 31)) );
-	Debug.DrawRay( tmp, Vector3.down * 0.58 );*/
 	
 	if( isGrounded ) {
 		lastGroundedTime = Time.time;
@@ -205,7 +185,7 @@ function stateDelegation() {
 	
 	StateFinal();
 	
-	//if (getName() == 'ZipperFace') Debug.Log( isGrounded );
+	if (getName() == 'ZipperFace') Debug.Log( isGrounded );
 	
 	// apply all changes to the texture atlas renderer
 	taRenderer.setTextureAtlasIndex( parseInt( state ) );

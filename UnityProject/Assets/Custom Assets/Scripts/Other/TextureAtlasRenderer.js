@@ -64,7 +64,7 @@ function applyTextureAtlas( ta : TextureAtlas ) {
 	
 	if (!scaleAgainstPlaceholder) scaleFactor = Vector2( (origScale.x / frame.width), (origScale.y / frame.height) );
 	
-	var scaleFromSide : boolean = (scaleAnchor != ScaleAnchor.Center);
+	var scaleFromSide : boolean = (scaleAnchor != ScaleAnchor.Center); // set a helper variable
 	if (scaleFromSide) var sizeBeforeScale : Vector3 = Global.getSize( gameObject );
 	
 	transform.localScale = Vector3( (frame.width * scaleFactor.x), (frame.height * scaleFactor.y), origScale.z );
@@ -74,16 +74,16 @@ function applyTextureAtlas( ta : TextureAtlas ) {
 		var sizeDiff : Vector3 = ((Global.getSize( gameObject ) - sizeBeforeScale) / 2);
 		switch( scaleAnchor ) {
 			case ScaleAnchor.Top:
-				if (sizeDiff.y < 0) transform.position.y += sizeDiff.y;
+				transform.position.y -= sizeDiff.y;
 				break;
 			case ScaleAnchor.Bottom:
-				if (sizeDiff.y > 0) transform.position.y += sizeDiff.y;
+				transform.position.y += sizeDiff.y;
 				break;
 			case ScaleAnchor.Left:
-				if (sizeDiff.x > 0) transform.position.x += sizeDiff.x;
+				transform.position.x += sizeDiff.x;
 				break;
 			case ScaleAnchor.Right:
-				if (sizeDiff.x < 0) transform.position.x += sizeDiff.x;
+				transform.position.x -= sizeDiff.x;
 				break;
 		}
 	}
