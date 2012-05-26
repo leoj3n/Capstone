@@ -25,7 +25,7 @@ class CharacterSelectScene extends SceneManager {
 			clone.GetComponent( SelectHUD ).characterPrefab = character;
 			clone.transform.parent = rotator.transform;
 			
-			rotations.Push( rot );
+			rotations.Push( rot ); // TODO: convert to built-in arrays for speed increase
 			hUDs.Push( clone );
 		}
 		

@@ -30,6 +30,7 @@ protected var stateTransition : boolean = false;
 
 // OTHER
 protected var shadowOffsetExtra : Vector3;
+protected var environmentForce : Vector3;
 
 // HEALTH
 protected var health : float = 100.0;
@@ -130,8 +131,8 @@ function setVerticalMovement() {
 
 // move the character controller
 function doMovement() {	
-	characterController.Move( 
-		((moveDirection * moveSpeed + Vector3( 0, verticalSpeed, 0 ) + inAirVelocity) * Time.deltaTime) );
+	characterController.Move( Time.deltaTime * 
+		((moveDirection * moveSpeed) + Vector3( 0, verticalSpeed, 0 ) + inAirVelocity + environmentForce) );
 	
 	if( characterController.isGrounded ) {
 		lastGroundedTime = Time.time;
@@ -239,21 +240,33 @@ function enforceBounds() {
 
 // utility function to add an explosion force to this avatar
 function addExplosionForce( pos : Vector3, force : float, damping : float ) {	
-	var dist : float = Mathf.Max( Vector3.Distance( pos, transform.position ), 1.0 );
+	var dist : float = Vector3.Distance( pos, characterController.collider.ClosestPointOnBounds( pos ) );
+	//Mathf.Max( Vector3.Distance( pos, transform.position ), 2.7 ); //characterController.bounds.extents.y
+	//Debug.Log( (dist) );
+	//dist = (dist * dist);
+	
+	var radius : float = 7.0;
+	var percentage : float = (1.0 - Mathf.Clamp01( dist / radius ));
 	
 	var dir : Vector3 = (transform.position - pos).normalized;
+	dir.z = 0.0;
 	
-	var explosionForce : Vector3 = ((dir * force) / dist);
-	if (explosionForce.y < 0.0) explosionForce.y = 0.0;
-	explosionForce.y *= 1.5;//+= 0.2; // add upward bias
+	var explosionForce : Vector3 = (force * dir * percentage);//(force * (dir / dist));
+	Debug.Log( explosionForce );
+			
+	health -= (explosionForce.magnitude / damping); // bigger distance = less damage (naturally)
 	
-	var damage : float = ((force * damping) / dist);
-	health -= (damage * damage);
+	if (characterController.isGrounded) explosionForce.y = Mathf.Max( explosionForce.y, (force * 0.16) );
 	
 	// apply explosion force via co-routine
+	var initial : boolean = true;
 	while( explosionForce != Vector3.zero ) {
+		if (!initial) environmentForce -= explosionForce;
+		initial = false;
+		
 		explosionForce = Vector3.Slerp( explosionForce, Vector3.zero, (Time.deltaTime * damping) );
-		characterController.Move( explosionForce );
+		
+		environmentForce += explosionForce;
 		yield;
 	}
 }

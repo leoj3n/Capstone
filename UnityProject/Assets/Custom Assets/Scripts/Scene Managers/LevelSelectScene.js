@@ -30,7 +30,7 @@ class LevelSelectScene extends SceneManager {
 			tar.isStatic = true;
 			tar.staticFrame = i;
 			
-			rotations.Push( rot );
+			rotations.Push( rot ); // TODO: convert to built-in arrays for speed increase
 			levelHUDs.Push( clone );
 		}
 	}
