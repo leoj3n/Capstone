@@ -12,22 +12,24 @@ public var shadowPrefab : GameObject;
 public var shadowOffset : Vector3;
 
 // STATIC
-private var boundController : ControllerEnum;
+protected var boundController : ControllerEnum;
 private var shadow : GameObject;
 protected var gravity : float = 50.0;
 protected var groundedAcceleration : float = 6.0;
 protected var inAirAcceleration : float = 3.0;
+protected var characterController : CharacterController;
 protected var taRenderer : TextureAtlasRenderer;
 
 // STATE
-private var collisionFlags : CollisionFlags;
 protected var facing : int = 1;
 protected var canJump : boolean = true;
 public var isControllable : boolean = true;
 protected var state : CharacterState;
+protected var stateForced : boolean = false;
 
 // OTHER
 protected var shadowOffsetExtra : Vector3;
+protected var isGrounded : boolean;
 
 // HEALTH
 protected var health : float = 100.0;
@@ -53,6 +55,7 @@ protected var isMoving : boolean = false;
 function Start() {
 	shadow = GameObject.Instantiate( shadowPrefab );	
 	moveDirection = transform.TransformDirection( Vector3.forward );
+	characterController = GetComponent( CharacterController );
 	taRenderer = GetComponent( TextureAtlasRenderer );
 }
 
@@ -90,7 +93,7 @@ function setHorizontalMovement() {
 	var targetDirection = (h * right); // x-axis user input
 	
 	// grounded controls
-	if( isGrounded() ) {
+	if( isGrounded ) {
 		// moveDirection is always normalized, and we only update it if there is user input
 		if (targetDirection != Vector3.zero) moveDirection = targetDirection.normalized;
 				
@@ -107,12 +110,12 @@ function setHorizontalMovement() {
 // sets verticalSpeed, jumping, lastJumpTime, lastJumpButtonTime and lastJumpStartHeight
 function setVerticalMovement() {
 	// apply gravity
-	verticalSpeed = (isGrounded() ? 0.0 : (verticalSpeed - (gravity * Time.deltaTime)));
+	verticalSpeed = (isGrounded ? 0.0 : (verticalSpeed - (gravity * Time.deltaTime)));
 	
 	// prevent jumping too fast after each other
 	if (lastJumpTime + jumpRepeatTime > Time.time) return;
 
-	if( isGrounded() ) {
+	if( isGrounded ) {
 		// jump only when pressing the button down with a timeout so you can press the button slightly before landing		
 		if( canJump && (Time.time < (lastJumpButtonTime + jumpTimeout)) ) {
 			AudioPlay( CharacterSound.Jump );
@@ -126,15 +129,16 @@ function setVerticalMovement() {
 }
 
 // move the character controller
-function doMovement() {
-	// move transform so the character prefab is anchored at the feet
-	//transform.position.y = Mathf.Lerp( transform.position.y, (Global.getSize( gameObject ).y / 2), (Time.deltaTime * 20) );
-	//GetComponent( CharacterController ).center.y = Mathf.Lerp( GetComponent( CharacterController ).center.y, (Global.getSize( gameObject ).y / 2), (Time.deltaTime * 20) );
-	
-	collisionFlags = GetComponent( CharacterController ).Move( 
+function doMovement() {	
+	characterController.Move( 
 		((moveDirection * moveSpeed + Vector3( 0, verticalSpeed, 0 ) + inAirVelocity) * Time.deltaTime) );
 	
-	if( isGrounded() ) {
+	isGrounded = characterController.isGrounded;
+	
+	//isNearlyGrounded = Physics.Raycast( characterController.bounds.min.y, Vector3.down, 1.0 );
+	Debug.DrawRay( characterController.bounds.center, characterController.bounds.extents );
+	
+	if( isGrounded ) {
 		lastGroundedTime = Time.time;
 		inAirVelocity = Vector3.zero;
 		jumping = false;
@@ -143,7 +147,7 @@ function doMovement() {
 
 function updateShadow() {
 	var newPos : Vector3 = (transform.position + shadowOffset + shadowOffsetExtra);
-	newPos.x += GetComponent( CharacterController ).center.x;
+	newPos.x += characterController.center.x;
 	shadow.transform.position = Vector3.Lerp( shadow.transform.position, newPos, (Time.deltaTime * 20) );
 }
 
@@ -151,30 +155,18 @@ function updateShadow() {
 function stateDelegation() {	
 	var blocking : boolean = (!isMoving && (Global.getAxis( 'Vertical', boundController ) <= -0.2)) ? true : false; // block
 	var knockback : boolean = false;
-	var A : boolean = Global.isButton( 'A', boundController );
 	
 	// set dynamic variables to default state
-	var reverse : boolean = false;
 	var staticFrame : int = -1;
 	shadowOffsetExtra = Vector3.zero;
 	
+	// joystick-activated states
 	switch( true ) {
-		case blocking:
-			state = CharacterState.Block;
-			break;
 		case jumping:
 			state = CharacterState.Jump; // forward/backwards
 			break;
-		case knockback:
-			state = CharacterState.Jump; // forward/backwards
-			break;
-		case A:
-			Attack1();
-			state = CharacterState.Attack1;
-			break;
-		case movingBack:
-			state = CharacterState.Walk;
-			reverse = true;
+		case blocking:
+			state = CharacterState.Block;
 			break;
 		case isMoving:
 			state = CharacterState.Walk;
@@ -184,11 +176,23 @@ function stateDelegation() {
 			break;
 	}
 	
-	StateUpdated();
+	// button-activated states (overrides joystick)
+	StateUpdate();
+	
+	// environment-activated states (overrides all)
+	switch( true ) {
+		case knockback:
+			state = CharacterState.Jump;
+			break;
+	}
+	
+	StateFinal();
+	
+	if (getName() == 'ZipperFace') Debug.Log( jumping );
 	
 	// apply all changes to the texture atlas renderer
 	taRenderer.setTextureAtlasIndex( parseInt( state ) );
-	taRenderer.reverse = reverse;
+	taRenderer.reverse = (movingBack && (state == CharacterState.Walk));
 	if( staticFrame > -1) {
 		taRenderer.isStatic = true;
 		taRenderer.staticFrame = staticFrame;
@@ -197,12 +201,8 @@ function stateDelegation() {
 	}
 }
 
-function StateUpdated() { /* override this function */ }
-
-// utility function for determining if this avatar is grounded
-function isGrounded() {
-	return ((collisionFlags & CollisionFlags.CollidedBelow) != 0);
-}
+function StateUpdate() { /* override this function */ }
+function StateFinal() { /* override this function */ }
 
 // utility function to cause this avatar to face the nearest avatar
 function faceNearestEnemy() {
@@ -251,7 +251,7 @@ function addExplosionForce( pos : Vector3, force : float, damping : float ) {
 	// apply explosion force via co-routine
 	while( explosionForce != Vector3.zero ) {
 		explosionForce = Vector3.Slerp( explosionForce, Vector3.zero, (Time.deltaTime * damping) );
-		transform.GetComponent( CharacterController ).Move( explosionForce );
+		characterController.Move( explosionForce );
 		yield;
 	}
 }
