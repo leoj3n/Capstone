@@ -6,7 +6,7 @@ class ZipperFace extends Avatar {
 	
 	function StateUpdate() {
 		// button-activated states
-		//if( isGrounded() ) {
+		if( characterController.isGrounded || stateTransition ) {
 			switch( true ) {
 				case Global.isButton( 'A', boundController ):
 					state = CharacterState.Attack1;
@@ -25,7 +25,7 @@ class ZipperFace extends Avatar {
 					// do special attack 2
 					break;
 			}
-		//}
+		}
 	}
 	
 	function StateFinal() {

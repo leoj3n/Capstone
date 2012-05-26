@@ -26,10 +26,10 @@ protected var canJump : boolean = true;
 public var isControllable : boolean = true;
 protected var state : CharacterState;
 protected var stateForced : boolean = false;
+protected var stateTransition : boolean = false;
 
 // OTHER
 protected var shadowOffsetExtra : Vector3;
-protected var isGrounded : boolean;
 
 // HEALTH
 protected var health : float = 100.0;
@@ -93,7 +93,7 @@ function setHorizontalMovement() {
 	var targetDirection = (h * right); // x-axis user input
 	
 	// grounded controls
-	if( isGrounded ) {
+	if( characterController.isGrounded ) {
 		// moveDirection is always normalized, and we only update it if there is user input
 		if (targetDirection != Vector3.zero) moveDirection = targetDirection.normalized;
 				
@@ -110,12 +110,12 @@ function setHorizontalMovement() {
 // sets verticalSpeed, jumping, lastJumpTime, lastJumpButtonTime and lastJumpStartHeight
 function setVerticalMovement() {
 	// apply gravity
-	verticalSpeed = (isGrounded ? -0.1 : (verticalSpeed - (gravity * Time.deltaTime)));
+	verticalSpeed = (characterController.isGrounded ? -0.1 : (verticalSpeed - (gravity * Time.deltaTime)));
 	
 	// prevent jumping too fast after each other
 	if (lastJumpTime + jumpRepeatTime > Time.time) return;
 
-	if( isGrounded ) {
+	if( characterController.isGrounded ) {
 		// jump only when pressing the button down with a timeout so you can press the button slightly before landing		
 		if( canJump && (Time.time < (lastJumpButtonTime + jumpTimeout)) ) {
 			AudioPlay( CharacterSound.Jump );
@@ -133,9 +133,7 @@ function doMovement() {
 	characterController.Move( 
 		((moveDirection * moveSpeed + Vector3( 0, verticalSpeed, 0 ) + inAirVelocity) * Time.deltaTime) );
 	
-	isGrounded = characterController.isGrounded;
-	
-	if( isGrounded ) {
+	if( characterController.isGrounded ) {
 		lastGroundedTime = Time.time;
 		inAirVelocity = Vector3.zero;
 		jumping = false;
@@ -154,6 +152,7 @@ function stateDelegation() {
 	var knockback : boolean = false;
 	
 	// set dynamic variables to default state
+	var stateBefore : CharacterState = state;
 	var staticFrame : int = -1;
 	shadowOffsetExtra = Vector3.zero;
 	
@@ -185,7 +184,13 @@ function stateDelegation() {
 	
 	StateFinal();
 	
-	if (getName() == 'ZipperFace') Debug.Log( isGrounded );
+	//if (getName() == 'ZipperFace') Debug.Log( characterController.isGrounded );
+	//state = CharacterState.Selected;
+	
+	if (stateBefore != state)
+		stateTransition = true;
+	else if (characterController.isGrounded || jumping || isMoving)
+		stateTransition = false;
 	
 	// apply all changes to the texture atlas renderer
 	taRenderer.setTextureAtlasIndex( parseInt( state ) );
@@ -238,7 +243,7 @@ function addExplosionForce( pos : Vector3, force : float, damping : float ) {
 	
 	var dir : Vector3 = (transform.position - pos).normalized;
 	
-	var explosionForce : Vector3 = ((dir * force) / (dist));
+	var explosionForce : Vector3 = ((dir * force) / dist);
 	if (explosionForce.y < 0.0) explosionForce.y = 0.0;
 	explosionForce.y *= 1.5;//+= 0.2; // add upward bias
 	
