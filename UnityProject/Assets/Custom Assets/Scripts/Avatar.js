@@ -30,7 +30,7 @@ protected var stateTransition : boolean = false;
 
 // OTHER
 protected var shadowOffsetExtra : Vector3;
-protected var environmentForce : Vector3;
+protected var knockbackForce : Vector3;
 
 // HEALTH
 protected var health : float = 100.0;
@@ -132,7 +132,7 @@ function setVerticalMovement() {
 // move the character controller
 function doMovement() {	
 	characterController.Move( Time.deltaTime * 
-		((moveDirection * moveSpeed) + Vector3( 0, verticalSpeed, 0 ) + inAirVelocity + environmentForce) );
+		((moveDirection * moveSpeed) + Vector3( 0, verticalSpeed, 0 ) + inAirVelocity + knockbackForce) );
 	
 	if( characterController.isGrounded ) {
 		lastGroundedTime = Time.time;
@@ -150,7 +150,6 @@ function updateShadow() {
 // determine the state of this avatar and apply it to the texture atlas renderer
 function stateDelegation() {	
 	var blocking : boolean = (!isMoving && (Global.getAxis( 'Vertical', boundController ) <= -0.2)) ? true : false; // block
-	var knockback : boolean = false;
 	
 	// set dynamic variables to default state
 	var stateBefore : CharacterState = state;
@@ -178,7 +177,7 @@ function stateDelegation() {
 	
 	// environment-activated states (overrides all)
 	switch( true ) {
-		case knockback:
+		case (knockbackForce != Vector3.zero):
 			state = CharacterState.Jump;
 			break;
 	}
@@ -239,34 +238,26 @@ function enforceBounds() {
 }
 
 // utility function to add an explosion force to this avatar
-function addExplosionForce( pos : Vector3, force : float, damping : float ) {	
-	var dist : float = Vector3.Distance( pos, characterController.collider.ClosestPointOnBounds( pos ) );
-	//Mathf.Max( Vector3.Distance( pos, transform.position ), 2.7 ); //characterController.bounds.extents.y
-	//Debug.Log( (dist) );
-	//dist = (dist * dist);
-	
-	var radius : float = 7.0;
-	var percentage : float = (1.0 - Mathf.Clamp01( dist / radius ));
+function addExplosionForce( pos : Vector3, radius : float, force : float, damping : float ) {
+	var percentage : float = (1.0 - Mathf.Clamp01( 
+		Vector3.Distance( pos, characterController.collider.ClosestPointOnBounds( pos ) ) / radius ));
 	
 	var dir : Vector3 = (transform.position - pos).normalized;
 	dir.z = 0.0;
 	
-	var explosionForce : Vector3 = (force * dir * percentage);//(force * (dir / dist));
-	Debug.Log( explosionForce );
-			
-	health -= (explosionForce.magnitude / damping); // bigger distance = less damage (naturally)
-	
-	if (characterController.isGrounded) explosionForce.y = Mathf.Max( explosionForce.y, (force * 0.16) );
+	var explosionForce : Vector3 = (force * dir * percentage);
+	var modifier : float = (force * percentage / damping);
+	if (characterController.isGrounded) explosionForce.y = Mathf.Max( explosionForce.y, (modifier / 2) );
+	health -= modifier;
 	
 	// apply explosion force via co-routine
 	var initial : boolean = true;
 	while( explosionForce != Vector3.zero ) {
-		if (!initial) environmentForce -= explosionForce;
+		if (!initial) knockbackForce -= explosionForce;
 		initial = false;
 		
 		explosionForce = Vector3.Slerp( explosionForce, Vector3.zero, (Time.deltaTime * damping) );
-		
-		environmentForce += explosionForce;
+		knockbackForce += explosionForce;
 		yield;
 	}
 }

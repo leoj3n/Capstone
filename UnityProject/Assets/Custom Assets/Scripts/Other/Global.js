@@ -93,14 +93,14 @@ static function getSize( object ) : Vector3 {
 // GLOBAL AVATAR FUNCTIONS
 
 // utility function add explosion force to one or multiple avatars
-static function avatarExplosion( avatars : GameObject[], pos : Vector3, range : float, force : float, damping : float ) {
+static function avatarExplosion( avatars : GameObject[], pos : Vector3, radius : float, force : float, damping : float ) {
 	for( var avatar : GameObject in avatars ) {
-		if (Vector3.Distance( pos, avatar.transform.position ) < range)
-			avatar.GetComponent( Avatar ).addExplosionForce( pos, force, damping );
+		if (Vector3.Distance( pos, avatar.transform.position ) < radius)
+			avatar.GetComponent( Avatar ).addExplosionForce( pos, radius, force, damping );
 	}
 }
-static function avatarExplosion( object : System.Object, pos : Vector3, range : float, force : float, damping : float ) {
-	avatarExplosion( Array( object.gameObject ), pos, range, force, damping );
+static function avatarExplosion( object : System.Object, pos : Vector3, radius : float, force : float, damping : float ) {
+	avatarExplosion( Array( object.gameObject ), pos, radius, force, damping );
 }
 
 // utility function for testing if a given object is an avatar

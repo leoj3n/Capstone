@@ -75,7 +75,8 @@ function OnCollisionEnter( collision : Collision ) {
 		GameObject.Instantiate( detonatorPrefab, transform.position, Quaternion.identity );
 				
 		// add explosion force to avatars that are within 7 units
-		Global.avatarExplosion( GameManager.instance.avatars, transform.position, 7.0, 50.0, 3.5 );
+		var force : float = (30.0 + collision.impactForceSum.magnitude);
+		Global.avatarExplosion( GameManager.instance.avatars, transform.position, 7.0, force, ((force / 10.0) - 1.0) );
 		
 		// add a crater decal to the floor
 		if (collision.collider.CompareTag( 'Floor' ))
