@@ -1,6 +1,7 @@
 
 @script RequireComponent( CharacterController )
 
+public var expectedTextureAtlases : CharacterState;
 public var walkSpeed : float = 6.0;
 public var jumpHeight : float = 2.0;
 public var sound : AudioClip[];
@@ -22,7 +23,7 @@ protected var inAirAcceleration : float = 3.0;
 protected var facing : int = 1;
 protected var canJump : boolean = true;
 public var isControllable : boolean = true;
-public var state : CharacterState;
+protected var state : CharacterState;
 
 // HEALTH
 protected var health : float = 100.0;
@@ -145,7 +146,9 @@ function updateShadow() {
 function stateSetup() {	
 	var blocking : boolean = (!isMoving && (Global.getAxis( 'Vertical', boundController ) <= -0.2)) ? true : false; // block
 	var knockback : boolean = false;
-	var fire1 : boolean = Global.isButton( 'A', boundController );
+	var A : boolean = Global.isButton( 'A', boundController );
+	
+	var reverse : boolean = false;
 	
 	switch( true ) {
 		case blocking:
@@ -157,18 +160,26 @@ function stateSetup() {
 		case knockback:
 			state = CharacterState.Jump; // forward/backwards
 			break;
-		case fire1:
-			Special2();
+		case A:
+			Attack1();
 			state = CharacterState.Attack1;
 			break;
+		case movingBack:
+			state = CharacterState.Walk;
+			reverse = true;
+			break;
+		case isMoving:
+			state = CharacterState.Walk;
+			break;
 		default:
-			state = CharacterState.Attack2;
+			state = CharacterState.Idle;
 			break;
 	}
 	
-	state = CharacterState.Idle; // Debug.
+	//state = CharacterState.Idle; // Debug.
 	
 	BroadcastMessage( 'TextureAtlasIndex', parseInt( state ), SendMessageOptions.DontRequireReceiver );
+	BroadcastMessage( 'Reverse', reverse, SendMessageOptions.DontRequireReceiver );
 }
 
 // utility function for determining if this avatar is grounded
