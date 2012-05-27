@@ -58,7 +58,6 @@ function Update() {
 	}
 }
 
-
 function OnCollisionEnter( collision : Collision ) {
 	Camera.main.SendMessage( 'AddShake', 0.05 );
 	health -= 10.0;

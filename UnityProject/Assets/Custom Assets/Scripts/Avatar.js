@@ -125,8 +125,8 @@ function setHorizontalMovement() {
 
 // sets verticalSpeed, jumping, lastJumpTime, lastJumpButtonTime and lastJumpStartHeight
 function setVerticalMovement() {
-	// apply gravity (-0.1 fixes jittering isGrounded problem)
-	verticalSpeed = (characterController.isGrounded ? -0.1 : (verticalSpeed - (gravity * Time.deltaTime)));
+	// apply gravity (-0.001 fixes jittering isGrounded problem)
+	verticalSpeed = (characterController.isGrounded ? -0.05 : (verticalSpeed - (gravity * Time.deltaTime)));
 	
 	// prevent jumping too fast after each other
 	if (lastJumpTime + jumpRepeatTime > Time.time) return;
@@ -198,7 +198,7 @@ function stateDelegation() {
 	
 	// environment-activated states (overrides all)
 	switch( true ) {
-		case (knockbackForce.magnitude > 0.1):
+		case (knockbackForce.magnitude > 0.1):			
 			state = CharacterState.Fall;
 			
 			canJump = canMove = false;
@@ -207,13 +207,18 @@ function stateDelegation() {
 			
 			shadowOffsetExtra = Vector3( 0.8, 0.0, 0.0 );
 			
+			if (getName() == 'BlackMagic') break;
+			
 			var newCenter : Vector3 = (origCenter + Vector3( 0.0, 0.2, 0.0 ));
 			if (characterController.center != newCenter) characterController.center = newCenter;
 			
 			if (taRenderer.loopCount == 1) staticFrame = 14;
 			break;
 		case (stateBefore == CharacterState.Fall):
+			if (getName() == 'BlackMagic') break;
+			
 			transform.position += Vector3( 0.0, 0.2, 0.0 );
+			
 			characterController.center = origCenter;
 			break;
 	}

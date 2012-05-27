@@ -8,6 +8,7 @@ private var shaderTransparent : Shader;
 private var origPos : Vector3;
 private var origRot : Quaternion;
 private var origLayer : int;
+private var origParent : Transform;
 private var dislodged : boolean = false;
 private var trigger : boolean = false;
 private var debris : GameObject;
@@ -21,6 +22,7 @@ function Start() {
 	origPos = transform.position;
 	origRot = transform.rotation;
 	origLayer = gameObject.layer;
+	origParent = transform.parent;
 	rigidbody.constraints = RigidbodyConstraints.FreezeAll;
 	rigidbody.isKinematic = true;
 	posOverTime = new ArrayList();
@@ -47,6 +49,7 @@ function Update() {
 			gameObject.layer = origLayer;
 			rigidbody.constraints = RigidbodyConstraints.FreezeAll;
 			rigidbody.isKinematic = true;
+			transform.parent = origParent;
 			posOverTime.Clear();
 			rotOverTime.Clear();
 			dislodged = false;
@@ -63,6 +66,7 @@ function OnCollisionEnter( collision : Collision ) {
 	if (frame == 0) GameManager.instance.audioPlay( GetInstanceID(), true, false, (collision.impactForceSum.magnitude / 10) );
 	
 	if( !dislodged && collision.collider.CompareTag( 'Meteor' ) ) {
+		transform.parent = null;
 		rigidbody.constraints = RigidbodyConstraints.None;
 		rigidbody.isKinematic = false;
 		gameObject.layer = parseInt( Mathf.Log( dislodgedLayer.value, 2 ) );
@@ -70,6 +74,7 @@ function OnCollisionEnter( collision : Collision ) {
 		
 		debris = Instantiate( debrisPrefab, transform.position, transform.rotation );
 		debris.transform.parent = transform;
+		
 		rigidbody.AddExplosionForce( (collision.impactForceSum.magnitude * 20), collision.transform.position, 0.0, 0.0, ForceMode.Acceleration );
 	}
 }
