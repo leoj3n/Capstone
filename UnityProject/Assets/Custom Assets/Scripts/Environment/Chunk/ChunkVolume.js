@@ -61,6 +61,6 @@ function Update() {
 function ignoreAvatarCollision( other : Collider, ignore : boolean ) {
 	for( var chunk : GameObject in chunks ) {
 		Physics.IgnoreCollision( other.collider, chunk.collider, ignore );
-		chunk.GetComponent( 'Chunk' ).setTrigger( ignore );
+		chunk.GetComponent( Chunk ).setTrigger( ignore );
 	}
 }

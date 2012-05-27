@@ -3,6 +3,7 @@ public var meteorPrefab : GameObject;
 public var timeBetween : float = 5.0;
 public var yOffset : float = 10.0;
 public var debug : boolean = false;
+public var disable : boolean = false;
 
 private var lastSpawnTime : float;
 private var range : float;
@@ -12,7 +13,7 @@ function Awake() {
 }
 
 function Update() {
-	if( (Time.time - lastSpawnTime) > timeBetween ) {
+	if( !disable && ((Time.time - lastSpawnTime) > timeBetween) ) {
 		range = Mathf.Clamp( (GetComponent( 'MainCamera' ).largestX / 2), Global.sharedMinX, Global.sharedMaxX );
 		
 		var xPos : float = Random.Range( (transform.position.x - range), (transform.position.x + range) );

@@ -125,7 +125,7 @@ function setHorizontalMovement() {
 
 // sets verticalSpeed, jumping, lastJumpTime, lastJumpButtonTime and lastJumpStartHeight
 function setVerticalMovement() {
-	// apply gravity
+	// apply gravity (-0.1 fixes jittering isGrounded problem)
 	verticalSpeed = (characterController.isGrounded ? -0.1 : (verticalSpeed - (gravity * Time.deltaTime)));
 	
 	// prevent jumping too fast after each other
@@ -175,7 +175,6 @@ function stateDelegation() {
 	canMove = true;
 	shadowOffsetExtra = Vector3.zero;
 	shadowAspectRatioExtra = 0.0;
-	characterController.center = origCenter;
 	
 	// joystick-activated states
 	switch( true ) {
@@ -208,12 +207,14 @@ function stateDelegation() {
 			
 			shadowOffsetExtra = Vector3( 0.8, 0.0, 0.0 );
 			
-			characterController.center += Vector3( 0.0, 0.2, 0.0 );
+			var newCenter : Vector3 = (origCenter + Vector3( 0.0, 0.2, 0.0 ));
+			if (characterController.center != newCenter) characterController.center = newCenter;
 			
 			if (taRenderer.loopCount == 1) staticFrame = 14;
 			break;
 		case (stateBefore == CharacterState.Fall):
 			transform.position += Vector3( 0.0, 0.2, 0.0 );
+			characterController.center = origCenter;
 			break;
 	}
 	
