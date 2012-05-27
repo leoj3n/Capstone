@@ -176,12 +176,30 @@ function stateDelegation() {
 	shadowOffsetExtra = Vector3.zero;
 	shadowAspectRatioExtra = 0.0;
 	
-	var tmp : Vector3 = Vector3( characterController.bounds.center.x, characterController.bounds.min.y, characterController.bounds.center.z );	
-	if (!jumping)
-		isNearlyGrounded = Physics.Raycast( tmp, Vector3.down, 1.0, (~(1 << 8) | ~(1 << 11) | ~(1 << 31)) );
-	else
-		isNearlyGrounded = false;
-	Debug.DrawRay( tmp, Vector3.down * 1.0 );
+	//var tmp : Vector3 = Vector3( characterController.bounds.center.x, characterController.bounds.min.y, characterController.bounds.center.z );
+	//var start : Vector3 = Vector3( characterController.bounds.center.x, characterController.bounds.min.y, characterController.bounds.center.z );
+	//if (!jumping)
+		/*isNearlyGrounded = Physics.Raycast( 
+			characterController.bounds.center, Vector3.down, (characterController.bounds.extents.y + 2.0), 
+			(~(1 << 8) | ~(1 << 11) | ~(1 << 31)) );*/
+		//isNearlyGrounded = Physics.CheckCapsule( start, (start + Vector3( 0.0, -1.0, 0.0 )), 1.0, (~(1 << 8) | ~(1 << 11) | ~(1 << 31)) );
+	//else
+		//isNearlyGrounded = false;
+	//Debug.DrawRay( Vector3( characterController.bounds.max.x, characterController.bounds.min.y, characterController.bounds.center.z ), Vector3.down * 2.0 );
+	//Debug.DrawRay( Vector3( characterController.bounds.min.x, characterController.bounds.min.y, characterController.bounds.center.z ), Vector3.down * 2.0 );
+	
+	var hit : RaycastHit;
+	var p1 : Vector3 = characterController.bounds.center;
+	var p2 : Vector3 = (p1 + Vector3( 0.0, -characterController.bounds.extents.y, 0.0 ));
+	
+	var dist : Vector3 = Vector3( 0.0, -2.0, 0.0 );
+	Debug.DrawLine( p1+dist, p2+dist );
+	Debug.DrawLine( p1+dist, p1+dist + Vector3( (transform.localScale.x * characterController.radius), 0.0, 0.0 ) );
+	
+	if( Physics.CapsuleCast( p1, p2, (transform.localScale.x * characterController.radius), Vector3.down, hit, 2.0, (~(1 << 11) | ~(1 << 31)) ) ) {
+		//distanceToObstacle = hit.distance;
+		if (getName() == 'ZipperFace' && hit.transform.name != 'Rooftop') Debug.Log( hit.transform.name + ' ...' + Time.time );
+	}
 	
 	// joystick-activated states
 	switch( true ) {
@@ -190,6 +208,11 @@ function stateDelegation() {
 			break;
 		case blocking:
 			state = CharacterState.Block;
+			break;
+		case !isNearlyGrounded:
+			Debug.Log( Time.time );
+			state = CharacterState.Jump; // forward/backwards
+			staticFrame = 8;
 			break;
 		case isMoving:
 			state = CharacterState.Walk;
@@ -205,7 +228,7 @@ function stateDelegation() {
 	
 	// environment-activated states (overrides all)
 	switch( true ) {
-		case (knockbackForce.magnitude > 0.1):			
+		case (knockbackForce.magnitude > 1.0):			
 			state = CharacterState.Fall;
 			
 			canJump = canMove = false;
@@ -224,7 +247,7 @@ function stateDelegation() {
 		case (stateBefore == CharacterState.Fall):
 			if (getName() == 'BlackMagic') break;
 			
-			transform.position += Vector3( 0.0, 0.2, 0.0 );
+			transform.position += Vector3( 0.0, 1.0, 0.0 ); // compensate for 0.0, 0.2, 0.0
 			
 			characterController.center = origCenter;
 			break;

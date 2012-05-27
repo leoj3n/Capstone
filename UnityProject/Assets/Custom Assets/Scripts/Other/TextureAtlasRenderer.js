@@ -50,13 +50,16 @@ function Start() {
 }
 
 function Update() {
-	if (!isStatic) applyTextureAtlas( textureAtlasArray[textureAtlasIndex] );
+	applyTextureAtlas( textureAtlasArray[textureAtlasIndex] );
 }
 
 function applyTextureAtlas( ta : TextureAtlas ) {
 	fpsTimer += Time.deltaTime;
-	var index : int = (isStatic ? staticFrame : parseInt( (fpsTimer * fps) % (ta.frames.Length) ));
+	
+	var index : int = parseInt( (fpsTimer * fps) % (ta.frames.Length) );
 	if (reverse) index = ((ta.frames.Length - 1) - index);
+	if (isStatic) index = staticFrame;
+	
 	var frame : Rect = ta.frames[index];
 	renderer.material.mainTexture = ta.texture;
 	renderer.material.mainTextureOffset = Vector2( (frame.x / ta.width), (1.0 - ((frame.y + frame.height) / ta.height)) );
