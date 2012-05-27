@@ -6,22 +6,26 @@ class ZipperFace extends Avatar {
 	
 	function StateUpdate() {
 		// button-activated states
-		if( characterController.isGrounded || stateTransition ) {
+		if( isNearlyGrounded ) {
 			switch( true ) {
 				case Global.isButton( 'A', boundController ):
 					state = CharacterState.Attack1;
+					canMove = false;
 					// do attack 1
 					break;
 				case Global.isButton( 'B', boundController ):
 					state = CharacterState.Attack2;
+					canMove = false;
 					// do attack 2
 					break;
 				case Global.isButton( 'X', boundController ):
 					state = CharacterState.Special1;
+					canMove = false;
 					// do special attack 1
 					break;
 				case Global.isButton( 'Y', boundController ):
 					state = CharacterState.Special2;
+					canMove = false;
 					// do special attack 2
 					break;
 			}

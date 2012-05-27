@@ -27,7 +27,7 @@ protected var canMove : boolean = true;
 public var isControllable : boolean = true;
 protected var state : CharacterState;
 protected var stateForced : boolean = false;
-protected var stateTransition : boolean = false;
+protected var isNearlyGrounded : boolean = true;
 
 // OTHER
 protected var origCenter : Vector3;
@@ -125,7 +125,7 @@ function setHorizontalMovement() {
 
 // sets verticalSpeed, jumping, lastJumpTime, lastJumpButtonTime and lastJumpStartHeight
 function setVerticalMovement() {
-	// apply gravity (-0.001 fixes jittering isGrounded problem)
+	// apply gravity (-0.05 fixes jittering isGrounded problem)
 	verticalSpeed = (characterController.isGrounded ? -0.05 : (verticalSpeed - (gravity * Time.deltaTime)));
 	
 	// prevent jumping too fast after each other
@@ -176,6 +176,13 @@ function stateDelegation() {
 	shadowOffsetExtra = Vector3.zero;
 	shadowAspectRatioExtra = 0.0;
 	
+	var tmp : Vector3 = Vector3( characterController.bounds.center.x, characterController.bounds.min.y, characterController.bounds.center.z );	
+	if (!jumping)
+		isNearlyGrounded = Physics.Raycast( tmp, Vector3.down, 1.0, (~(1 << 8) | ~(1 << 11) | ~(1 << 31)) );
+	else
+		isNearlyGrounded = false;
+	Debug.DrawRay( tmp, Vector3.down * 1.0 );
+	
 	// joystick-activated states
 	switch( true ) {
 		case jumping:
@@ -224,11 +231,6 @@ function stateDelegation() {
 	}
 	
 	StateFinal();
-	
-	if (stateBefore != state)
-		stateTransition = true;
-	else if (characterController.isGrounded || jumping || isMoving)
-		stateTransition = false;
 	
 	// apply all changes to the texture atlas renderer
 	taRenderer.setTextureAtlasIndex( parseInt( state ) );
