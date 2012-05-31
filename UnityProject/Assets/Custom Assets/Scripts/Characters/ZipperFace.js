@@ -4,38 +4,22 @@ class ZipperFace extends Avatar {
 		Debug.Log( 'ZipperFace is alive!' );
 	}
 	
-	function StateUpdate() {
-		// button-activated states
-		if( isNearlyGrounded ) {
-			switch( true ) {
-				case Global.isButton( 'A', boundController ):
-					state = CharacterState.Attack1;
-					canMove = false;
-					// do attack 1
-					break;
-				case Global.isButton( 'B', boundController ):
-					state = CharacterState.Attack2;
-					canMove = false;
-					// do attack 2
-					break;
-				case Global.isButton( 'X', boundController ):
-					state = CharacterState.Special1;
-					canMove = false;
-					// do special attack 1
-					break;
-				case Global.isButton( 'Y', boundController ):
-					state = CharacterState.Special2;
-					canMove = false;
-					// do special attack 2
-					break;
-			}
-		}
-	}
-	
 	function StateFinal() {
 		switch( state ) {
 			case CharacterState.Walk:
 				shadowOffsetExtra = Vector3( -0.2, 0.0, 0.0 );
+				break;
+			case CharacterState.Drop:
+				Debug.Log( 'Drop!' );
+				staticFrame = 8;
+				break;
+			case CharacterState.Special1:
+				canMove = false;
+				// do special attack 1
+				break;
+			case CharacterState.Special2:
+				canMove = false;
+				// do special attack 2
 				break;
 		}
 	}
@@ -52,11 +36,5 @@ class ZipperFace extends Avatar {
 	
 	function Special1() {
 		Debug.Log( 'ZipperFace Special1() override called!' );
-		
-		/*
-		var orbClone : Rigidbody = Instantiate( orbPrefab, (transform.position + Vector3( 0, 1, 0 )), transform.rotation );
-		orbClone.rigidbody.AddForce( Vector3( 1, 0, 0 ) * 1000.0 );
-		Physics.IgnoreCollision( orbClone.collider, transform.parent.collider );
-		*/
 	}
 }

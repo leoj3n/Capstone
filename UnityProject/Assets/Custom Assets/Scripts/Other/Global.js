@@ -3,6 +3,20 @@
 enum CharacterEnum { ZipperFace, BlackMagic, KidCane, Dan, Mick }
 enum CharacterSound { AnnouncerName, Selected, Jump }
 enum CharacterState {
+	CutScene,
+	Idle,
+	Jump,
+	Walk,
+	Fall,
+	Drop,
+	Block,
+	Attack1,
+	Attack2,
+	Special1,
+	Special2,
+	Ultimate,
+}
+enum CharacterAtlas {
 	SelectIdle, // 0
 	Selected, // 1
 	Intro, // 2

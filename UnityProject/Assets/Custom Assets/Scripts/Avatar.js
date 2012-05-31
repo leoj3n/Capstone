@@ -1,7 +1,7 @@
 
 @script RequireComponent( CharacterController )
 
-public var expectedTextureAtlases : CharacterState;
+public var atlas : CharacterAtlas;
 public var walkSpeed : float = 6.0;
 public var jumpHeight : float = 2.0;
 public var sound : AudioClip[];
@@ -199,58 +199,104 @@ function stateDelegation() {
 	// joystick-activated states
 	switch( true ) {
 		case jumping:
-			state = CharacterState.Jump; // forward/backwards
+			state = CharacterState.Jump;
 			break;
 		case blocking:
 			state = CharacterState.Block;
 			break;
-		case !isNearlyGrounded:
-			state = CharacterState.Jump; // forward/backwards
-			staticFrame = 8;
+		case !isNearlyGrounded: // not joystick-activated but needs to be here
+			state = CharacterState.Drop;
 			break;
 		case isMoving:
 			state = CharacterState.Walk;
-			if (movingBack) reverse = true;
 			break;
 		default:
 			state = CharacterState.Idle;
 			break;
 	}
 	
-	// button-activated states (overrides joystick)
-	StateUpdate();
+	// grounded button-activated states (overrides joystick)
+	if( isNearlyGrounded ) {
+		switch( true ) {
+			case Global.isButton( 'A', boundController ):
+				state = CharacterState.Attack1;
+				break;
+			case Global.isButton( 'B', boundController ):
+				state = CharacterState.Attack2;
+				break;
+			case Global.isButton( 'X', boundController ):
+				state = CharacterState.Special1;
+				break;
+			case Global.isButton( 'Y', boundController ):
+				state = CharacterState.Special2;
+				break;
+		}
+	}
 	
 	// environment-activated states (overrides all)
 	switch( true ) {
 		case (knockbackForce.magnitude > 0.1):			
 			state = CharacterState.Fall;
-			
-			canJump = canMove = false;
-			
-			shadowAspectRatioExtra = Mathf.Max( (3.0 - knockbackForce.magnitude), origShadowAspectRatio );
-			
-			shadowOffsetExtra = Vector3( 0.8, 0.0, 0.0 );
-			
-			if (getName() == 'BlackMagic') break;
-			
-			var newCenter : Vector3 = (origCenter + Vector3( 0.0, 0.2, 0.0 ));
-			if (characterController.center != newCenter) characterController.center = newCenter;
-			
-			if (taRenderer.loopCount == 1) staticFrame = 14;
 			break;
 		case (stateBefore == CharacterState.Fall):
 			if (getName() == 'BlackMagic') break;
-			
 			transform.position += Vector3( 0.0, 1.0, 0.0 ); // compensate for 0.0, 0.2, 0.0
-			
 			characterController.center = origCenter;
+			break;
+	}
+	
+	// finally, set atlas and do anything else based on state
+	switch( state ) {
+		case CharacterState.Jump:
+			atlas = CharacterAtlas.Jump; // forward/backwards
+			break;
+		case CharacterState.Block:
+			atlas = CharacterAtlas.Block;
+			break;
+		case CharacterState.Drop:
+			atlas = CharacterAtlas.Jump; // forward/backwards
+			break;
+		case CharacterState.Walk:
+			atlas = CharacterAtlas.Walk;
+			if (movingBack) reverse = true;
+			break;
+		case CharacterState.Idle:
+			atlas = CharacterAtlas.Idle;
+			break;
+		case CharacterState.Fall:
+			atlas = CharacterAtlas.Fall;
+			canJump = canMove = false;
+			shadowAspectRatioExtra = Mathf.Max( (3.0 - knockbackForce.magnitude), origShadowAspectRatio );
+			shadowOffsetExtra = Vector3( 0.8, 0.0, 0.0 );
+			if (getName() == 'BlackMagic') break;
+			var newCenter : Vector3 = (origCenter + Vector3( 0.0, 0.2, 0.0 ));
+			if (characterController.center != newCenter) characterController.center = newCenter;
+			if ((stateBefore == CharacterState.Fall) && (taRenderer.loopCount == 1)) staticFrame = 14;
+			break;
+		case CharacterState.Attack1:
+			atlas = CharacterAtlas.Attack1;
+			canMove = false;
+			// do attack 1
+			break;
+		case CharacterState.Attack2:
+			atlas = CharacterAtlas.Attack2;
+			canMove = false;
+			// do attack 1
+			break;
+		case CharacterState.Special1:
+			atlas = CharacterAtlas.Special1;
+			break;
+		case CharacterState.Special2:
+			atlas = CharacterAtlas.Special2;
 			break;
 	}
 	
 	StateFinal();
 	
+	//Debug.Log( state );
+	
 	// apply all changes to the texture atlas renderer
-	taRenderer.setTextureAtlasIndex( parseInt( state ) );
+	taRenderer.setTextureAtlasIndex( parseInt( atlas ) );
 	taRenderer.reverse = reverse;
 	if( staticFrame > -1) {
 		taRenderer.isStatic = true;
@@ -260,7 +306,6 @@ function stateDelegation() {
 	}
 }
 
-function StateUpdate() { /* override this function */ }
 function StateFinal() { /* override this function */ }
 
 // utility function to cause this avatar to face the nearest avatar
