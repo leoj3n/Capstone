@@ -12,6 +12,7 @@ class GameManager extends MonoBehaviour {
 	public var characterPrefabs : GameObject[];
 	public var expectedOrder : CharacterEnum; // just to expose the expected order in the Inspector
 	public var soundsBoundByName : AudioClip[]; // no order necessary
+	public var nearlyGroundedLayerMask : LayerMask = -1;
 		
 	// private variables (accessible via GameManager.instance)
 	private var _controllers : Controller[];
@@ -108,7 +109,7 @@ class GameManager extends MonoBehaviour {
 			var ce : ControllerEnum = readyControllers[i];
 			
 			var avatar : GameObject = GameObject.Instantiate( 
-				characterPrefabs[controllers[ce].character], Vector3( (3.0 * i), 4.0, 0.0 ), Quaternion.LookRotation( Vector3.back ) );
+				characterPrefabs[controllers[ce].character], Vector3( (3.0 * i), 4.0, 0.0 ), Quaternion.identity );
 			
 			Global.bindAvatarToController( avatar, ce ); // set a reference to the Controller in Avatar
 			avatars[i] = avatar;

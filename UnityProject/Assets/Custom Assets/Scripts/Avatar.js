@@ -27,7 +27,10 @@ protected var canMove : boolean = true;
 public var isControllable : boolean = true;
 protected var state : CharacterState;
 protected var stateForced : boolean = false;
+protected var previousState : CharacterState;
 protected var isNearlyGrounded : boolean = true;
+protected var staticFrame : int = -1;
+protected var reverse : boolean = false;
 
 // OTHER
 protected var origCenter : Vector3;
@@ -75,13 +78,14 @@ function Update() {
 		setHorizontalMovement();
 		setVerticalMovement();
 		doMovement();
-		
-		checkIfNearlyGrounded();
-		updateShadow();
-		
-		//faceNearestEnemy();
-		stateDelegation();
 		enforceBounds();
+		checkIfNearlyGrounded();
+		
+		updateShadow();
+		//faceNearestEnemy();
+		
+		determineState();
+		actUponState();
 	}
 }
 
@@ -159,21 +163,20 @@ function doMovement() {
 
 // set isNearlyGrounded variable
 function checkIfNearlyGrounded() {
-	var hit : RaycastHit;
 	var p1 : Vector3;
 	var p2 : Vector3;
-	p1 = p2 = characterController.bounds.center;
-	p1.y = characterController.bounds.max.y;
-	p2.y = characterController.bounds.min.y;
-	var dist : float = 1.0;
-	var dir : Vector3 = Vector3.down;
 	var radius : float = Mathf.Abs( transform.localScale.x * characterController.radius );
+	var halfHeight : float = (transform.localScale.y * characterController.height * 0.5);
+	p1 = p2 = (transform.position + Vector3.Scale( characterController.center, transform.localScale ) + Vector3( 0.0, -1.0, 0.0 ));
+	p1.y += halfHeight;
+	p2.y -= halfHeight;
 	
-	Debug.DrawLine( p1+dist*dir, p2+dist*dir );
-	Debug.DrawLine( p2+dist*dir, p2+dist*dir + Vector3( radius, 0.0, 0.0 ) );
+	Debug.DrawLine( p1, p2 );
+	Debug.DrawLine( p2, p2 + Vector3( radius, 0.0, 0.0 ) );
+	Debug.DrawLine( p2, p2 - Vector3( radius, 0.0, 0.0 ) );
 	
-	isNearlyGrounded = Physics.CapsuleCast( p1, p2, radius, Vector3.down, hit, dist, (~(1 << 8) | ~(1 << 11) | ~(1 << 31)) );
-	if (jumping || (isNearlyGrounded && hit.transform.tag == 'Player')) isNearlyGrounded = false;
+	isNearlyGrounded = Physics.CheckCapsule( p1, p2, radius, GameManager.instance.nearlyGroundedLayerMask );
+	if (jumping) isNearlyGrounded = false;
 }
 
 function updateShadow() {
@@ -184,13 +187,13 @@ function updateShadow() {
 }
 
 // determine the state of this avatar and apply it to the texture atlas renderer
-function stateDelegation() {	
+function determineState() {	
 	var blocking : boolean = (!isMoving && (Global.getAxis( 'Vertical', boundController ) <= -0.2)) ? true : false; // block
 	
 	// set dynamic variables to default state
-	var stateBefore : CharacterState = state;
-	var staticFrame : int = -1;
-	var reverse : boolean = false;
+	previousState = state;
+	staticFrame = -1;
+	reverse = false;
 	canJump = true;
 	canMove = true;
 	shadowOffsetExtra = Vector3.zero;
@@ -238,14 +241,16 @@ function stateDelegation() {
 		case (knockbackForce.magnitude > 0.1):			
 			state = CharacterState.Fall;
 			break;
-		case (stateBefore == CharacterState.Fall):
+		case (previousState == CharacterState.Fall):
 			if (getName() == 'BlackMagic') break;
 			transform.position += Vector3( 0.0, 1.0, 0.0 ); // compensate for 0.0, 0.2, 0.0
 			characterController.center = origCenter;
 			break;
 	}
-	
-	// finally, set atlas and do anything else based on state
+}
+
+// set atlas and do anything else based on state
+function actUponState() {
 	switch( state ) {
 		case CharacterState.Jump:
 			atlas = CharacterAtlas.Jump; // forward/backwards
@@ -271,7 +276,7 @@ function stateDelegation() {
 			if (getName() == 'BlackMagic') break;
 			var newCenter : Vector3 = (origCenter + Vector3( 0.0, 0.2, 0.0 ));
 			if (characterController.center != newCenter) characterController.center = newCenter;
-			if ((stateBefore == CharacterState.Fall) && (taRenderer.loopCount == 1)) staticFrame = 14;
+			if ((previousState == CharacterState.Fall) && (taRenderer.loopCount == 1)) staticFrame = 14;
 			break;
 		case CharacterState.Attack1:
 			atlas = CharacterAtlas.Attack1;
@@ -292,8 +297,6 @@ function stateDelegation() {
 	}
 	
 	StateFinal();
-	
-	//Debug.Log( state );
 	
 	// apply all changes to the texture atlas renderer
 	taRenderer.setTextureAtlasIndex( parseInt( atlas ) );
