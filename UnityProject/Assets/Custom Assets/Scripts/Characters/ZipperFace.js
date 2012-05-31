@@ -23,18 +23,4 @@ class ZipperFace extends Avatar {
 				break;
 		}
 	}
-	
-	/*function Attack1() {
-		stateForced = true;
-		
-		while( stateForced == true ) {
-			Debug.Log( 'raycast attack ' + Time.deltaTime );
-			if (taRenderer.loopCount == 1) stateForced = false;
-			yield;
-		}
-	}*/
-	
-	function Special1() {
-		Debug.Log( 'ZipperFace Special1() override called!' );
-	}
 }

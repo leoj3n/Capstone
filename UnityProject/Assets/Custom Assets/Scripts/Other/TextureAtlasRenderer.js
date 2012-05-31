@@ -7,11 +7,10 @@ public var texture : Texture2D[];
 public var atlas : TextAsset[];
 public var scaleAgainstPlaceholder : boolean = false;
 public var scaleAnchor : ScaleAnchor;
-public var fps : float = 30.0; // should match After Effects render settings
+public var fps : float = 30.0; // should match (or be close to) After Effects composition settings
 public var isStatic : boolean = false;
 public var staticFrame : int = 0;
 public var reverse : boolean = false;
-public var loopCount : int = 0;
 
 private var textureAtlasArray : TextureAtlas[];
 private var textureAtlasIndex : int;
@@ -20,6 +19,8 @@ private var attachedController : CharacterController;
 private var origRadius : float;
 private var scaleFactor : Vector2 = Vector2( 1.0, 1.0 );
 private var fpsTimer : float = 0.0;
+private var frameIndex : int = 0;
+private var loopCount : int = 0;
 
 function Start() {
 	origScale = transform.localScale;
@@ -56,11 +57,11 @@ function Update() {
 function applyTextureAtlas( ta : TextureAtlas ) {
 	fpsTimer += Time.deltaTime;
 	
-	var index : int = parseInt( (fpsTimer * fps) % (ta.frames.Length) );
-	if (reverse) index = ((ta.frames.Length - 1) - index);
-	if (isStatic) index = staticFrame;
+	frameIndex = parseInt( (fpsTimer * fps) % (ta.frames.Length) );
+	if (reverse) frameIndex = ((ta.frames.Length - 1) - frameIndex);
+	if (isStatic) frameIndex = staticFrame;
 	
-	var frame : Rect = ta.frames[index];
+	var frame : Rect = ta.frames[frameIndex];
 	renderer.material.mainTexture = ta.texture;
 	renderer.material.mainTextureOffset = Vector2( (frame.x / ta.width), (1.0 - ((frame.y + frame.height) / ta.height)) );
 	renderer.material.mainTextureScale = Vector2( (frame.width / ta.width), (frame.height / ta.height) );
@@ -95,7 +96,7 @@ function applyTextureAtlas( ta : TextureAtlas ) {
 	if (scaleAgainstPlaceholder && attachedController)
 		attachedController.radius = (origRadius * (origScale.x / transform.localScale.x));
 	
-	if (!isStatic && (index == (ta.frames.Length - 1))) loopCount++;
+	if (!isStatic && (frameIndex == (ta.frames.Length - 1))) loopCount++;
 }
 
 function setTextureAtlasIndex( index : int ) {
@@ -104,6 +105,18 @@ function setTextureAtlasIndex( index : int ) {
 		loopCount = 0;
 		fpsTimer = 0.0;
 	}
+}
+
+function getLoopCount() {
+	return loopCount;
+}
+
+function getFrameIndex() {
+	return frameIndex;
+}
+
+function getFrameCount() {
+	return textureAtlasArray[textureAtlasIndex].frames.Length;
 }
 
 class TextureAtlas {

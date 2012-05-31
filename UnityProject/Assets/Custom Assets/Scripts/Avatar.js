@@ -26,11 +26,13 @@ protected var canJump : boolean = true;
 protected var canMove : boolean = true;
 public var isControllable : boolean = true;
 protected var state : CharacterState;
-protected var stateForced : boolean = false;
 protected var previousState : CharacterState;
 protected var isNearlyGrounded : boolean = true;
 protected var staticFrame : int = -1;
 protected var reverse : boolean = false;
+private var attackStarted : boolean = false;
+private var attackWaiting : boolean = false;
+private var attackCount : int = 0;
 
 // OTHER
 protected var origCenter : Vector3;
@@ -165,7 +167,7 @@ function doMovement() {
 function checkIfNearlyGrounded() {	
 	var p1 : Vector3;
 	var p2 : Vector3;
-	var dist : float = 1.0;
+	var dist : float = 1.0; // change this as needed
 	var dir : Vector3 = Vector3.down;
 	var radius : float = Mathf.Abs( transform.localScale.x * characterController.radius );
 	var halfHeight : float = (transform.localScale.y * characterController.height * 0.5);
@@ -264,6 +266,9 @@ function determineState() {
 			characterController.center = origCenter;
 			break;
 	}
+	
+	// set dynamic variable to default state if state changed
+	if (state != previousState) attackStarted = false;
 }
 
 // set atlas and do anything else based on state
@@ -293,23 +298,44 @@ function actUponState() {
 			if (getName() == 'BlackMagic') break;
 			var newCenter : Vector3 = (origCenter + Vector3( 0.0, 0.2, 0.0 ));
 			if (characterController.center != newCenter) characterController.center = newCenter;
-			if ((previousState == CharacterState.Fall) && (taRenderer.loopCount == 1)) staticFrame = 14;
+			if ((previousState == CharacterState.Fall) && (taRenderer.getLoopCount() == 1)) staticFrame = 14;
 			break;
 		case CharacterState.Attack1:
 			atlas = CharacterAtlas.Attack1;
 			canMove = false;
-			// do attack 1
+			
+			if( attackStarted ) {
+				if( attackWaiting && (taRenderer.getFrameIndex() > (taRenderer.getFrameCount() / 2)) ) {
+					Debug.Log( 'attack!' );
+					attackWaiting = false;
+				}
+				
+				if( taRenderer.getLoopCount() > attackCount ) {
+					attackStarted = false;
+					attackWaiting = true;
+					attackCount++;
+				}
+			} else {
+				attackStarted = true;
+				attackWaiting = true;
+				attackCount = 0;
+			}
 			break;
 		case CharacterState.Attack2:
 			atlas = CharacterAtlas.Attack2;
 			canMove = false;
-			// do attack 1
 			break;
 		case CharacterState.Special1:
 			atlas = CharacterAtlas.Special1;
+			canMove = false;
 			break;
 		case CharacterState.Special2:
 			atlas = CharacterAtlas.Special2;
+			canMove = false;
+			break;
+		case CharacterState.Ultimate:
+			atlas = CharacterAtlas.Ultimate;
+			canMove = false;
 			break;
 	}
 	
@@ -419,22 +445,6 @@ function AudioPlay( cs : int ) {
 	var uid : int = (GetInstanceID() + cs);
 	GameManager.instance.audioBind( uid, sound[cs] );
 	GameManager.instance.audioPlay( uid, true );
-}
-
-function Attack1() {
-	Debug.LogWarning( 'You must override the default template function "Attack1()"' );
-}
-
-function Special1() {
-	Debug.LogWarning( 'You must override the default template function "Special1()"' );
-}
-
-function Special2() {
-	Debug.LogWarning( 'You must override the default template function "Special2()"' );
-}
-
-function Ultimate() {
-	Debug.LogWarning( 'You must override the default template function "Ultimate()"' );
 }
 
 // this is called when using the Reset command in the inspector

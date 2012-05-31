@@ -46,6 +46,6 @@ function Update() {
 	taRenderer.setTextureAtlasIndex(
 		parseInt( playSelected ? CharacterState.Selected : CharacterState.SelectIdle ) );
 	
-	if (playSelected && (taRenderer.loopCount == 1))
+	if (playSelected && (taRenderer.getLoopCount() == 1))
 		playSelected = false;
 }
