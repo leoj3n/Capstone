@@ -329,8 +329,8 @@ function actUponState() {
 	
 	var hitInfo : RaycastHit;
 	var sizeOfGeometry : Vector3 = Global.getSize( gameObject );
-	var distnce : float = Mathf.Abs(characterController.center.x + (sizeOfGeometry.x / 2));
 	var dirctn : Vector3 = Vector3.left;
+	var distnce : float = ((Mathf.Abs( transform.localScale.x * characterController.center.x ) * dirctn.x) + (sizeOfGeometry.x / 2));
 	if( Physics.Raycast( getCenter(), dirctn, hitInfo, distnce ) ) {
 		Debug.Log( 'Attack Ray hit an object named: ' + hitInfo.transform.name );
 		Debug.DrawRay( getCenter(), dirctn * distnce, Color.red, 1.0 );
