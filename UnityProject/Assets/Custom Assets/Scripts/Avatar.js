@@ -162,21 +162,38 @@ function doMovement() {
 }
 
 // set isNearlyGrounded variable
-function checkIfNearlyGrounded() {
+function checkIfNearlyGrounded() {	
 	var p1 : Vector3;
 	var p2 : Vector3;
+	var dist : float = 1.0;
+	var dir : Vector3 = Vector3.down;
 	var radius : float = Mathf.Abs( transform.localScale.x * characterController.radius );
 	var halfHeight : float = (transform.localScale.y * characterController.height * 0.5);
-	p1 = p2 = (transform.position + Vector3.Scale( characterController.center, transform.localScale ) + Vector3( 0.0, -1.0, 0.0 ));
+	p1 = p2 = (transform.position + Vector3.Scale( characterController.center, transform.localScale ) + Vector3( 0.0, dist, 0.0 ));
 	p1.y += halfHeight;
 	p2.y -= halfHeight;
 	
+	var radiusVector : Vector3 = Vector3( radius, 0.0, 0.0 );
+		
+	Debug.DrawLine( p1, p1 + radiusVector );
+	Debug.DrawLine( p1, p1 - radiusVector );
 	Debug.DrawLine( p1, p2 );
-	Debug.DrawLine( p2, p2 + Vector3( radius, 0.0, 0.0 ) );
-	Debug.DrawLine( p2, p2 - Vector3( radius, 0.0, 0.0 ) );
+	Debug.DrawLine( p2, p2 + radiusVector );
+	Debug.DrawLine( p2, p2 - radiusVector );
 	
-	isNearlyGrounded = Physics.CheckCapsule( p1, p2, radius, GameManager.instance.nearlyGroundedLayerMask );
-	if (jumping) isNearlyGrounded = false;
+	var distReal : float = (dist * 2.0);
+	var p2Real : Vector3 = (p2 + (distReal * dir));
+	
+	Debug.DrawLine( p2, p2Real, Color.red );
+	Debug.DrawLine( p2Real, p2Real + radiusVector, Color.red );
+	Debug.DrawLine( p2Real, p2Real - radiusVector, Color.red );
+	
+	var hits : RaycastHit[] = Physics.CapsuleCastAll( p1, p2, radius, dir, distReal, GameManager.instance.nearlyGroundedLayerMask );
+	
+	isNearlyGrounded = false;
+	for( var hit : RaycastHit in hits ) {
+		if (hit.transform != transform) isNearlyGrounded = true;
+	}
 }
 
 function updateShadow() {
