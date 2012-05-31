@@ -172,7 +172,7 @@ function checkIfNearlyGrounded() {
 	var dir : Vector3 = Vector3.down;
 	var radius : float = Mathf.Abs( transform.localScale.x * characterController.radius );
 	var halfHeight : float = (transform.localScale.y * characterController.height * 0.5);
-	p1 = p2 = (transform.position + Vector3.Scale( characterController.center, transform.localScale ) + Vector3( 0.0, dist, 0.0 ));
+	p1 = p2 = (getCenter() + Vector3( 0.0, dist, 0.0 ));
 	p1.y += halfHeight;
 	p2.y -= halfHeight;
 	
@@ -305,19 +305,8 @@ function actUponState() {
 			atlas = CharacterAtlas.Attack1;
 			canMove = false;
 			
-			if( attackStarted ) {
-				if( attackWaiting && ((Time.time - lastAttackTime) > 3.0) && (taRenderer.getFrameIndex() > (taRenderer.getFrameCount() / 2)) ) {
-					attackWaiting = false;
-					lastAttackTime = Time.time;
-					Debug.Log( 'attack!' );
-				} else if( taRenderer.getLoopCount() > attackCount ) {
-					attackWaiting = true;
-					attackCount++;
-				}
-			} else {
-				attackStarted = true;
-				attackWaiting = true;
-				attackCount = 0;
+			if( timeToAttack() ) {
+				Debug.Log( 'time to attack!' );
 			}
 			break;
 		case CharacterState.Attack2:
@@ -338,6 +327,16 @@ function actUponState() {
 			break;
 	}
 	
+	var hitInfo : RaycastHit;
+	var sizeOfGeometry : Vector3 = Global.getSize( gameObject );
+	var distnce : float = Mathf.Abs(characterController.center.x + (sizeOfGeometry.x / 2));
+	var dirctn : Vector3 = Vector3.left;
+	if( Physics.Raycast( getCenter(), dirctn, hitInfo, distnce ) ) {
+		Debug.Log( 'Attack Ray hit an object named: ' + hitInfo.transform.name );
+		Debug.DrawRay( getCenter(), dirctn * distnce, Color.red, 1.0 );
+	}
+	Debug.DrawRay( getCenter(), dirctn * distnce );
+	
 	StateFinal();
 	
 	// apply all changes to the texture atlas renderer
@@ -352,6 +351,30 @@ function actUponState() {
 }
 
 function StateFinal() { /* override this function */ }
+
+// utility function to determine if it is time to attack
+function timeToAttack() : boolean {
+	if( attackStarted ) {
+		if( attackWaiting && ((Time.time - lastAttackTime) > 3.0) && (taRenderer.getFrameIndex() > (taRenderer.getFrameCount() / 2)) ) {
+			attackWaiting = false;
+			lastAttackTime = Time.time;
+			return true;
+		} else if( taRenderer.getLoopCount() > attackCount ) {
+			attackWaiting = true;
+			attackCount++;
+		}
+	} else {
+		attackStarted = true;
+		attackWaiting = true;
+		attackCount = 0;
+	}
+	
+	return false;
+}
+
+function getCenter() : Vector3 {
+	return (transform.position + Vector3.Scale( characterController.center, transform.localScale ));
+}
 
 // utility function to cause this avatar to face the nearest avatar
 function faceNearestEnemy() {
