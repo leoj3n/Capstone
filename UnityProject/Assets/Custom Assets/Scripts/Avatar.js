@@ -76,6 +76,7 @@ function Update() {
 		setVerticalMovement();
 		doMovement();
 		
+		checkIfNearlyGrounded();
 		updateShadow();
 		
 		//faceNearestEnemy();
@@ -156,6 +157,25 @@ function doMovement() {
 	}
 }
 
+// set isNearlyGrounded variable
+function checkIfNearlyGrounded() {
+	var hit : RaycastHit;
+	var p1 : Vector3;
+	var p2 : Vector3;
+	p1 = p2 = characterController.bounds.center;
+	p1.y = characterController.bounds.max.y;
+	p2.y = characterController.bounds.min.y;
+	var dist : float = 1.0;
+	var dir : Vector3 = Vector3.down;
+	var radius : float = Mathf.Abs( transform.localScale.x * characterController.radius );
+	
+	Debug.DrawLine( p1+dist*dir, p2+dist*dir );
+	Debug.DrawLine( p2+dist*dir, p2+dist*dir + Vector3( radius, 0.0, 0.0 ) );
+	
+	isNearlyGrounded = Physics.CapsuleCast( p1, p2, radius, Vector3.down, hit, dist, (~(1 << 8) | ~(1 << 11) | ~(1 << 31)) );
+	if (jumping || (isNearlyGrounded && hit.transform.tag == 'Player')) isNearlyGrounded = false;
+}
+
 function updateShadow() {
 	var newPos : Vector3 = (transform.position + shadowOffset + shadowOffsetExtra);
 	newPos.x += characterController.center.x;
@@ -175,38 +195,6 @@ function stateDelegation() {
 	canMove = true;
 	shadowOffsetExtra = Vector3.zero;
 	shadowAspectRatioExtra = 0.0;
-	
-	//var tmp : Vector3 = Vector3( characterController.bounds.center.x, characterController.bounds.min.y, characterController.bounds.center.z );
-	//var start : Vector3 = Vector3( characterController.bounds.center.x, characterController.bounds.min.y, characterController.bounds.center.z );
-	/*if (!jumping)
-		isNearlyGrounded = Physics.Raycast( 
-			characterController.bounds.center, Vector3.down, (characterController.bounds.extents.y + 2.0), 
-			(~(1 << 8) | ~(1 << 11) | ~(1 << 31)) );
-		//isNearlyGrounded = Physics.CheckCapsule( start, (start + Vector3( 0.0, -1.0, 0.0 )), 1.0, (~(1 << 8) | ~(1 << 11) | ~(1 << 31)) );
-	else
-		isNearlyGrounded = false;
-	Debug.DrawRay( Vector3( characterController.bounds.max.x, characterController.bounds.min.y, characterController.bounds.center.z ), Vector3.down * 2.0 );
-	Debug.DrawRay( Vector3( characterController.bounds.min.x, characterController.bounds.min.y, characterController.bounds.center.z ), Vector3.down * 2.0 );
-	*/
-	
-	var hit : RaycastHit;
-	var p1 : Vector3 = characterController.bounds.center;
-	p1.y = characterController.bounds.max.y;
-	var p2 : Vector3 = p1;
-	p2.y = characterController.bounds.min.y;
-	
-	var dist : Vector3 = Vector3( 0.0, 0.0, 0.0 );
-	Debug.DrawLine( p1+dist, p2+dist );
-	Debug.DrawLine( p1+dist, p1+dist + Vector3( (transform.localScale.x * characterController.radius), 0.0, 0.0 ) );
-	
-	isNearlyGrounded = Physics.CapsuleCast( p1, p2, 0.48, Vector3.down, hit, 1.0, (~(1 << 8) | ~(1 << 11) | ~(1 << 31)) );
-	
-	if (isNearlyGrounded && hit.transform.tag == 'Player') isNearlyGrounded = false;
-	
-	if( isNearlyGrounded ) {
-		if (getName() == 'ZipperFace' && hit.transform.name != 'Rooftop') Debug.Log( hit.transform.name + ', ' + hit.transform.tag + ', ' + Time.time );
-	}
-	if (jumping) isNearlyGrounded = false;
 	
 	// joystick-activated states
 	switch( true ) {
