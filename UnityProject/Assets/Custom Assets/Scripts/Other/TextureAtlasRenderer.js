@@ -57,7 +57,7 @@ function Update() {
 function applyTextureAtlas( ta : TextureAtlas ) {
 	fpsTimer += Time.deltaTime;
 	
-	frameIndex = parseInt( (fpsTimer * fps) % (ta.frames.Length) );
+	frameIndex = parseInt( (fpsTimer * fps) % ta.frames.Length );
 	if (reverse) frameIndex = ((ta.frames.Length - 1) - frameIndex);
 	if (isStatic) frameIndex = staticFrame;
 	

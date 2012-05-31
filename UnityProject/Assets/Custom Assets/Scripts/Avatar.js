@@ -32,6 +32,7 @@ protected var staticFrame : int = -1;
 protected var reverse : boolean = false;
 private var attackStarted : boolean = false;
 private var attackWaiting : boolean = false;
+private var lastAttackTime : float = 0.0;
 private var attackCount : int = 0;
 
 // OTHER
@@ -305,13 +306,11 @@ function actUponState() {
 			canMove = false;
 			
 			if( attackStarted ) {
-				if( attackWaiting && (taRenderer.getFrameIndex() > (taRenderer.getFrameCount() / 2)) ) {
-					Debug.Log( 'attack!' );
+				if( attackWaiting && ((Time.time - lastAttackTime) > 3.0) && (taRenderer.getFrameIndex() > (taRenderer.getFrameCount() / 2)) ) {
 					attackWaiting = false;
-				}
-				
-				if( taRenderer.getLoopCount() > attackCount ) {
-					attackStarted = false;
+					lastAttackTime = Time.time;
+					Debug.Log( 'attack!' );
+				} else if( taRenderer.getLoopCount() > attackCount ) {
 					attackWaiting = true;
 					attackCount++;
 				}
