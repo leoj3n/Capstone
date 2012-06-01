@@ -42,6 +42,7 @@ protected var shadowOffsetExtra : Vector3;
 protected var origShadowAspectRatio : float;
 protected var shadowAspectRatioExtra : float;
 protected var knockbackForce : Vector3;
+protected var explosionForce : Vector3;
 
 // HEALTH
 protected var health : float = 100.0;
@@ -202,7 +203,7 @@ function setVerticalMovement() {
 // move the character controller
 function doMovement() {	
 	characterController.Move( Time.deltaTime * 
-		((moveDirection * moveSpeed) + Vector3( 0, verticalSpeed, 0 ) + inAirVelocity + knockbackForce) );
+		((moveDirection * moveSpeed) + Vector3( 0, verticalSpeed, 0 ) + inAirVelocity + knockbackForce + explosionForce) );
 	
 	if( characterController.isGrounded ) {
 		lastGroundedTime = Time.time;
@@ -311,6 +312,9 @@ function determineState() {
 	// environment-activated states (overrides all)
 	switch( true ) {
 		case (knockbackForce.magnitude > 0.1):			
+			//state = CharacterState.Hit;
+			break;
+		case (explosionForce.magnitude > 0.1):			
 			state = CharacterState.Fall;
 			break;
 		case (previousState == CharacterState.Fall):
@@ -346,7 +350,7 @@ function actUponState() {
 		case CharacterState.Fall:
 			atlas = CharacterAtlas.Fall;
 			canJump = canMove = false;
-			shadowAspectRatioExtra = Mathf.Max( (3.0 - knockbackForce.magnitude), origShadowAspectRatio );
+			shadowAspectRatioExtra = Mathf.Max( (3.0 - explosionForce.magnitude), origShadowAspectRatio );
 			shadowOffsetExtra = Vector3( 0.8, 0.0, 0.0 );
 			if (getName() == 'BlackMagic') break;
 			var newCenter : Vector3 = (origCenter + Vector3( 0.0, 0.2, 0.0 ));
@@ -360,7 +364,7 @@ function actUponState() {
 			var hit : RaycastHit = tryAttack();
 			
 			if( hit.transform ) {
-				Global.avatarExplosion( hit.transform, hit.point, hit.distance, 50, 10.0 );
+				hitOtherAvatar( hit, 50, 10 );
 			}
 			break;
 		case CharacterState.Attack2:
@@ -442,6 +446,11 @@ function timeToAttack() : boolean {
 	return false;
 }
 
+function hitOtherAvatar( hit : RaycastHit, force : float, damping : float ) {
+	if (Global.isAvatar( hit.transform ))
+		hit.transform.gameObject.GetComponent( Avatar ).addKnockbackForce( getCenterInWorld(), force, damping );
+}
+
 // utility function to get the avatar center in world coordinates
 function getCenterInWorld() : Vector3 {
 	return (transform.position + Vector3.Scale( characterController.center, transform.localScale ));
@@ -462,21 +471,44 @@ function addExplosionForce( pos : Vector3, radius : float, force : float, dampin
 	var dir : Vector3 = (transform.position - pos).normalized;
 	dir.z = 0.0;
 	
-	var explosionForce : Vector3 = (force * dir * percentage);
+	var explForce : Vector3 = (force * dir * percentage);
 	var modifier : float = (force * percentage / damping);
-	if (characterController.isGrounded) explosionForce.y = Mathf.Max( explosionForce.y, (modifier / 2) );
+	if (characterController.isGrounded) explForce.y = Mathf.Max( explForce.y, (modifier / 2) );
 	health -= modifier;
 	
 	// apply explosion force via co-routine
 	var initial : boolean = true;
-	while( explosionForce != Vector3.zero ) {
-		if (!initial) knockbackForce -= explosionForce;
+	while( explForce != Vector3.zero ) {
+		if (!initial) explosionForce -= explForce;
 		initial = false;
 		
-		explosionForce = Vector3.Slerp( explosionForce, Vector3.zero, (Time.deltaTime * damping) );
-		knockbackForce += explosionForce;
+		explForce = Vector3.Slerp( explForce, Vector3.zero, (Time.deltaTime * damping) );
+		explosionForce += explForce;
 		yield;
 	}
+}
+
+// utility function to add knockback force to this avatar
+function addKnockbackForce( pos : Vector3, force : float, damping : float, hp : float ) {	
+	var dir : Vector3 = (transform.position - pos).normalized;
+	dir.z = 0.0;
+	
+	var kbForce : Vector3 = (force * dir);
+	health -= hp;
+	
+	// apply explosion force via co-routine
+	var initial : boolean = true;
+	while( kbForce != Vector3.zero ) {
+		if (!initial) knockbackForce -= kbForce;
+		initial = false;
+		
+		kbForce = Vector3.Slerp( kbForce, Vector3.zero, (Time.deltaTime * damping) );
+		knockbackForce += kbForce;
+		yield;
+	}
+}
+function addKnockbackForce( pos : Vector3, force : float, damping : float ) {
+	addKnockbackForce( pos, force, damping, (force / damping) );
 }
 
 // push props away
