@@ -251,8 +251,9 @@ function checkIfNearlyGrounded() {
 	}
 }
 
+// move the shadow with the character controller
 function updateShadow() {
-	var newPos : Vector3 = (getCenterInWorld() + shadowOffset + shadowOffsetExtra);
+	var newPos : Vector3 = (getCenterInWorld() + shadowOffset + Global.multiplyVectorBySigns( shadowOffsetExtra, transform.localScale ));
 	shadow.transform.position = Vector3.Lerp( shadow.transform.position, newPos, (Time.deltaTime * 20) );
 	shadowProjector.aspectRatio = (origShadowAspectRatio + shadowAspectRatioExtra);
 }
@@ -356,8 +357,10 @@ function actUponState() {
 			atlas = CharacterAtlas.Attack1;
 			canMove = false;
 			
-			if( timeToAttack() ) {
-				Debug.Log( 'time to attack!' );
+			var hit : RaycastHit = tryAttack();
+			
+			if( hit.transform ) {
+				Global.avatarExplosion( transform.gameObject, hit.transform.position, 3.0, 400, 4.0 );
 			}
 			break;
 		case CharacterState.Attack2:
@@ -378,16 +381,6 @@ function actUponState() {
 			break;
 	}
 	
-	var hitInfo : RaycastHit;
-	var sizeOfGeometry : Vector3 = Global.getSize( gameObject );
-	var dirctn : Vector3 = Vector3( (facing * 1.0), 0.0, 0.0 );
-	var distnce : float = (Mathf.Abs( transform.localScale.x * characterController.center.x ) + (sizeOfGeometry.x / 2));
-	if( Physics.Raycast( getCenterInWorld(), dirctn, hitInfo, distnce ) ) {
-		Debug.Log( 'Attack Ray hit an object named: ' + hitInfo.transform.name );
-		Debug.DrawRay( getCenterInWorld(), (dirctn * distnce), Color.red, 1.0 );
-	}
-	Debug.DrawRay( getCenterInWorld(), (dirctn * distnce) );
-	
 	StateFinal();
 	
 	// apply all changes to the texture atlas renderer
@@ -402,6 +395,32 @@ function actUponState() {
 }
 
 function StateFinal() { /* override this function */ }
+
+
+
+// utility function to try an attack (utilizes timeToAttack())
+function tryAttack() : RaycastHit {
+	var sizeOfGeometry : Vector3 = Global.getSize( gameObject );
+	var dirctn : Vector3 = Vector3( (facing * 1.0), 0.0, 0.0 );
+	var distnce : float = (Mathf.Abs( transform.localScale.x * characterController.center.x ) + (sizeOfGeometry.x / 2));
+	
+	if( timeToAttack() ) {
+		var hits : RaycastHit[] = Physics.RaycastAll( getCenterInWorld(), dirctn, distnce, GameManager.instance.avatarOnlyLayerMask );
+		if( hits ) {
+			var didHit : boolean = false;
+			for( var hit : RaycastHit in hits ) {
+				if (hit.transform == transform) continue;
+				
+				Debug.DrawRay( getCenterInWorld(), (dirctn * distnce), Color.red, 1.0 );
+				return hit;
+			}
+			
+			Debug.DrawRay( getCenterInWorld(), (dirctn * distnce), Color.blue, 1.0 );
+		}
+	}
+	
+	Debug.DrawRay( getCenterInWorld(), (dirctn * distnce) );
+}
 
 // utility function to determine if it is time to attack
 function timeToAttack() : boolean {

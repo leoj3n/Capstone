@@ -10,6 +10,7 @@ private var taRenderer : TextureAtlasRenderer;
 
 function Start() {
 	character = Instantiate( characterPrefab );
+	character.transform.localScale.z = 0.0001;
 	
 	taRenderer = character.GetComponent( TextureAtlasRenderer );
 	
@@ -44,7 +45,7 @@ function Start() {
 
 function Update() {
 	taRenderer.setTextureAtlasIndex(
-		parseInt( playSelected ? CharacterState.Selected : CharacterState.SelectIdle ) );
+		parseInt( playSelected ? CharacterAtlas.Selected : CharacterAtlas.SelectIdle ) );
 	
 	if (playSelected && (taRenderer.getLoopCount() == 1))
 		playSelected = false;

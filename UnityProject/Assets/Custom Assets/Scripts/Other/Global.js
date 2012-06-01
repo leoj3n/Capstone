@@ -112,6 +112,11 @@ static function absoluteVector( v : Vector2 ) {
 	return Vector3( Mathf.Abs( v.x ), Mathf.Abs( v.y ) );
 }
 
+// utility function to multiply one vector by the signs of another
+static function multiplyVectorBySigns( v : Vector3, signs : Vector3 ) {
+	return Vector3( (v.x * Mathf.Sign( signs.x )), (v.y * Mathf.Sign( signs.y )), (v.z * Mathf.Sign( signs.z )) );
+}
+
 // GLOBAL AVATAR FUNCTIONS
 
 // utility function add explosion force to one or multiple avatars

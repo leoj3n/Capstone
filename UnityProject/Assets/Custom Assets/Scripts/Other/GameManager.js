@@ -13,6 +13,7 @@ class GameManager extends MonoBehaviour {
 	public var expectedOrder : CharacterEnum; // just to expose the expected order in the Inspector
 	public var soundsBoundByName : AudioClip[]; // no order necessary
 	public var nearlyGroundedLayerMask : LayerMask = -1;
+	public var avatarOnlyLayerMask : LayerMask = -1;
 		
 	// private variables (accessible via GameManager.instance)
 	private var _controllers : Controller[];
