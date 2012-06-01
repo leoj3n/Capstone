@@ -126,6 +126,7 @@ function faceNearestEnemy() {
 
 // sets movingBack, isMoving, moveDirection, moveSpeed and inAirVelocity
 function setHorizontalMovement() {
+	/*
 	// forward vector relative to the camera along the x-z plane	
 	var forward = Camera.main.transform.TransformDirection( Vector3.forward );
 	forward.y = 0;
@@ -133,15 +134,18 @@ function setHorizontalMovement() {
 
 	// right vector relative to the camera, always orthogonal to the forward vector
 	var right = Vector3( forward.z, 0, -forward.x );
-
-	var h = Global.getAxis( 'Horizontal', boundController );
+	*/
 	
-	var wasMoving = isMoving;
+	var right : Vector3 = Vector3.right;
+	
+	var h : float = Global.getAxis( 'Horizontal', boundController );
+	
+	var wasMoving : boolean = isMoving;
 	
 	if( canMove ) {
 		isMoving = (Mathf.Abs( h ) > 0.1); // check for any lateral joystick movement
 		
-		var targetDirection = (h * right); // x-axis user input
+		var targetDirection : Vector3 = (h * right); // x-axis user input
 		
 		// grounded controls
 		if( characterController.isGrounded ) {
@@ -149,7 +153,7 @@ function setHorizontalMovement() {
 			if (targetDirection != Vector3.zero) moveDirection = targetDirection.normalized;
 					
 			// choose target speed
-			var targetSpeed = Mathf.Min( targetDirection.magnitude, 1.0 ) * walkSpeed;
+			var targetSpeed : float = Mathf.Min( targetDirection.magnitude, 1.0 ) * walkSpeed;
 			
 			// interpolate moveSpeed -> targetSpeed
 			moveSpeed = Mathf.Lerp( moveSpeed, targetSpeed, (groundedAcceleration * Time.deltaTime) );

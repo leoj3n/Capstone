@@ -23,7 +23,7 @@ private var frameIndex : int = 0;
 private var loopCount : int = 0;
 
 function Start() {
-	origScale = transform.localScale;
+	origScale = Global.absoluteVector( transform.localScale );
 	
 	attachedController = GetComponent( CharacterController );
 	if (attachedController) origRadius = attachedController.radius;
@@ -71,7 +71,10 @@ function applyTextureAtlas( ta : TextureAtlas ) {
 	var scaleFromSide : boolean = (scaleAnchor != ScaleAnchor.Center); // set a helper variable
 	if (scaleFromSide) var sizeBeforeScale : Vector3 = Global.getSize( gameObject );
 	
-	transform.localScale = Vector3( (frame.width * scaleFactor.x), (frame.height * scaleFactor.y), origScale.z );
+	var xSign : float = ((transform.localScale.x < 0.0) ? -1.0 : 1.0);
+	var ySign : float = ((transform.localScale.y < 0.0) ? -1.0 : 1.0);
+	var zSign : float = ((transform.localScale.z < 0.0) ? -1.0 : 1.0);
+	transform.localScale = Vector3( (frame.width * scaleFactor.x * xSign), (frame.height * scaleFactor.y * ySign), origScale.z * zSign );
 	
 	// update position to compensate for scale
 	if( scaleFromSide ) {
@@ -94,7 +97,7 @@ function applyTextureAtlas( ta : TextureAtlas ) {
 	
 	// update radius to compensate for scale
 	if (scaleAgainstPlaceholder && attachedController)
-		attachedController.radius = (origRadius * (origScale.x / transform.localScale.x));
+		attachedController.radius = (origRadius * Mathf.Abs( origScale.x / transform.localScale.x ));
 	
 	if (!isStatic && (frameIndex == (ta.frames.Length - 1))) loopCount++;
 }
