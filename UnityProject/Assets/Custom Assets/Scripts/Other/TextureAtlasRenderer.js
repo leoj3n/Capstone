@@ -71,10 +71,8 @@ function applyTextureAtlas( ta : TextureAtlas ) {
 	var scaleFromSide : boolean = (scaleAnchor != ScaleAnchor.Center); // set a helper variable
 	if (scaleFromSide) var sizeBeforeScale : Vector3 = Global.getSize( gameObject );
 	
-	var xSign : float = ((transform.localScale.x < 0.0) ? -1.0 : 1.0);
-	var ySign : float = ((transform.localScale.y < 0.0) ? -1.0 : 1.0);
-	var zSign : float = ((transform.localScale.z < 0.0) ? -1.0 : 1.0);
-	transform.localScale = Vector3( (frame.width * scaleFactor.x * xSign), (frame.height * scaleFactor.y * ySign), origScale.z * zSign );
+	transform.localScale = Vector3( (frame.width * scaleFactor.x * Mathf.Sign( transform.localScale.x )), 
+		(frame.height * scaleFactor.y * Mathf.Sign( transform.localScale.y )), origScale.z * Mathf.Sign( transform.localScale.z ) );
 	
 	// update position to compensate for scale
 	if( scaleFromSide ) {

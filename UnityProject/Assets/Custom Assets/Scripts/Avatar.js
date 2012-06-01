@@ -77,11 +77,17 @@ function Update() {
 	if( isControllable ) {
 		if (Global.getAxis( 'Vertical', boundController ) >= 0.2) lastJumpButtonTime = Time.time; // jump
 		
-		faceNearestEnemy();
 		setHorizontalMovement();
 		setVerticalMovement();
 		doMovement();
 		enforceBounds();
+		
+		if (GameManager.instance.avatars.Length == 2)
+			faceNearestEnemy();
+		else
+			faceMoveDirection();
+		
+		checkIfMovingBack();
 		checkIfNearlyGrounded();
 		
 		updateShadow();
@@ -92,7 +98,7 @@ function Update() {
 }
 
 // utility function to cause this avatar to face the nearest avatar
-// IMPORTANT NOTE: the game expects all avatars to be facing right at the start
+// IMPORTANT: the game expects all avatars to be facing right at the start
 function faceNearestEnemy() {
 	var dist : float = 0.0;
 	var closestDist : float = 9999.0;
@@ -124,18 +130,23 @@ function faceNearestEnemy() {
 	}
 }
 
-// sets movingBack, isMoving, moveDirection, moveSpeed and inAirVelocity
-function setHorizontalMovement() {
-	/*
-	// forward vector relative to the camera along the x-z plane	
-	var forward = Camera.main.transform.TransformDirection( Vector3.forward );
-	forward.y = 0;
-	forward = forward.normalized;
+// utility function to cause this avatar to face the direction it is moving
+function faceMoveDirection() {
+	if( moveDirection.x > 0.0 ) { // moving right
+		if( facing == -1 ) { // if facing left
+			facing = 1; // face right
+			transform.localScale.x *= -1.0;
+		}
+	} else if( moveDirection.x < 0.0 ) { // moving left
+		if( facing == 1 ) { // if facing right
+			facing = -1; // face left
+			transform.localScale.x *= -1.0;
+		}
+	}
+}
 
-	// right vector relative to the camera, always orthogonal to the forward vector
-	var right = Vector3( forward.z, 0, -forward.x );
-	*/
-	
+// sets movingBack, isMoving, moveDirection, moveSpeed and inAirVelocity
+function setHorizontalMovement() {	
 	var right : Vector3 = Vector3.right;
 	
 	var h : float = Global.getAxis( 'Horizontal', boundController );
@@ -165,8 +176,6 @@ function setHorizontalMovement() {
 		moveSpeed = 0.0;
 		moveDirection = Vector3.zero;
 	}
-	
-	movingBack = (((moveDirection.x - facing) == 0) ? true : false);
 }
 
 // sets verticalSpeed, jumping, lastJumpTime, lastJumpButtonTime and lastJumpStartHeight
@@ -200,6 +209,11 @@ function doMovement() {
 		inAirVelocity = Vector3.zero;
 		jumping = false;
 	}
+}
+
+// set movingBack variable
+function checkIfMovingBack() {
+	movingBack = (moveDirection.x != facing);
 }
 
 // set isNearlyGrounded variable
@@ -238,8 +252,7 @@ function checkIfNearlyGrounded() {
 }
 
 function updateShadow() {
-	var newPos : Vector3 = (transform.position + shadowOffset + shadowOffsetExtra);
-	newPos.x += characterController.center.x;
+	var newPos : Vector3 = (getCenterInWorld() + shadowOffset + shadowOffsetExtra);
 	shadow.transform.position = Vector3.Lerp( shadow.transform.position, newPos, (Time.deltaTime * 20) );
 	shadowProjector.aspectRatio = (origShadowAspectRatio + shadowAspectRatioExtra);
 }
