@@ -95,6 +95,8 @@ function Update() {
 		
 		determineState();
 		actUponState();
+	} else {
+		shadowProjector.enabled = false;
 	}
 }
 
@@ -389,6 +391,7 @@ function actUponState() {
 	
 	// apply all changes to the texture atlas renderer
 	taRenderer.setTextureAtlasIndex( parseInt( atlas ) );
+	taRenderer.scaleAnchorHoriz = ((facing == 1) ? ScaleAnchorH.Left : ScaleAnchorH.Right);
 	taRenderer.reverse = reverse;
 	if( staticFrame > -1) {
 		taRenderer.isStatic = true;

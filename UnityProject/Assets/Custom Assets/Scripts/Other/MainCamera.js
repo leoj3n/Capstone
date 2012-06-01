@@ -29,12 +29,12 @@ function Update() {
 	t = (damping * Time.deltaTime);
 	
 	for( var i = 0; i < GameManager.instance.avatars.Length; i++ ) {
-		var iPos : Vector3 = GameManager.instance.avatars[i].transform.position;
+		var iPos : Vector3 = GameManager.instance.avatars[i].GetComponent( Avatar ).getCenterInWorld();
 		
-		averagePosition += GameManager.instance.avatars[i].transform.position;
+		averagePosition += iPos;
 		
 		for( var j = 0; j < GameManager.instance.avatars.Length; j++ ) {
-			var jPos : Vector3 = GameManager.instance.avatars[j].transform.position;
+			var jPos : Vector3 = GameManager.instance.avatars[j].GetComponent( Avatar ).getCenterInWorld();
 			
 			var distance : float = Vector3.Distance( iPos, jPos );
 			if (distance > largestDistance) largestDistance = distance;
@@ -51,7 +51,7 @@ function Update() {
 	
 	if (averagePosition.y < minimumY) averagePosition.y = minimumY;
 	
-	// stop the camera from moving for tiny movements
+	// stop the camera from moving for tiny movements on y-axis
 	if( Mathf.Abs( averagePositionY_Save - averagePosition.y ) > 0.1 ) {
 		averagePositionY_Save = averagePosition.y;
 		largestY_Save = largestY;

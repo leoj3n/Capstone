@@ -1,12 +1,14 @@
 
 import MiniJSON;
 
-enum ScaleAnchor { Center, Top, Bottom, Left, Right }
+enum ScaleAnchorV { Center, Top, Bottom }
+enum ScaleAnchorH { Middle, Left, Right }
 
 public var texture : Texture2D[];
 public var atlas : TextAsset[];
 public var scaleAgainstPlaceholder : boolean = false;
-public var scaleAnchor : ScaleAnchor;
+public var scaleAnchorVert : ScaleAnchorV;
+public var scaleAnchorHoriz : ScaleAnchorH;
 public var fps : float = 30.0; // should match (or be close to) After Effects composition settings
 public var isStatic : boolean = false;
 public var staticFrame : int = 0;
@@ -15,8 +17,9 @@ public var reverse : boolean = false;
 private var textureAtlasArray : TextureAtlas[];
 private var textureAtlasIndex : int;
 private var origScale : Vector3;
-private var attachedController : CharacterController;
+private var attachedCharContr : CharacterController;
 private var origRadius : float;
+private var origCenter : Vector3;
 private var scaleFactor : Vector2 = Vector2( 1.0, 1.0 );
 private var fpsTimer : float = 0.0;
 private var frameIndex : int = 0;
@@ -25,8 +28,11 @@ private var loopCount : int = 0;
 function Start() {
 	origScale = Global.absoluteVector( transform.localScale );
 	
-	attachedController = GetComponent( CharacterController );
-	if (attachedController) origRadius = attachedController.radius;
+	attachedCharContr = GetComponent( CharacterController );
+	if( attachedCharContr ) {
+		origRadius = attachedCharContr.radius;
+		origCenter = attachedCharContr.center;
+	}
 	
 	/*
 	placeholder.width     frame.width
@@ -68,7 +74,7 @@ function applyTextureAtlas( ta : TextureAtlas ) {
 	
 	if (!scaleAgainstPlaceholder) scaleFactor = Vector2( (origScale.x / frame.width), (origScale.y / frame.height) );
 	
-	var scaleFromSide : boolean = (scaleAnchor != ScaleAnchor.Center); // set a helper variable
+	var scaleFromSide : boolean = ((scaleAnchorVert != ScaleAnchorV.Center) || (scaleAnchorHoriz != ScaleAnchorH.Middle));
 	if (scaleFromSide) var sizeBeforeScale : Vector3 = Global.getSize( gameObject );
 	
 	transform.localScale = Global.multiplyVectorBySigns( Vector3( (frame.width * scaleFactor.x), 
@@ -76,26 +82,34 @@ function applyTextureAtlas( ta : TextureAtlas ) {
 	
 	// update position to compensate for scale
 	if( scaleFromSide ) {
-		var sizeDiff : Vector3 = ((Global.getSize( gameObject ) - sizeBeforeScale) / 2);
-		switch( scaleAnchor ) {
-			case ScaleAnchor.Top:
+		var sizeDiff : Vector3 = ((Global.getSize( gameObject ) - sizeBeforeScale) / 2.0);
+		switch( scaleAnchorVert ) {
+			case ScaleAnchorV.Top:
 				transform.position.y -= sizeDiff.y;
 				break;
-			case ScaleAnchor.Bottom:
+			case ScaleAnchorV.Bottom:
 				transform.position.y += sizeDiff.y;
 				break;
-			case ScaleAnchor.Left:
-				transform.position.x += sizeDiff.x;
+		}
+		switch( scaleAnchorHoriz ) {
+			case ScaleAnchorH.Left:
+				//transform.position.x += sizeDiff.x;
+				var newCenterXinLocal : float = ((origCenter.x * transform.localScale.x) + sizeDiff.x);
+				attachedCharContr.center.x = (newCenterXinLocal / transform.localScale.x);
 				break;
-			case ScaleAnchor.Right:
+			case ScaleAnchorH.Right:
 				transform.position.x -= sizeDiff.x;
 				break;
 		}
 	}
 	
+	// update center to compensate for scale
+	//if (scaleAgainstPlaceholder && attachedCharContr)
+		//attachedCharContr.center.x = (origCenter.x * Mathf.Abs( origScale.x / transform.localScale.x ));
+	
 	// update radius to compensate for scale
-	if (scaleAgainstPlaceholder && attachedController)
-		attachedController.radius = (origRadius * Mathf.Abs( origScale.x / transform.localScale.x ));
+	if (scaleAgainstPlaceholder && attachedCharContr)
+		attachedCharContr.radius = (origRadius * Mathf.Abs( origScale.x / transform.localScale.x ));
 	
 	if (!isStatic && (frameIndex == (ta.frames.Length - 1))) loopCount++;
 }
