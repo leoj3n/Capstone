@@ -360,7 +360,7 @@ function actUponState() {
 			var hit : RaycastHit = tryAttack();
 			
 			if( hit.transform ) {
-				Global.avatarExplosion( transform.gameObject, hit.transform.position, 3.0, 400, 4.0 );
+				Global.avatarExplosion( hit.transform, hit.point, hit.distance, 50, 10.0 );
 			}
 			break;
 		case CharacterState.Attack2:

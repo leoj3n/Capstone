@@ -126,8 +126,10 @@ static function avatarExplosion( avatars : GameObject[], pos : Vector3, radius :
 			avatar.GetComponent( Avatar ).addExplosionForce( pos, radius, force, damping );
 	}
 }
-static function avatarExplosion( object : System.Object, pos : Vector3, radius : float, force : float, damping : float ) {
-	avatarExplosion( Array( object.gameObject ), pos, radius, force, damping );
+static function avatarExplosion( transform : Transform, pos : Vector3, radius : float, force : float, damping : float ) {
+	var avatars : GameObject[] = new GameObject[1];
+	avatars[0] = transform.gameObject;
+	avatarExplosion( avatars, pos, radius, force, damping );
 }
 
 // utility function for testing if a given object is an avatar
