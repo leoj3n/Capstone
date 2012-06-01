@@ -21,7 +21,7 @@ protected var characterController : CharacterController;
 protected var taRenderer : TextureAtlasRenderer;
 
 // STATE
-protected var facing : int = 1;
+protected var facing : int = 1; // 1 = right, -1 = left
 protected var canJump : boolean = true;
 protected var canMove : boolean = true;
 public var isControllable : boolean = true;
@@ -71,13 +71,13 @@ function Start() {
 	shadow = GameObject.Instantiate( shadowPrefab );
 	shadowProjector = shadow.GetComponent( Projector );
 	origShadowAspectRatio = shadowProjector.aspectRatio;
-	moveDirection = transform.TransformDirection( Vector3.forward );
 }
 
 function Update() {
 	if( isControllable ) {
 		if (Global.getAxis( 'Vertical', boundController ) >= 0.2) lastJumpButtonTime = Time.time; // jump
 		
+		faceNearestEnemy();
 		setHorizontalMovement();
 		setVerticalMovement();
 		doMovement();
@@ -85,10 +85,42 @@ function Update() {
 		checkIfNearlyGrounded();
 		
 		updateShadow();
-		//faceNearestEnemy();
 		
 		determineState();
 		actUponState();
+	}
+}
+
+// utility function to cause this avatar to face the nearest avatar
+// IMPORTANT NOTE: the game expects all avatars to be facing right at the start
+function faceNearestEnemy() {
+	var dist : float = 0.0;
+	var closestDist : float = 9999.0;
+	var side : int = 1; // 1 = right, -1 = left
+	var p1 : Vector3 = getCenterInWorld();
+	for( var avatar : GameObject in GameManager.instance.avatars ) {
+		if (gameObject == avatar) continue; // continue if self
+		
+		var p2 : Vector3 = avatar.GetComponent( Avatar ).getCenterInWorld();
+		
+		dist = Vector3.Distance( p1, p2 );
+		if( dist < closestDist ) {
+			closestDist = dist;
+			side = ((p1.x < p2.x) ? 1 : -1); // if p2 is greater, it is on right
+		}
+	}
+	
+	// face left or right (to face closest enemy)
+	if( side == 1 ) { // closest is on right
+		if( facing == -1 ) { // if facing left
+			facing = 1; // face right
+			transform.localScale.x *= -1.0;
+		}
+	} else { // closest is on left
+		if( facing == 1 ) { // if facing right
+			facing = -1; // face left
+			transform.localScale.x *= -1.0;
+		}
 	}
 }
 
@@ -129,6 +161,8 @@ function setHorizontalMovement() {
 		moveSpeed = 0.0;
 		moveDirection = Vector3.zero;
 	}
+	
+	movingBack = (((moveDirection.x - facing) == 0) ? true : false);
 }
 
 // sets verticalSpeed, jumping, lastJumpTime, lastJumpButtonTime and lastJumpStartHeight
@@ -171,8 +205,8 @@ function checkIfNearlyGrounded() {
 	var dist : float = 1.0; // change this as needed
 	var dir : Vector3 = Vector3.down;
 	var radius : float = Mathf.Abs( transform.localScale.x * characterController.radius );
-	var halfHeight : float = (transform.localScale.y * characterController.height * 0.5);
-	p1 = p2 = (getCenter() + Vector3( 0.0, dist, 0.0 ));
+	var halfHeight : float = Mathf.Abs( transform.localScale.y * characterController.height * 0.5 );
+	p1 = p2 = (getCenterInWorld() + Vector3( 0.0, dist, 0.0 ));
 	p1.y += halfHeight;
 	p2.y -= halfHeight;
 	
@@ -329,13 +363,13 @@ function actUponState() {
 	
 	var hitInfo : RaycastHit;
 	var sizeOfGeometry : Vector3 = Global.getSize( gameObject );
-	var dirctn : Vector3 = Vector3.left;
-	var distnce : float = ((Mathf.Abs( transform.localScale.x * characterController.center.x ) * dirctn.x) + (sizeOfGeometry.x / 2));
-	if( Physics.Raycast( getCenter(), dirctn, hitInfo, distnce ) ) {
+	var dirctn : Vector3 = Vector3( (facing * 1.0), 0.0, 0.0 );
+	var distnce : float = (Mathf.Abs( transform.localScale.x * characterController.center.x ) + (sizeOfGeometry.x / 2));
+	if( Physics.Raycast( getCenterInWorld(), dirctn, hitInfo, distnce ) ) {
 		Debug.Log( 'Attack Ray hit an object named: ' + hitInfo.transform.name );
-		Debug.DrawRay( getCenter(), dirctn * distnce, Color.red, 1.0 );
+		Debug.DrawRay( getCenterInWorld(), (dirctn * distnce), Color.red, 1.0 );
 	}
-	Debug.DrawRay( getCenter(), dirctn * distnce );
+	Debug.DrawRay( getCenterInWorld(), (dirctn * distnce) );
 	
 	StateFinal();
 	
@@ -372,32 +406,9 @@ function timeToAttack() : boolean {
 	return false;
 }
 
-function getCenter() : Vector3 {
+// utility function to get the avatar center in world coordinates
+function getCenterInWorld() : Vector3 {
 	return (transform.position + Vector3.Scale( characterController.center, transform.localScale ));
-}
-
-// utility function to cause this avatar to face the nearest avatar
-function faceNearestEnemy() {
-	var dist : float = 0.0;
-	var closestDist : float = 999.0;
-	for( var avatar : GameObject in GameManager.instance.avatars ) {
-		if (collider == avatar.collider) continue; // continue if self
-		
-		// update closest dist
-		dist = transform.localPosition.x - avatar.transform.localPosition.x;
-		if (Mathf.Abs( dist ) < Mathf.Abs( closestDist )) closestDist = dist;
-	}
-	
-	// face left or right (to face closest enemy)
-	if( closestDist > 0.0 ) {
-		if (transform.localScale.x > 0.0) transform.localScale.x *= -1; // face left
-		facing = -1;
-	} else {
-		if (transform.localScale.x < 0.0) transform.localScale.x *= -1; // face right
-		facing = 1;
-	}
-	
-	movingBack = (((moveDirection.x - facing) == 0) ? true : false);
 }
 
 // utility function to enforce the bounds set in Global
@@ -472,8 +483,8 @@ function AudioPlay( cs : int ) {
 // this is called when using the Reset command in the inspector
 function Reset() {
 	gameObject.tag = 'Player';
-	gameObject.layer = 8;
+	gameObject.layer = 8; // Avatar layer
 	transform.position = Vector3.zero;
 	transform.rotation = Quaternion.identity;
-	transform.localScale = Vector3( 1.0, 1.0, -1.0 );
+	transform.localScale = Vector3( 8.0, 4.8, -0.0001 );
 }

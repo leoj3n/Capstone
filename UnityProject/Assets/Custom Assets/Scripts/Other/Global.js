@@ -101,7 +101,15 @@ static function getSize( object ) : Vector3 {
 		return Vector3.zero; // if unable get size of mesh, return zero
 	}
 	
-	return Vector3.Scale( size, object.transform.localScale ); // apply scaling to get final size
+	return absoluteVector( Vector3.Scale( size, object.transform.localScale ) ); // apply scaling to get final size
+}
+
+// utility functions for making the values of a vector absolute
+static function absoluteVector( v : Vector3 ) { 
+	return Vector3( Mathf.Abs( v.x ), Mathf.Abs( v.y ), Mathf.Abs( v.z ) );
+}
+static function absoluteVector( v : Vector2 ) { 
+	return Vector3( Mathf.Abs( v.x ), Mathf.Abs( v.y ) );
 }
 
 // GLOBAL AVATAR FUNCTIONS
