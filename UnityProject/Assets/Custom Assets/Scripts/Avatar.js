@@ -8,13 +8,12 @@ public var sound : AudioClip[];
 public var expectedSounds : CharacterSound; // just for exposing expected order of sounds in inspector
 public var statsTexture : Texture2D;
 public var statsAtlas : TextAsset;
-public var shadowPrefab : GameObject;
 public var baseOffset : Vector3 = Vector3.zero;
 public var isControllable : boolean = true;
 
 // STATIC
 protected var boundController : ControllerEnum;
-private var shadow : GameObject;
+private var shadow : Transform;
 private var shadowProjector : Projector;
 protected var shadowUseTAC : boolean = false;
 protected var gravity : float = 50.0;
@@ -71,7 +70,7 @@ function Start() {
 	taRenderer = GetComponentInChildren( TextureAtlasRenderer );
 	textureAtlasCube = transform.Find( 'TextureAtlasCube' );
 	
-	shadow = GameObject.Instantiate( shadowPrefab );
+	shadow = transform.Find( 'Shadow' );
 	shadowProjector = shadow.GetComponent( Projector );
 	origShadowAspectRatio = shadowProjector.aspectRatio;
 }
@@ -89,9 +88,9 @@ function Update() {
 		doMovement();
 		enforceBounds();
 		
-		//if (GameManager.instance.avatars.Length == 2)
-		//	faceNearestEnemy();
-		//else
+		if (GameManager.instance.avatars.Length == 2)
+			faceNearestEnemy();
+		else
 			faceMoveDirection();
 		
 		checkIfMovingBack();
@@ -101,9 +100,9 @@ function Update() {
 		
 		determineState();
 		actUponState();
-	} else {
-		shadowProjector.enabled = false;
 	}
+	
+	shadowProjector.enabled = isControllable;
 }
 
 // utility function to cause this avatar to face the nearest avatar
@@ -265,7 +264,7 @@ function updateShadow() {
 	var newPos : Vector3 = getCenterInWorld();
 	if (shadowUseTAC) newPos.x = textureAtlasCube.position.x;
 	
-	shadow.transform.position = Vector3.Lerp( shadow.transform.position, newPos, (Time.deltaTime * 20) );
+	shadow.position = Vector3.Lerp( shadow.position, newPos, (Time.deltaTime * 20) );
 	
 	shadowProjector.aspectRatio = (shadowUseTAC ? textureAtlasCube.localScale.x : origShadowAspectRatio);
 }
