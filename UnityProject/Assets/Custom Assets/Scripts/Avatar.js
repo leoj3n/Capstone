@@ -39,7 +39,7 @@ private var attackCount : int = 0;
 
 // OTHER
 protected var origShadowAspectRatio : float;
-protected var knockbackForce : Vector3;
+protected var hitForce : Vector3;
 protected var explosionForce : Vector3;
 protected var loop : boolean = true;
 protected var offset : Vector3 = Vector3.zero;
@@ -126,30 +126,34 @@ function faceNearestEnemy() {
 	
 	// face left or right (to face closest enemy)
 	if( side == 1 ) { // closest is on right
-		if( facing == -1 ) { // if facing left
-			facing = 1; // face right
-			transform.localScale.x *= -1.0;
-		}
+		faceRight();
 	} else { // closest is on left
-		if( facing == 1 ) { // if facing right
-			facing = -1; // face left
-			transform.localScale.x *= -1.0;
-		}
+		faceLeft();
 	}
 }
 
 // utility function to cause this avatar to face the direction it is moving
 function faceMoveDirection() {
 	if( moveDirection.x > 0.0 ) { // moving right
-		if( facing == -1 ) { // if facing left
-			facing = 1; // face right
-			transform.localScale.x *= -1.0;
-		}
+		faceRight();
 	} else if( moveDirection.x < 0.0 ) { // moving left
-		if( facing == 1 ) { // if facing right
-			facing = -1; // face left
-			transform.localScale.x *= -1.0;
-		}
+		faceLeft();
+	}
+}
+
+// utility function for facing right
+function faceRight() {
+	if( facing == -1 ) { // if facing left
+		facing = 1; // face right
+		transform.localScale.x *= -1.0;
+	}
+}
+
+// utility function for facing left
+function faceLeft() {
+	if( facing == 1 ) { // if facing right
+		facing = -1; // face left
+		transform.localScale.x *= -1.0;
 	}
 }
 
@@ -210,7 +214,7 @@ function setVerticalMovement() {
 // move the character controller
 function doMovement() {	
 	characterController.Move( Time.deltaTime * 
-		((moveDirection * moveSpeed) + Vector3( 0, verticalSpeed, 0 ) + inAirVelocity + knockbackForce + explosionForce) );
+		((moveDirection * moveSpeed) + Vector3( 0, verticalSpeed, 0 ) + inAirVelocity + hitForce + explosionForce) );
 	
 	if( characterController.isGrounded ) {
 		lastGroundedTime = Time.time;
@@ -230,8 +234,8 @@ function checkIfNearlyGrounded() {
 	var p2 : Vector3;
 	var dist : float = 1.0; // change this as needed
 	var dir : Vector3 = Vector3.down;
-	var radius : float = Mathf.Abs( transform.localScale.x * characterController.radius );
-	var halfHeight : float = Mathf.Abs( transform.localScale.y * characterController.height * 0.5 );
+	var radius : float = getScaledRadius();
+	var halfHeight : float = (getScaledHeight() * 0.5);
 	p1 = p2 = (getCenterInWorld() + Vector3( 0.0, dist, 0.0 ));
 	p1.y += halfHeight;
 	p2.y -= halfHeight;
@@ -322,7 +326,7 @@ function determineState() {
 	
 	// game-activated states (overrides all)
 	switch( true ) {
-		case (knockbackForce.magnitude > 0.1):			
+		case (hitForce.magnitude > 0.1):			
 			//state = CharacterState.Hit;
 			break;
 		case (explosionForce.magnitude > 0.1):			
@@ -377,15 +381,12 @@ function actUponState() {
 			break;
 		case CharacterState.Special1:
 			atlas = CharacterAtlas.Special1;
-			canMove = false;
 			break;
 		case CharacterState.Special2:
 			atlas = CharacterAtlas.Special2;
-			canMove = false;
 			break;
 		case CharacterState.Ultimate:
 			atlas = CharacterAtlas.Ultimate;
-			canMove = false;
 			break;
 	}
 	
@@ -408,7 +409,7 @@ function StateFinal() { /* override this function */ }
 // utility function to try an attack (utilizes timeToAttack())
 function tryAttack() : RaycastHit {
 	var sizeOfGeometry : Vector3 = Global.getSize( textureAtlasCube.gameObject );
-	var dist : float = (Mathf.Abs( transform.localScale.x * characterController.center.x ) + sizeOfGeometry.x + baseOffset.x + offset.x);
+	var dist : float = (Mathf.Abs( getScaledCenter().x ) + sizeOfGeometry.x + baseOffset.x + offset.x);
 	var dir : Vector3 = Vector3( (facing * 1.0), 0.0, 0.0 );
 	
 	if( timeToAttack() ) {
@@ -449,14 +450,30 @@ function timeToAttack() : boolean {
 	return false;
 }
 
+// utility function to apply hit force to another avatar using a passed RaycastHit
 function hitOtherAvatar( hit : RaycastHit, force : float, damping : float ) {
 	if (Global.isAvatar( hit.transform ))
-		hit.transform.gameObject.GetComponent( Avatar ).addKnockbackForce( getCenterInWorld(), force, damping );
+		hit.transform.gameObject.GetComponent( Avatar ).addHitForce( getCenterInWorld(), force, damping );
 }
 
 // utility function to get the avatar center in world coordinates
 function getCenterInWorld() : Vector3 {
-	return (transform.position + Vector3.Scale( characterController.center, transform.localScale ));
+	return (transform.position + getScaledCenter());
+}
+
+// utility function to get the scaled center of the character controller
+function getScaledCenter() : Vector3 {
+	return Vector3.Scale( characterController.center, transform.localScale );
+}
+
+// utility function to get the absolute scaled radius of the character controller
+function getScaledRadius() : float {
+	return Mathf.Abs( transform.localScale.x * characterController.radius );
+}
+
+// utility function to get the absolute scaled height of the character controller
+function getScaledHeight() : float {
+	return Mathf.Abs( transform.localScale.y * characterController.height );
 }
 
 // utility function to enforce the bounds set in Global
@@ -491,27 +508,27 @@ function addExplosionForce( pos : Vector3, radius : float, force : float, dampin
 	}
 }
 
-// utility function to add knockback force to this avatar
-function addKnockbackForce( pos : Vector3, force : float, damping : float, hp : float ) {	
+// utility function to add hit force to this avatar
+function addHitForce( pos : Vector3, force : float, damping : float, hp : float ) {	
 	var dir : Vector3 = (transform.position - pos).normalized;
 	dir.z = 0.0;
 	
-	var kbForce : Vector3 = (force * dir);
+	var hForce : Vector3 = (force * dir);
 	health -= hp;
 	
 	// apply explosion force via co-routine
 	var initial : boolean = true;
-	while( kbForce != Vector3.zero ) {
-		if (!initial) knockbackForce -= kbForce;
+	while( hForce != Vector3.zero ) {
+		if (!initial) hitForce -= hForce;
 		initial = false;
 		
-		kbForce = Vector3.Slerp( kbForce, Vector3.zero, (Time.deltaTime * damping) );
-		knockbackForce += kbForce;
+		hForce = Vector3.Slerp( hForce, Vector3.zero, (Time.deltaTime * damping) );
+		hitForce += hForce;
 		yield;
 	}
 }
-function addKnockbackForce( pos : Vector3, force : float, damping : float ) {
-	addKnockbackForce( pos, force, damping, (force / damping) );
+function addHitForce( pos : Vector3, force : float, damping : float ) {
+	addHitForce( pos, force, damping, (force / damping) );
 }
 
 // push props away
