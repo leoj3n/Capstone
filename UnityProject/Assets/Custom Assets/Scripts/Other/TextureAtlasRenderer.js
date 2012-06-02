@@ -18,18 +18,16 @@ public var reverse : boolean = false;
 private var textureAtlasArray : TextureAtlas[];
 private var textureAtlasIndex : int;
 private var origScale : Vector3;
-private var origLocalPos : Vector3;
+private var scalePos : Vector3 = Vector3.zero;
 private var scaleFactor : Vector2 = Vector2( 1.0, 1.0 );
 private var fpsTimer : float = 0.0;
 private var frameIndex : int = 0;
 private var loopCount : int = 0;
 private var offsetPosition : Vector3 = Vector3.zero;
 private var scaleFixPos : Vector3 = Vector3.zero;
-private var initial : boolean = true;
 
 function Start() {
 	origScale = Global.absoluteVector( transform.localScale );
-	origLocalPos = transform.localPosition;
 	
 	/*
 	placeholder.width     frame.width
@@ -51,7 +49,6 @@ function Start() {
 		textureAtlasArray[i] = new TextureAtlas( texture[i], atlas[i] );
 		
 	applyTextureAtlas( textureAtlasArray[textureAtlasIndex] );
-	initial = false;
 }
 
 function Update() {
@@ -74,40 +71,42 @@ function applyTextureAtlas( ta : TextureAtlas ) {
 	
 	if (!scaleAgainstPlaceholder) scaleFactor = Vector2( (origScale.x / frame.width), (origScale.y / frame.height) );
 	
-	var scaleFromSide : boolean = ((scaleAnchorVert != ScaleAnchorV.Center) || (scaleAnchorHoriz != ScaleAnchorH.Middle));
-	if (scaleFromSide) var sizeBeforeScale : Vector3 = Global.getSize( gameObject );
-	
+	var sizeBeforeScale : Vector3 = Global.getSize( gameObject );
 	transform.localScale = Global.multiplyVectorBySigns( Vector3( (frame.width * scaleFactor.x), 
 		(frame.height * scaleFactor.y), origScale.z ), transform.localScale );
+	var sizeDiff : Vector3 = ((Global.getSize( gameObject ) - sizeBeforeScale) / 2.0);
 	
 	// update position to compensate for scale
-	if( scaleFromSide ) {
-		var sizeDiff : Vector3 = ((Global.getSize( gameObject ) - sizeBeforeScale) / 2.0);
-		
-		switch( scaleAnchorVert ) {
-			case ScaleAnchorV.Top:
-				scaleFixPos.y -= sizeDiff.y;
-				break;
-			case ScaleAnchorV.Bottom:
-				scaleFixPos.y += sizeDiff.y;
-				break;
-		}
-		
-		if( !initial ) {
-			switch( scaleAnchorHoriz ) {
-				case ScaleAnchorH.Left:
-					scaleFixPos.x += sizeDiff.x;
-					break;
-				case ScaleAnchorH.Right:
-					scaleFixPos.x -= sizeDiff.x;
-					break;
-			}
-		} else {
-			Debug.Log( sizeDiff );
-		}
+	var xAmount : float = Mathf.Abs( origScale.x / 2 );
+	var yAmount : float = Mathf.Abs( origScale.y / 2 );
+	switch( scaleAnchorHoriz ) {
+		case ScaleAnchorH.Left:
+			scaleFixPos.x += sizeDiff.x;
+			scalePos.x = xAmount;
+			break;
+		case ScaleAnchorH.Right:
+			scaleFixPos.x -= sizeDiff.x;
+			scalePos.x = -xAmount;
+			break;
+		default:
+			scalePos.x = 0.0;
+			break;
+	}
+	switch( scaleAnchorVert ) {
+		case ScaleAnchorV.Top:
+			scaleFixPos.y -= sizeDiff.y;
+			scalePos.y = -yAmount;
+			break;
+		case ScaleAnchorV.Bottom:
+			scaleFixPos.y += sizeDiff.y;
+			scalePos.y = yAmount;
+			break;
+		default:
+			scalePos.y = 0.0;
+			break;
 	}
 	
-	transform.localPosition = (origLocalPos + scaleFixPos + offsetPosition);
+	transform.localPosition = (scalePos + scaleFixPos + offsetPosition);
 	
 	if (!isStatic && (frameIndex == (ta.frames.Length - 1))) loopCount++;
 }

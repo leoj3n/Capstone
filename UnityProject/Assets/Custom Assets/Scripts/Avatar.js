@@ -9,6 +9,8 @@ public var expectedSounds : CharacterSound; // just for exposing expected order 
 public var statsTexture : Texture2D;
 public var statsAtlas : TextAsset;
 public var shadowPrefab : GameObject;
+public var baseOffset : Vector3 = Vector3.zero;
+public var isControllable : boolean = true;
 
 // STATIC
 protected var boundController : ControllerEnum;
@@ -26,7 +28,6 @@ protected var textureAtlasCube : Transform;
 protected var facing : int = 1; // 1 = right, -1 = left
 protected var canJump : boolean = true;
 protected var canMove : boolean = true;
-public var isControllable : boolean = true;
 protected var state : CharacterState;
 protected var previousState : CharacterState;
 protected var isNearlyGrounded : boolean = true;
@@ -388,8 +389,8 @@ function actUponState() {
 	StateFinal();
 	
 	// apply all changes to the texture atlas renderer
-	taRenderer.setTextureAtlas( parseInt( atlas ), offset, loop ); // Vector3( 0.68, 0.3, 0.0 )
-	//taRenderer.scaleAnchorHoriz = ((facing == 1) ? ScaleAnchorH.Left : ScaleAnchorH.Right);
+	taRenderer.setTextureAtlas( parseInt( atlas ), (offset + baseOffset), loop ); // Vector3( 0.68, 0.3, 0.0 )
+	//taRenderer.scaleAnchorHoriz = scaleAnchor;//((facing == 1) ? ScaleAnchorH.Left : ScaleAnchorH.Right);
 	taRenderer.reverse = reverse;
 	if( staticFrame > -1) {
 		taRenderer.isStatic = true;
