@@ -375,14 +375,17 @@ function determineAtlas() {
 			atlas = CharacterAtlas.Hit;
 			break;*/
 		case CharacterState.Block:
-			atlas = CharacterAtlas.Block;
+			//atlas = CharacterAtlas.Block;
+			atlas = CharacterAtlas.Idle;
 			break;
 		case CharacterState.Attack1:			
 			atlas = CharacterAtlas.Attack1;
+			offset = Vector3( -0.5, 0.0, 0.0 );
 			canMove = false;
 			break;
 		case CharacterState.Attack2:
-			atlas = CharacterAtlas.Attack2;
+			atlas = CharacterAtlas.Attack1;
+			offset = Vector3( -0.5, 0.0, 0.0 );
 			canMove = false;
 			break;
 		case CharacterState.Special1:
@@ -400,7 +403,7 @@ function determineAtlas() {
 	
 	// apply all changes to the texture atlas renderer
 	var finalOffset : Vector3 = Vector3( baseOffset.x, (baseOffset.y - (characterController.height / 2.0)), baseOffset.z );
-	taRenderer.setTextureAtlas( parseInt( atlas ), (offset + finalOffset), loop );
+	taRenderer.setTextureAtlas( parseInt( atlas ), scaleAnchorFix( offset + finalOffset), loop );
 	taRenderer.reverse = reverse;
 	if( staticFrame > -1) {
 		taRenderer.isStatic = true;
@@ -414,15 +417,23 @@ function determineAtlas() {
 // switch over state in order to implement Special1, Special2 or Ultimate
 function CharacterStateSwitch() { /* override this function */ }
 
+// a hack to make footage facing the wrong way (to the right) work
+function scaleAnchorFix( v : Vector3 ) : Vector3 {
+	if (taRenderer.scaleAnchorHoriz == ScaleAnchorH.Right)
+		return Vector3( (v.x * -1.0), v.y, v.z );
+	else
+		return v;
+}
+
 // utility function to try an attack (utilizes timeToAttack())
 function raycastAttack( type : AttackType, passedVar ) : RaycastHit {	
 	var sizeOfGeometry : Vector3 = Global.getSize( textureAtlasCube.gameObject );
 	
 	var dist : float;
-	if (taRenderer.scaleAnchorHoriz == ScaleAnchorH.Left)
+	//if (taRenderer.scaleAnchorHoriz == ScaleAnchorH.Left)
 		dist = (Mathf.Abs( getScaledCenter().x ) + sizeOfGeometry.x + baseOffset.x + offset.x);
-	else
-		dist = (Mathf.Abs( getScaledCenter().x ) + sizeOfGeometry.x - baseOffset.x - offset.x);
+	//else
+		//dist = (Mathf.Abs( getScaledCenter().x ) + sizeOfGeometry.x - baseOffset.x - offset.x);
 	
 	var dir : Vector3 = Vector3( (facing * 1.0), 0.0, 0.0 );
 	
