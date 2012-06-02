@@ -9,7 +9,6 @@ public var expectedSounds : CharacterSound; // just for exposing expected order 
 public var statsTexture : Texture2D;
 public var statsAtlas : TextAsset;
 public var shadowPrefab : GameObject;
-public var shadowOffset : Vector3;
 
 // STATIC
 protected var boundController : ControllerEnum;
@@ -258,9 +257,11 @@ function checkIfNearlyGrounded() {
 
 // move the shadow with the character controller
 function updateShadow() {
-	var newPos : Vector3 = (getCenterInWorld() + Global.multiplyVectorBySigns( shadowOffset, transform.localScale ));
+	var newPos : Vector3 = getCenterInWorld();
 	if (shadowUseTAC) newPos.x = textureAtlasCube.position.x;
+	
 	shadow.transform.position = Vector3.Lerp( shadow.transform.position, newPos, (Time.deltaTime * 20) );
+	
 	shadowProjector.aspectRatio = (shadowUseTAC ? textureAtlasCube.localScale.x : origShadowAspectRatio);
 }
 
@@ -353,10 +354,11 @@ function actUponState() {
 			offset = Vector3( -1.0, -0.2, 0.0 );
 			loop = false;
 			shadowUseTAC = true;
-			canJump = canMove = false;
+			canJump = canMove = false; // Input.ResetInputAxes(); ???
 			break;
 		case CharacterState.Attack1:
 			atlas = CharacterAtlas.Attack1;
+			offset = Vector3( -0.5, 0.0, 0.0 );
 			canMove = false;
 			
 			var hit : RaycastHit = tryAttack();
@@ -386,8 +388,8 @@ function actUponState() {
 	StateFinal();
 	
 	// apply all changes to the texture atlas renderer
-	taRenderer.setTextureAtlasIndex( parseInt( atlas ), loop, Vector3( 0.68, 0.3, 0.0 ) );
-	taRenderer.scaleAnchorHoriz = ((facing == 1) ? ScaleAnchorH.Left : ScaleAnchorH.Right);
+	taRenderer.setTextureAtlas( parseInt( atlas ), offset, loop ); // Vector3( 0.68, 0.3, 0.0 )
+	//taRenderer.scaleAnchorHoriz = ((facing == 1) ? ScaleAnchorH.Left : ScaleAnchorH.Right);
 	taRenderer.reverse = reverse;
 	if( staticFrame > -1) {
 		taRenderer.isStatic = true;
@@ -551,5 +553,5 @@ function Reset() {
 	gameObject.layer = 8; // Avatar layer
 	transform.position = Vector3.zero;
 	transform.rotation = Quaternion.identity;
-	transform.localScale = Vector3( 8.0, 4.8, -0.0001 );
+	transform.localScale = Vector3( 1.0, 1.0, 1.0 );
 }

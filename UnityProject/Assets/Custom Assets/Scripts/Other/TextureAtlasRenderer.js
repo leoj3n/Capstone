@@ -18,15 +18,18 @@ public var reverse : boolean = false;
 private var textureAtlasArray : TextureAtlas[];
 private var textureAtlasIndex : int;
 private var origScale : Vector3;
+private var origLocalPos : Vector3;
 private var scaleFactor : Vector2 = Vector2( 1.0, 1.0 );
 private var fpsTimer : float = 0.0;
 private var frameIndex : int = 0;
 private var loopCount : int = 0;
 private var offsetPosition : Vector3 = Vector3.zero;
-private var previousOffsetPosition : Vector3 = Vector3.zero;
+private var scaleFixPos : Vector3 = Vector3.zero;
+private var initial : boolean = true;
 
 function Start() {
 	origScale = Global.absoluteVector( transform.localScale );
+	origLocalPos = transform.localPosition;
 	
 	/*
 	placeholder.width     frame.width
@@ -48,16 +51,17 @@ function Start() {
 		textureAtlasArray[i] = new TextureAtlas( texture[i], atlas[i] );
 		
 	applyTextureAtlas( textureAtlasArray[textureAtlasIndex] );
+	initial = false;
 }
 
 function Update() {
+	if (!allowLooping && (loopCount > 0)) return;
+	
 	applyTextureAtlas( textureAtlasArray[textureAtlasIndex] );
 }
 
 function applyTextureAtlas( ta : TextureAtlas ) {
 	fpsTimer += Time.deltaTime;
-	
-	if (!allowLooping && (loopCount > 0)) return;
 	
 	frameIndex = parseInt( (fpsTimer * fps) % ta.frames.Length );
 	if (reverse) frameIndex = ((ta.frames.Length - 1) - frameIndex);
@@ -79,50 +83,53 @@ function applyTextureAtlas( ta : TextureAtlas ) {
 	// update position to compensate for scale
 	if( scaleFromSide ) {
 		var sizeDiff : Vector3 = ((Global.getSize( gameObject ) - sizeBeforeScale) / 2.0);
+		
 		switch( scaleAnchorVert ) {
 			case ScaleAnchorV.Top:
-				transform.localPosition.y -= sizeDiff.y;
+				scaleFixPos.y -= sizeDiff.y;
 				break;
 			case ScaleAnchorV.Bottom:
-				transform.localPosition.y += sizeDiff.y;
+				scaleFixPos.y += sizeDiff.y;
 				break;
 		}
-		switch( scaleAnchorHoriz ) {
-			case ScaleAnchorH.Left:
-				transform.localPosition.x += sizeDiff.x;
-				break;
-			case ScaleAnchorH.Right:
-				transform.localPosition.x -= sizeDiff.x;
-				break;
+		
+		if( !initial ) {
+			switch( scaleAnchorHoriz ) {
+				case ScaleAnchorH.Left:
+					scaleFixPos.x += sizeDiff.x;
+					break;
+				case ScaleAnchorH.Right:
+					scaleFixPos.x -= sizeDiff.x;
+					break;
+			}
+		} else {
+			Debug.Log( sizeDiff );
 		}
 	}
 	
-	/*if( offsetPosition != previousOffsetPosition ) {
-		transform.localPosition -= previousOffsetPosition;
-		transform.localPosition += offsetPosition;
-		previousOffsetPosition = offsetPosition;
-	}*/
+	transform.localPosition = (origLocalPos + scaleFixPos + offsetPosition);
 	
 	if (!isStatic && (frameIndex == (ta.frames.Length - 1))) loopCount++;
 }
 
-function setTextureAtlasIndex( index : int, loop : boolean, offset : Vector3, force : boolean ) {
+function setTextureAtlas( index : int, offset : Vector3, loop : boolean, force : boolean ) {
 	if( force || (index != textureAtlasIndex) ) {
-		textureAtlasIndex = index;
-		allowLooping = loop;
-		offsetPosition = offset;
-		loopCount = 0;
 		fpsTimer = 0.0;
+		loopCount = 0;
 	}
+	
+	textureAtlasIndex = index;
+	offsetPosition = offset;
+	allowLooping = loop;
 }
-function setTextureAtlasIndex( index : int, loop : boolean, offset : Vector3 ) {
-	setTextureAtlasIndex( index, loop, offset, false );
+function setTextureAtlas( index : int, offset : Vector3, loop : boolean ) {
+	setTextureAtlas( index, offset, loop, false );
 }
-function setTextureAtlasIndex( index : int, loop : boolean ) {
-	setTextureAtlasIndex( index, loop, Vector3.zero );
+function setTextureAtlas( index : int, offset : Vector3 ) {
+	setTextureAtlas( index, offset, true );
 }
-function setTextureAtlasIndex( index : int ) {
-	setTextureAtlasIndex( index, true );
+function setTextureAtlas( index : int ) {
+	setTextureAtlas( index, Vector3.zero );
 }
 
 function getLoopCount() {

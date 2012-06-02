@@ -10,9 +10,9 @@ private var taRenderer : TextureAtlasRenderer;
 
 function Start() {
 	character = Instantiate( characterPrefab );
-	character.transform.localScale.z = 0.0001;
+	character.transform.Find( 'TextureAtlasCube' ).transform.localScale.z *= -1.0;
 	
-	taRenderer = character.GetComponent( TextureAtlasRenderer );
+	taRenderer = character.GetComponentInChildren( TextureAtlasRenderer );
 	
 	var statsTexture : Texture2D = character.GetComponent( Avatar ).statsTexture;
 	var statsAtlas : TextAsset = character.GetComponent( Avatar ).statsAtlas;
@@ -44,8 +44,8 @@ function Start() {
 }
 
 function Update() {
-	taRenderer.setTextureAtlasIndex(
-		parseInt( playSelected ? CharacterAtlas.Selected : CharacterAtlas.SelectIdle ) );
+	taRenderer.setTextureAtlas(
+		parseInt( playSelected ? CharacterAtlas.Selected : CharacterAtlas.SelectIdle ), Vector3( -0.5, -0.3, 0.0 ) );
 	
 	if (playSelected && (taRenderer.getLoopCount() == 1))
 		playSelected = false;
