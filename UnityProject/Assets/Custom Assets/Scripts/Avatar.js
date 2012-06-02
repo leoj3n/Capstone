@@ -379,13 +379,7 @@ function determineAtlas() {
 			break;
 		case CharacterState.Attack1:			
 			atlas = CharacterAtlas.Attack1;
-			offset = Vector3( -0.5, 0.0, 0.0 );
 			canMove = false;
-			
-			var hit : RaycastHit = raycastAttack( AttackType.SpecificFrame, 5 );
-			if( hit.transform ) {
-				hitOtherAvatar( hit, attackOneForce, (attackOneForce / 2.0) );
-			}
 			break;
 		case CharacterState.Attack2:
 			atlas = CharacterAtlas.Attack2;
@@ -402,7 +396,7 @@ function determineAtlas() {
 			break;
 	}
 	
-	StateFinal();
+	CharacterStateSwitch();
 	
 	// apply all changes to the texture atlas renderer
 	var finalOffset : Vector3 = Vector3( baseOffset.x, (baseOffset.y - (characterController.height / 2.0)), baseOffset.z );
@@ -418,12 +412,18 @@ function determineAtlas() {
 
 // override this function in any character script to do any custom work such as
 // switch over state in order to implement Special1, Special2 or Ultimate
-function StateFinal() { /* override this function */ }
+function CharacterStateSwitch() { /* override this function */ }
 
 // utility function to try an attack (utilizes timeToAttack())
 function raycastAttack( type : AttackType, passedVar ) : RaycastHit {	
 	var sizeOfGeometry : Vector3 = Global.getSize( textureAtlasCube.gameObject );
-	var dist : float = (Mathf.Abs( getScaledCenter().x ) + sizeOfGeometry.x + baseOffset.x + offset.x);
+	
+	var dist : float;
+	if (taRenderer.scaleAnchorHoriz == ScaleAnchorH.Left)
+		dist = (Mathf.Abs( getScaledCenter().x ) + sizeOfGeometry.x + baseOffset.x + offset.x);
+	else
+		dist = (Mathf.Abs( getScaledCenter().x ) + sizeOfGeometry.x - baseOffset.x - offset.x);
+	
 	var dir : Vector3 = Vector3( (facing * 1.0), 0.0, 0.0 );
 	
 	if( timeToAttack( type, passedVar ) ) {
