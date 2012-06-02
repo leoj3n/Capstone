@@ -99,7 +99,7 @@ function Update() {
 		updateShadow();
 		
 		determineState();
-		actUponState();
+		determineAtlas();
 	}
 	
 	shadowProjector.enabled = isControllable;
@@ -270,7 +270,7 @@ function updateShadow() {
 	
 	shadow.position = Vector3.Lerp( shadow.position, newPos, (Time.deltaTime * 20) );
 	
-	shadowProjector.aspectRatio = (shadowUseTAC ? textureAtlasCube.localScale.x : origShadowAspectRatio);
+	shadowProjector.aspectRatio = (shadowUseTAC ? Mathf.Abs( textureAtlasCube.localScale.x ) : origShadowAspectRatio);
 }
 
 // determine the state of this avatar and apply it to the texture atlas renderer
@@ -338,17 +338,22 @@ function determineState() {
 	if (state != previousState) attackStarted = false;
 }
 
-// set atlas and do anything else based on state
-function actUponState() {
+// set atlas (and do anything else necessary) based on state
+function determineAtlas() {
 	switch( state ) {
 		case CharacterState.Jump:
-			atlas = CharacterAtlas.Jump; // forward/backwards
-			break;
-		case CharacterState.Block:
-			atlas = CharacterAtlas.Block;
+			if (movingBack)
+				atlas = CharacterAtlas.Jump; // JumpBackward
+			else
+				atlas = CharacterAtlas.Jump; // JumpForward
 			break;
 		case CharacterState.Drop:
-			atlas = CharacterAtlas.Jump; // forward/backwards
+			if (previousState == CharacterState.Drop) staticFrame = (taRenderer.getFrameCount() / 2);
+			
+			if (movingBack)
+				atlas = CharacterAtlas.Jump; // JumpBackward
+			else
+				atlas = CharacterAtlas.Jump; // JumpForward
 			break;
 		case CharacterState.Walk:
 			atlas = CharacterAtlas.Walk;
@@ -364,13 +369,18 @@ function actUponState() {
 			shadowUseTAC = true;
 			canJump = canMove = false; // Input.ResetInputAxes(); ???
 			break;
+		/*case CharacterState.Hit:
+			atlas = CharacterAtlas.Hit;
+			break;*/
+		case CharacterState.Block:
+			atlas = CharacterAtlas.Block;
+			break;
 		case CharacterState.Attack1:
 			atlas = CharacterAtlas.Attack1;
 			offset = Vector3( -0.5, 0.0, 0.0 );
 			canMove = false;
 			
 			var hit : RaycastHit = tryAttack();
-			
 			if( hit.transform ) {
 				hitOtherAvatar( hit, 50, 10 );
 			}
@@ -404,6 +414,8 @@ function actUponState() {
 	}
 }
 
+// override this function in any character script to do any custom work such as
+// switch over state in order to implement Special1, Special2 or Ultimate
 function StateFinal() { /* override this function */ }
 
 // utility function to try an attack (utilizes timeToAttack())

@@ -9,8 +9,7 @@ class ZipperFace extends Avatar {
 			case CharacterState.Walk:
 				break;
 			case CharacterState.Drop:
-				Debug.Log( 'Drop!' );
-				staticFrame = 8;
+				//staticFrame = 8;
 				break;
 			case CharacterState.Special1:
 				canMove = false;
