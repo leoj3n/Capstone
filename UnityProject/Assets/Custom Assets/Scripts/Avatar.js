@@ -14,12 +14,14 @@ public var shadowOffset : Vector3;
 // STATIC
 protected var boundController : ControllerEnum;
 private var shadow : GameObject;
+private var shadowProjector : Projector;
+protected var shadowUseTAC : boolean = false;
 protected var gravity : float = 50.0;
 protected var groundedAcceleration : float = 6.0;
 protected var inAirAcceleration : float = 3.0;
 protected var characterController : CharacterController;
 protected var taRenderer : TextureAtlasRenderer;
-protected var textureAtlasCube : GameObject;
+protected var textureAtlasCube : Transform;
 
 // STATE
 protected var facing : int = 1; // 1 = right, -1 = left
@@ -37,13 +39,11 @@ private var lastAttackTime : float = 0.0;
 private var attackCount : int = 0;
 
 // OTHER
-protected var origCenter : Vector3;
-protected var shadowProjector : Projector;
-protected var shadowOffsetExtra : Vector3;
 protected var origShadowAspectRatio : float;
-protected var shadowAspectRatioExtra : float;
 protected var knockbackForce : Vector3;
 protected var explosionForce : Vector3;
+protected var loop : boolean = true;
+protected var offset : Vector3 = Vector3.zero;
 
 // HEALTH
 protected var health : float = 100.0;
@@ -68,9 +68,9 @@ protected var isMoving : boolean = false;
 
 function Start() {
 	characterController = GetComponent( CharacterController );
-	origCenter = characterController.center;
 	taRenderer = GetComponentInChildren( TextureAtlasRenderer );
-	textureAtlasCube = gameObject.Find( 'TextureAtlasCube' );
+	textureAtlasCube = transform.Find( 'TextureAtlasCube' );
+	
 	shadow = GameObject.Instantiate( shadowPrefab );
 	shadowProjector = shadow.GetComponent( Projector );
 	origShadowAspectRatio = shadowProjector.aspectRatio;
@@ -85,9 +85,9 @@ function Update() {
 		doMovement();
 		enforceBounds();
 		
-		if (GameManager.instance.avatars.Length == 2)
-			faceNearestEnemy();
-		else
+		//if (GameManager.instance.avatars.Length == 2)
+		//	faceNearestEnemy();
+		//else
 			faceMoveDirection();
 		
 		checkIfMovingBack();
@@ -258,9 +258,10 @@ function checkIfNearlyGrounded() {
 
 // move the shadow with the character controller
 function updateShadow() {
-	var newPos : Vector3 = (getCenterInWorld() + shadowOffset + Global.multiplyVectorBySigns( shadowOffsetExtra, transform.localScale ));
+	var newPos : Vector3 = (getCenterInWorld() + Global.multiplyVectorBySigns( shadowOffset, transform.localScale ));
+	if (shadowUseTAC) newPos.x = textureAtlasCube.position.x;
 	shadow.transform.position = Vector3.Lerp( shadow.transform.position, newPos, (Time.deltaTime * 20) );
-	shadowProjector.aspectRatio = (origShadowAspectRatio + shadowAspectRatioExtra);
+	shadowProjector.aspectRatio = (shadowUseTAC ? textureAtlasCube.localScale.x : origShadowAspectRatio);
 }
 
 // determine the state of this avatar and apply it to the texture atlas renderer
@@ -270,11 +271,12 @@ function determineState() {
 	// set dynamic variables to default state
 	previousState = state;
 	staticFrame = -1;
+	loop = true;
+	offset = Vector3.zero;
 	reverse = false;
 	canJump = true;
 	canMove = true;
-	shadowOffsetExtra = Vector3.zero;
-	shadowAspectRatioExtra = 0.0;
+	shadowUseTAC = false;
 	
 	// joystick-activated states
 	switch( true ) {
@@ -313,18 +315,13 @@ function determineState() {
 		}
 	}
 	
-	// environment-activated states (overrides all)
+	// game-activated states (overrides all)
 	switch( true ) {
 		case (knockbackForce.magnitude > 0.1):			
 			//state = CharacterState.Hit;
 			break;
 		case (explosionForce.magnitude > 0.1):			
 			state = CharacterState.Fall;
-			break;
-		case (previousState == CharacterState.Fall):
-			if (getName() == 'BlackMagic') break;
-			transform.position += Vector3( 0.0, 1.0, 0.0 ); // compensate for 0.0, 0.2, 0.0
-			characterController.center = origCenter;
 			break;
 	}
 	
@@ -353,13 +350,10 @@ function actUponState() {
 			break;
 		case CharacterState.Fall:
 			atlas = CharacterAtlas.Fall;
+			offset = Vector3( -1.0, -0.2, 0.0 );
+			loop = false;
+			shadowUseTAC = true;
 			canJump = canMove = false;
-			shadowAspectRatioExtra = Mathf.Max( (3.0 - explosionForce.magnitude), origShadowAspectRatio );
-			shadowOffsetExtra = Vector3( 0.8, 0.0, 0.0 );
-			if (getName() == 'BlackMagic') break;
-			var newCenter : Vector3 = (origCenter + Vector3( 0.0, 0.2, 0.0 ));
-			if (characterController.center != newCenter) characterController.center = newCenter;
-			if ((previousState == CharacterState.Fall) && (taRenderer.getLoopCount() == 1)) staticFrame = 14;
 			break;
 		case CharacterState.Attack1:
 			atlas = CharacterAtlas.Attack1;
@@ -392,7 +386,7 @@ function actUponState() {
 	StateFinal();
 	
 	// apply all changes to the texture atlas renderer
-	taRenderer.setTextureAtlasIndex( parseInt( atlas ) );
+	taRenderer.setTextureAtlasIndex( parseInt( atlas ), loop, Vector3( 0.68, 0.3, 0.0 ) );
 	taRenderer.scaleAnchorHoriz = ((facing == 1) ? ScaleAnchorH.Left : ScaleAnchorH.Right);
 	taRenderer.reverse = reverse;
 	if( staticFrame > -1) {
@@ -405,11 +399,9 @@ function actUponState() {
 
 function StateFinal() { /* override this function */ }
 
-
-
 // utility function to try an attack (utilizes timeToAttack())
 function tryAttack() : RaycastHit {
-	var sizeOfGeometry : Vector3 = Global.getSize( textureAtlasCube );
+	var sizeOfGeometry : Vector3 = Global.getSize( textureAtlasCube.gameObject );
 	var dirctn : Vector3 = Vector3( (facing * 1.0), 0.0, 0.0 );
 	var distnce : float = (Mathf.Abs( transform.localScale.x * characterController.center.x ) + (sizeOfGeometry.x / 2));
 	

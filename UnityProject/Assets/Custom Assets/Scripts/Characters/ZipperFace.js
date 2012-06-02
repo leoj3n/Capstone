@@ -7,7 +7,6 @@ class ZipperFace extends Avatar {
 	function StateFinal() {
 		switch( state ) {
 			case CharacterState.Walk:
-				shadowOffsetExtra = Vector3( -0.2, 0.0, 0.0 );
 				break;
 			case CharacterState.Drop:
 				Debug.Log( 'Drop!' );

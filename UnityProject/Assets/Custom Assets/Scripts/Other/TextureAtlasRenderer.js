@@ -12,6 +12,7 @@ public var scaleAnchorHoriz : ScaleAnchorH;
 public var fps : float = 30.0; // should match (or be close to) After Effects composition settings
 public var isStatic : boolean = false;
 public var staticFrame : int = 0;
+public var allowLooping : boolean = true;
 public var reverse : boolean = false;
 
 private var textureAtlasArray : TextureAtlas[];
@@ -21,6 +22,8 @@ private var scaleFactor : Vector2 = Vector2( 1.0, 1.0 );
 private var fpsTimer : float = 0.0;
 private var frameIndex : int = 0;
 private var loopCount : int = 0;
+private var offsetPosition : Vector3 = Vector3.zero;
+private var previousOffsetPosition : Vector3 = Vector3.zero;
 
 function Start() {
 	origScale = Global.absoluteVector( transform.localScale );
@@ -54,6 +57,8 @@ function Update() {
 function applyTextureAtlas( ta : TextureAtlas ) {
 	fpsTimer += Time.deltaTime;
 	
+	if (!allowLooping && (loopCount > 0)) return;
+	
 	frameIndex = parseInt( (fpsTimer * fps) % ta.frames.Length );
 	if (reverse) frameIndex = ((ta.frames.Length - 1) - frameIndex);
 	if (isStatic) frameIndex = staticFrame;
@@ -76,31 +81,48 @@ function applyTextureAtlas( ta : TextureAtlas ) {
 		var sizeDiff : Vector3 = ((Global.getSize( gameObject ) - sizeBeforeScale) / 2.0);
 		switch( scaleAnchorVert ) {
 			case ScaleAnchorV.Top:
-				transform.position.y -= sizeDiff.y;
+				transform.localPosition.y -= sizeDiff.y;
 				break;
 			case ScaleAnchorV.Bottom:
-				transform.position.y += sizeDiff.y;
+				transform.localPosition.y += sizeDiff.y;
 				break;
 		}
 		switch( scaleAnchorHoriz ) {
 			case ScaleAnchorH.Left:
-				transform.position.x += sizeDiff.x;
+				transform.localPosition.x += sizeDiff.x;
 				break;
 			case ScaleAnchorH.Right:
-				transform.position.x -= sizeDiff.x;
+				transform.localPosition.x -= sizeDiff.x;
 				break;
 		}
 	}
 	
+	/*if( offsetPosition != previousOffsetPosition ) {
+		transform.localPosition -= previousOffsetPosition;
+		transform.localPosition += offsetPosition;
+		previousOffsetPosition = offsetPosition;
+	}*/
+	
 	if (!isStatic && (frameIndex == (ta.frames.Length - 1))) loopCount++;
 }
 
-function setTextureAtlasIndex( index : int ) {
-	if( index != textureAtlasIndex ) {
+function setTextureAtlasIndex( index : int, loop : boolean, offset : Vector3, force : boolean ) {
+	if( force || (index != textureAtlasIndex) ) {
 		textureAtlasIndex = index;
+		allowLooping = loop;
+		offsetPosition = offset;
 		loopCount = 0;
 		fpsTimer = 0.0;
 	}
+}
+function setTextureAtlasIndex( index : int, loop : boolean, offset : Vector3 ) {
+	setTextureAtlasIndex( index, loop, offset, false );
+}
+function setTextureAtlasIndex( index : int, loop : boolean ) {
+	setTextureAtlasIndex( index, loop, Vector3.zero );
+}
+function setTextureAtlasIndex( index : int ) {
+	setTextureAtlasIndex( index, true );
 }
 
 function getLoopCount() {
