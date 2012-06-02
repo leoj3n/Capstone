@@ -1,5 +1,5 @@
 
-@script RequireComponent( CharacterController )
+//@script RequireComponent( CharacterController )
 
 public var atlas : CharacterAtlas;
 public var walkSpeed : float = 6.0;
@@ -201,7 +201,7 @@ function setVerticalMovement() {
 	if( characterController.isGrounded ) {
 		// jump only when pressing the button down with a timeout so you can press the button slightly before landing		
 		if( canJump && (Time.time < (lastJumpButtonTime + jumpTimeout)) ) {
-			AudioPlay( CharacterSound.Jump );
+			audioPlay( CharacterSound.Jump );
 			verticalSpeed = Mathf.Sqrt( 2 * jumpHeight * gravity );
 			jumping = true;
 			lastJumpTime = Time.time;
@@ -560,10 +560,12 @@ function SetController( ce : ControllerEnum ) {
 	boundController = ce;
 }
 
+// returns bound controller
 function getController() : ControllerEnum {
 	return boundController;
 }
 
+// returns literal name of character
 function getName() : String {
 	return typeof( this ).ToString();
 }
@@ -574,9 +576,10 @@ function OutOfBounds() {
 	Debug.Log( 'Avatar has been returned from out of bounds.' );
 }
 
-function AudioPlay( cs : int ) {
-	var uid : int = (GetInstanceID() + cs);
-	GameManager.instance.audioBind( uid, sound[cs] );
+// utility function to make playing character audio easier
+function audioPlay( sid : int ) {
+	var uid : int = (GetInstanceID() + sid);
+	GameManager.instance.audioBind( uid, sound[sid] );
 	GameManager.instance.audioPlay( uid, true );
 }
 
