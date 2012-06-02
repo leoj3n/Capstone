@@ -6,13 +6,13 @@ public var statsTopFrame : int = 2;
 public var playSelected : boolean = false;
 
 private var character : GameObject;
+private var avatar : Avatar;
 private var taRenderer : TextureAtlasRenderer;
 
 function Start() {
 	character = Instantiate( characterPrefab );
-	character.transform.Find( 'TextureAtlasCube' ).transform.localScale.z *= -1.0;
-	
-	taRenderer = character.GetComponentInChildren( TextureAtlasRenderer );
+	avatar = character.GetComponent( Avatar );
+	taRenderer = avatar.GetComponentInChildren( TextureAtlasRenderer );
 	
 	var statsTexture : Texture2D = character.GetComponent( Avatar ).statsTexture;
 	var statsAtlas : TextAsset = character.GetComponent( Avatar ).statsAtlas;
@@ -37,7 +37,7 @@ function Start() {
 		}
 	}
 	
-	character.GetComponent( Avatar ).isControllable = false;
+	avatar.isControllable = false;
 	character.transform.parent = transform;
 	character.transform.localPosition = Vector3( 0.0, 2.4, -12.6 );
 	character.AddComponent( BillBoard );
@@ -45,7 +45,8 @@ function Start() {
 
 function Update() {
 	taRenderer.setTextureAtlas(
-		parseInt( playSelected ? CharacterAtlas.Selected : CharacterAtlas.SelectIdle ), Vector3( -0.5, -0.3, 0.0 ) );
+		parseInt( playSelected ? CharacterAtlas.Selected : CharacterAtlas.SelectIdle ), 
+		Vector3( (avatar.baseOffset.x * -1.0), avatar.baseOffset.y, 0.0 ) );
 	
 	if (playSelected && (taRenderer.getLoopCount() == 1))
 		playSelected = false;

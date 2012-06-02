@@ -80,6 +80,10 @@ function Update() {
 	if( isControllable ) {
 		if (Global.getAxis( 'Vertical', boundController ) >= 0.2) lastJumpButtonTime = Time.time; // jump
 		
+		// force correct sign of z-scale
+		if (Mathf.Sign( textureAtlasCube.transform.localScale.z ) == 1.0)
+			textureAtlasCube.transform.localScale.z *= -1.0;
+		
 		setHorizontalMovement();
 		setVerticalMovement();
 		doMovement();
@@ -389,8 +393,8 @@ function actUponState() {
 	StateFinal();
 	
 	// apply all changes to the texture atlas renderer
-	taRenderer.setTextureAtlas( parseInt( atlas ), (offset + baseOffset), loop ); // Vector3( 0.68, 0.3, 0.0 )
-	//taRenderer.scaleAnchorHoriz = scaleAnchor;//((facing == 1) ? ScaleAnchorH.Left : ScaleAnchorH.Right);
+	var finalOffset : Vector3 = Vector3( baseOffset.x, (baseOffset.y - (characterController.height / 2.0)), baseOffset.z );
+	taRenderer.setTextureAtlas( parseInt( atlas ), (offset + finalOffset), loop );
 	taRenderer.reverse = reverse;
 	if( staticFrame > -1) {
 		taRenderer.isStatic = true;

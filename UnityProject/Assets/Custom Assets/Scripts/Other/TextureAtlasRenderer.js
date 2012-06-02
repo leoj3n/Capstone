@@ -18,6 +18,7 @@ public var reverse : boolean = false;
 private var textureAtlasArray : TextureAtlas[];
 private var textureAtlasIndex : int;
 private var origScale : Vector3;
+private var origPos : Vector3;
 private var scalePos : Vector3 = Vector3.zero;
 private var scaleFactor : Vector2 = Vector2( 1.0, 1.0 );
 private var fpsTimer : float = 0.0;
@@ -26,8 +27,9 @@ private var loopCount : int = 0;
 private var offsetPosition : Vector3 = Vector3.zero;
 private var scaleFixPos : Vector3 = Vector3.zero;
 
-function Start() {
+function Awake() {
 	origScale = Global.absoluteVector( transform.localScale );
+	origPos = transform.position;
 	
 	/*
 	placeholder.width     frame.width
@@ -43,7 +45,9 @@ function Start() {
 		scaleFactor = Vector2( (origScale.x / renderer.material.mainTexture.width), (origScale.y / renderer.material.mainTexture.height) );
 		
 	//Debug.Log( scaleFactor.ToString( 'F4' ) );
-	
+}
+
+function Start() {
 	textureAtlasArray = new TextureAtlas[texture.length];
 	for (var i = 0; i < texture.Length; i++)
 		textureAtlasArray[i] = new TextureAtlas( texture[i], atlas[i] );
@@ -106,7 +110,7 @@ function applyTextureAtlas( ta : TextureAtlas ) {
 			break;
 	}
 	
-	transform.localPosition = (scalePos + scaleFixPos + offsetPosition);
+	transform.localPosition = (/*scalePos +*/ scaleFixPos + offsetPosition);
 	
 	if (!isStatic && (frameIndex == (ta.frames.Length - 1))) loopCount++;
 }
@@ -131,15 +135,15 @@ function setTextureAtlas( index : int ) {
 	setTextureAtlas( index, Vector3.zero );
 }
 
-function getLoopCount() {
+function getLoopCount() : int {
 	return loopCount;
 }
 
-function getFrameIndex() {
+function getFrameIndex() : int {
 	return frameIndex;
 }
 
-function getFrameCount() {
+function getFrameCount() : int {
 	return textureAtlasArray[textureAtlasIndex].frames.Length;
 }
 
