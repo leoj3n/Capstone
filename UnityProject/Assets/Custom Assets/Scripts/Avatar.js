@@ -19,6 +19,7 @@ protected var groundedAcceleration : float = 6.0;
 protected var inAirAcceleration : float = 3.0;
 protected var characterController : CharacterController;
 protected var taRenderer : TextureAtlasRenderer;
+protected var textureAtlasCube : GameObject;
 
 // STATE
 protected var facing : int = 1; // 1 = right, -1 = left
@@ -68,7 +69,8 @@ protected var isMoving : boolean = false;
 function Start() {
 	characterController = GetComponent( CharacterController );
 	origCenter = characterController.center;
-	taRenderer = GetComponent( TextureAtlasRenderer );
+	taRenderer = GetComponentInChildren( TextureAtlasRenderer );
+	textureAtlasCube = gameObject.Find( 'TextureAtlasCube' );
 	shadow = GameObject.Instantiate( shadowPrefab );
 	shadowProjector = shadow.GetComponent( Projector );
 	origShadowAspectRatio = shadowProjector.aspectRatio;
@@ -407,7 +409,7 @@ function StateFinal() { /* override this function */ }
 
 // utility function to try an attack (utilizes timeToAttack())
 function tryAttack() : RaycastHit {
-	var sizeOfGeometry : Vector3 = Global.getSize( gameObject );
+	var sizeOfGeometry : Vector3 = Global.getSize( textureAtlasCube );
 	var dirctn : Vector3 = Vector3( (facing * 1.0), 0.0, 0.0 );
 	var distnce : float = (Mathf.Abs( transform.localScale.x * characterController.center.x ) + (sizeOfGeometry.x / 2));
 	

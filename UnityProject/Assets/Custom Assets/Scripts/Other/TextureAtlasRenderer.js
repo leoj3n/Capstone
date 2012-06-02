@@ -17,9 +17,6 @@ public var reverse : boolean = false;
 private var textureAtlasArray : TextureAtlas[];
 private var textureAtlasIndex : int;
 private var origScale : Vector3;
-private var attachedCharContr : CharacterController;
-private var origRadius : float;
-private var origCenter : Vector3;
 private var scaleFactor : Vector2 = Vector2( 1.0, 1.0 );
 private var fpsTimer : float = 0.0;
 private var frameIndex : int = 0;
@@ -27,12 +24,6 @@ private var loopCount : int = 0;
 
 function Start() {
 	origScale = Global.absoluteVector( transform.localScale );
-	
-	attachedCharContr = GetComponent( CharacterController );
-	if( attachedCharContr ) {
-		origRadius = attachedCharContr.radius;
-		origCenter = attachedCharContr.center;
-	}
 	
 	/*
 	placeholder.width     frame.width
@@ -93,23 +84,13 @@ function applyTextureAtlas( ta : TextureAtlas ) {
 		}
 		switch( scaleAnchorHoriz ) {
 			case ScaleAnchorH.Left:
-				//transform.position.x += sizeDiff.x;
-				var newCenterXinLocal : float = ((origCenter.x * transform.localScale.x) + sizeDiff.x);
-				attachedCharContr.center.x = (newCenterXinLocal / transform.localScale.x);
+				transform.position.x += sizeDiff.x;
 				break;
 			case ScaleAnchorH.Right:
 				transform.position.x -= sizeDiff.x;
 				break;
 		}
 	}
-	
-	// update center to compensate for scale
-	//if (scaleAgainstPlaceholder && attachedCharContr)
-		//attachedCharContr.center.x = (origCenter.x * Mathf.Abs( origScale.x / transform.localScale.x ));
-	
-	// update radius to compensate for scale
-	if (scaleAgainstPlaceholder && attachedCharContr)
-		attachedCharContr.radius = (origRadius * Mathf.Abs( origScale.x / transform.localScale.x ));
 	
 	if (!isStatic && (frameIndex == (ta.frames.Length - 1))) loopCount++;
 }

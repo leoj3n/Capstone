@@ -72,7 +72,7 @@ class SceneManager extends MonoBehaviour {
 			// simulate character select
 			if( Application.loadedLevel > 1 ) {
 				GameManager.instance.controllers[0].character = CharacterEnum.ZipperFace;
-				GameManager.instance.controllers[1].character = CharacterEnum.BlackMagic;
+				GameManager.instance.controllers[1].character = CharacterEnum.ZipperFace;//BlackMagic;
 			}
 			
 			// simulate level select
@@ -97,7 +97,7 @@ static function getSize( object ) : Vector3 {
 	try {
 		var size : Vector3 = object.GetComponent( MeshFilter ).sharedMesh.bounds.size;
 	} catch( err ) {
-		Debug.LogError( err );
+		Debug.LogError( err, object );
 		return Vector3.zero; // if unable get size of mesh, return zero
 	}
 	
