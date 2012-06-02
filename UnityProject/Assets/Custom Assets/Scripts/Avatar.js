@@ -377,7 +377,7 @@ function determineAtlas() {
 		case CharacterState.Block:
 			atlas = CharacterAtlas.Block;
 			break;
-		case CharacterState.Attack1:
+		case CharacterState.Attack1:			
 			atlas = CharacterAtlas.Attack1;
 			offset = Vector3( -0.5, 0.0, 0.0 );
 			canMove = false;
@@ -421,7 +421,7 @@ function determineAtlas() {
 function StateFinal() { /* override this function */ }
 
 // utility function to try an attack (utilizes timeToAttack())
-function raycastAttack( type : AttackType, passedVar ) : RaycastHit {
+function raycastAttack( type : AttackType, passedVar ) : RaycastHit {	
 	var sizeOfGeometry : Vector3 = Global.getSize( textureAtlasCube.gameObject );
 	var dist : float = (Mathf.Abs( getScaledCenter().x ) + sizeOfGeometry.x + baseOffset.x + offset.x);
 	var dir : Vector3 = Vector3( (facing * 1.0), 0.0, 0.0 );
@@ -448,8 +448,10 @@ function raycastAttack( type : AttackType ) : RaycastHit {
 }
 
 // utility function to determine if it is time to attack
-function timeToAttack( type : AttackType, passedVar ) : boolean {
+function timeToAttack( type : AttackType, passedVar ) : boolean {	
 	var isTime : boolean = false;
+	
+	if (previousState != state) return isTime; // texture atlas has not been set yet
 	
 	switch( type ) {
 		case AttackType.SpecificFrame:
