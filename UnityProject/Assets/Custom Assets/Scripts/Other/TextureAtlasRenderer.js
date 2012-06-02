@@ -18,7 +18,7 @@ public var reverse : boolean = false;
 private var textureAtlasArray : TextureAtlas[];
 private var textureAtlasIndex : int;
 private var origScale : Vector3;
-private var origPos : Vector3;
+private var origLocalPos : Vector3;
 private var scalePos : Vector3 = Vector3.zero;
 private var scaleFactor : Vector2 = Vector2( 1.0, 1.0 );
 private var fpsTimer : float = 0.0;
@@ -29,22 +29,11 @@ private var scaleFixPos : Vector3 = Vector3.zero;
 
 function Awake() {
 	origScale = Global.absoluteVector( transform.localScale );
-	origPos = transform.position;
-	
-	/*
-	placeholder.width     frame.width
-	------------------ = -------------
-	   origScale.x        newScale.x
-	
-	newScale.x = (origScale.x * frame.width) / placeholder.width
-	newScale.x = frame.width * (origScale.x / placeholder.width)
-	*/
+	origLocalPos = transform.localPosition;
 	
 	 // Placeholder-Image / Axis-Scale
 	if( scaleAgainstPlaceholder )
 		scaleFactor = Vector2( (origScale.x / renderer.material.mainTexture.width), (origScale.y / renderer.material.mainTexture.height) );
-		
-	//Debug.Log( scaleFactor.ToString( 'F4' ) );
 }
 
 function Start() {
@@ -110,7 +99,7 @@ function applyTextureAtlas( ta : TextureAtlas ) {
 			break;
 	}
 	
-	transform.localPosition = (/*scalePos +*/ scaleFixPos + offsetPosition);
+	transform.localPosition = (origLocalPos + scalePos + scaleFixPos + offsetPosition);
 	
 	if (!isStatic && (frameIndex == (ta.frames.Length - 1))) loopCount++;
 }
@@ -206,6 +195,14 @@ class TextureAtlas {
 }
 
 /*
+placeholder.width     frame.width
+------------------ = -------------
+   origScale.x        newScale.x
+
+newScale.x = (origScale.x * frame.width) / placeholder.width
+newScale.x = frame.width * (origScale.x / placeholder.width)
+
+Debug.Log( scaleFactor.ToString( 'F4' ) );
 
 TexturePacker Settings:
 	
