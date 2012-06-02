@@ -382,7 +382,7 @@ function determineAtlas() {
 			offset = Vector3( -0.5, 0.0, 0.0 );
 			canMove = false;
 			
-			var hit : RaycastHit = raycastAttack( AttackType.WidestFrame );
+			var hit : RaycastHit = raycastAttack( AttackType.SpecificFrame, 5 );
 			if( hit.transform ) {
 				hitOtherAvatar( hit, attackOneForce, (attackOneForce / 2.0) );
 			}
