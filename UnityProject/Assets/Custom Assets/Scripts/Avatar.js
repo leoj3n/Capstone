@@ -408,25 +408,25 @@ function StateFinal() { /* override this function */ }
 // utility function to try an attack (utilizes timeToAttack())
 function tryAttack() : RaycastHit {
 	var sizeOfGeometry : Vector3 = Global.getSize( textureAtlasCube.gameObject );
-	var dirctn : Vector3 = Vector3( (facing * 1.0), 0.0, 0.0 );
-	var distnce : float = (Mathf.Abs( transform.localScale.x * characterController.center.x ) + (sizeOfGeometry.x / 2));
+	var dist : float = (Mathf.Abs( transform.localScale.x * characterController.center.x ) + sizeOfGeometry.x + baseOffset.x + offset.x);
+	var dir : Vector3 = Vector3( (facing * 1.0), 0.0, 0.0 );
 	
 	if( timeToAttack() ) {
-		var hits : RaycastHit[] = Physics.RaycastAll( getCenterInWorld(), dirctn, distnce, GameManager.instance.avatarOnlyLayerMask );
+		var hits : RaycastHit[] = Physics.RaycastAll( getCenterInWorld(), dir, dist, GameManager.instance.avatarOnlyLayerMask );
 		if( hits ) {
 			var didHit : boolean = false;
 			for( var hit : RaycastHit in hits ) {
 				if (hit.transform == transform) continue;
 				
-				Debug.DrawRay( getCenterInWorld(), (dirctn * distnce), Color.red, 1.0 );
+				Debug.DrawRay( getCenterInWorld(), (dir * dist), Color.red, 1.0 );
 				return hit;
 			}
 			
-			Debug.DrawRay( getCenterInWorld(), (dirctn * distnce), Color.blue, 1.0 );
+			Debug.DrawRay( getCenterInWorld(), (dir * dist), Color.blue, 1.0 );
 		}
 	}
 	
-	Debug.DrawRay( getCenterInWorld(), (dirctn * distnce) );
+	Debug.DrawRay( getCenterInWorld(), (dir * dist) );
 }
 
 // utility function to determine if it is time to attack
