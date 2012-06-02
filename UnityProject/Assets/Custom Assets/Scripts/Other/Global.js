@@ -1,7 +1,7 @@
 
 // all shared enums are here
 enum CharacterEnum { ZipperFace, BlackMagic, KidCane, Dan, Mick }
-enum CharacterSound { AnnouncerName, Selected, Jump }
+enum CharacterSound { AnnouncerName, Selected, Jump, Hit }
 enum CharacterState {
 	CutScene,
 	Idle,

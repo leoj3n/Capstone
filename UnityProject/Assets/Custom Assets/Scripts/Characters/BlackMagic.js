@@ -8,11 +8,11 @@ class BlackMagic extends Avatar {
 		switch( state ) {
 			case CharacterState.Attack1:
 			case CharacterState.Attack2:
-				fps = 20.0;
+				fps = 25.0;
 				
 				var hit : RaycastHit = raycastAttack( AttackType.WidestFrame );
 				if( hit.transform ) {
-					hitOtherAvatar( hit, attackOneForce, (attackOneForce * 0.25) );
+					hitOtherAvatar( hit, attackOneForce, attackOneDamping );
 				}
 				break;
 			case CharacterState.Special1:

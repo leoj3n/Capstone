@@ -4,8 +4,10 @@
 public var atlas : CharacterAtlas;
 public var walkSpeed : float = 6.0;
 public var jumpHeight : float = 2.0;
-public var attackOneForce : float = 50.0;
+public var attackOneForce : float = 40.0;
+public var attackOneDamping : float = 2.0;
 public var attackTwoForce : float = 80.0;
+public var attackTwoDamping : float = 5.0;
 public var sound : AudioClip[];
 public var expectedSounds : CharacterSound; // just for exposing expected order of sounds in inspector
 public var statsTexture : Texture2D;
@@ -33,6 +35,9 @@ protected var canJump : boolean = true;
 protected var canMove : boolean = true;
 protected var state : CharacterState;
 protected var previousState : CharacterState;
+protected var previousAtlas : CharacterAtlas;
+protected var previousLoopCount : int = 0;
+protected var attackedThisLoop : boolean = false;
 protected var isNearlyGrounded : boolean = true;
 protected var staticFrame : int = -1;
 protected var reverse : boolean = false;
@@ -325,7 +330,7 @@ function determineState() {
 	
 	// game-activated states (overrides all)
 	switch( true ) {
-		case (hitForce.magnitude > 0.1):			
+		case (hitForce.magnitude > 3.0):			
 			state = CharacterState.Hit;
 			break;
 		case (explosionForce.magnitude > 0.1):			
@@ -395,6 +400,10 @@ function determineAtlas() {
 	
 	CharacterStateSwitch();
 	
+	if ((taRenderer.getLoopCount() != previousLoopCount) || (previousAtlas != atlas)) attackedThisLoop = false;
+	previousAtlas = atlas;
+	previousLoopCount = taRenderer.getLoopCount();
+	
 	// apply all changes to the texture atlas renderer
 	var finalOffset : Vector3 = Vector3( baseOffset.x, (baseOffset.y - (characterController.height / 2.0)), baseOffset.z );
 	taRenderer.setTextureAtlas( parseInt( atlas ), scaleAnchorFix( offset + finalOffset), loop );
@@ -455,10 +464,10 @@ function timeToAttack( type : AttackType, passedVar ) : boolean {
 	
 	switch( type ) {
 		case AttackType.SpecificFrame:
-			isTime = (taRenderer.getFrameIndex() == passedVar);
+			if (!attackedThisLoop) isTime = (taRenderer.getFrameIndex() == passedVar);
 			break;
 		case AttackType.WidestFrame:
-			isTime = (taRenderer.getFrameIndex() == taRenderer.getWidestFrameIndex());
+			if (!attackedThisLoop) isTime = (taRenderer.getFrameIndex() == taRenderer.getWidestFrameIndex());
 			break;
 		case AttackType.Timed:
 			isTime = ((Time.time - lastAttackTime) > passedVar);
@@ -468,7 +477,11 @@ function timeToAttack( type : AttackType, passedVar ) : boolean {
 			break;
 	}
 	
-	if (isTime) lastAttackTime = Time.time;
+	if( isTime ) {
+		Debug.Log( attackedThisLoop );
+		lastAttackTime = Time.time;
+		attackedThisLoop = true;
+	}
 	
 	return isTime;
 }
@@ -539,6 +552,8 @@ function addHitForce( pos : Vector3, force : float, damping : float, hp : float 
 	var hForce : Vector3 = (force * dir);
 	health -= hp;
 	
+	audioPlay( CharacterSound.Hit );
+	
 	// apply explosion force via co-routine
 	var initial : boolean = true;
 	while( hForce != Vector3.zero ) {
@@ -563,7 +578,8 @@ function OnControllerColliderHit( hit : ControllerColliderHit ) {
 	
 	var pushDir : Vector3 = Vector3( hit.moveDirection.x, 0, hit.moveDirection.z );
 	
-	body.velocity = (2 * (pushDir + (pushDir / body.mass)));
+	body.velocity = (Mathf.Max( 2.5, ((hitForce.magnitude + explosionForce.magnitude) / 2.0) ) * 
+		(pushDir + (pushDir / body.mass)));
 }
 
 // use SendMessage to call this
