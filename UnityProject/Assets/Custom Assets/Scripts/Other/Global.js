@@ -8,6 +8,7 @@ enum CharacterState {
 	Jump,
 	Walk,
 	Fall,
+	Hit,
 	Drop,
 	Block,
 	Attack1,
@@ -26,12 +27,13 @@ enum CharacterAtlas {
 	JumpForward, // 6
 	Walk, // 7
 	Fall, // 8
-	Block, // 9
-	Attack1, // 10
-	Attack2, // 11
-	Special1, // 12
-	Special2, // 13
-	Ultimate, // 14
+	Hit, // 9
+	Block, // 10
+	Attack1, // 11
+	Attack2, // 12
+	Special1, // 13
+	Special2, // 14
+	Ultimate, // 15
 }
 enum AttackType {
 	SpecificFrame,

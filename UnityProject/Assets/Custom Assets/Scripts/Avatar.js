@@ -34,15 +34,12 @@ protected var previousState : CharacterState;
 protected var isNearlyGrounded : boolean = true;
 protected var staticFrame : int = -1;
 protected var reverse : boolean = false;
-private var attackStarted : boolean = false;
-private var attackWaiting : boolean = false;
 private var lastAttackTime : float = 0.0;
-private var attackCount : int = 0;
 
 // OTHER
 protected var origShadowAspectRatio : float;
-protected var hitForce : Vector3;
-protected var explosionForce : Vector3;
+protected var hitForce : Vector3; // force from a hit from another avatar
+protected var explosionForce : Vector3; // force from a meteor explosion or similar
 protected var loop : boolean = true;
 protected var offset : Vector3 = Vector3.zero;
 
@@ -53,11 +50,8 @@ protected var health : float = 100.0;
 protected var jumping : boolean = false;
 private var jumpTimeout : float = 0.15;
 private var jumpRepeatTime : float = 0.05;
-private var groundedTimeout : float = 0.25;
 private var lastJumpButtonTime : float = -10.0;
 private var lastJumpTime : float = -1.0;
-private var lastGroundedTime : float = 0.0;
-protected var lastJumpStartHeight : float = 0.0;
 protected var verticalSpeed : float = 0.0;
 protected var inAirVelocity : Vector3 = Vector3.zero;
 
@@ -192,7 +186,7 @@ function setHorizontalMovement() {
 	}
 }
 
-// sets verticalSpeed, jumping, lastJumpTime, lastJumpButtonTime and lastJumpStartHeight
+// sets verticalSpeed, jumping, lastJumpTime, lastJumpButtonTime
 function setVerticalMovement() {
 	// apply gravity (-0.05 fixes jittering isGrounded problem)
 	verticalSpeed = (characterController.isGrounded ? -0.05 : (verticalSpeed - (gravity * Time.deltaTime)));
@@ -208,7 +202,6 @@ function setVerticalMovement() {
 			jumping = true;
 			lastJumpTime = Time.time;
 			lastJumpButtonTime = -10;
-			lastJumpStartHeight = transform.position.y;
 		}
 	}
 }
@@ -219,7 +212,6 @@ function doMovement() {
 		((moveDirection * moveSpeed) + Vector3( 0, verticalSpeed, 0 ) + inAirVelocity + hitForce + explosionForce) );
 	
 	if( characterController.isGrounded ) {
-		lastGroundedTime = Time.time;
 		inAirVelocity = Vector3.zero;
 		jumping = false;
 	}
@@ -329,15 +321,12 @@ function determineState() {
 	// game-activated states (overrides all)
 	switch( true ) {
 		case (hitForce.magnitude > 0.1):			
-			//state = CharacterState.Hit;
+			state = CharacterState.Hit;
 			break;
 		case (explosionForce.magnitude > 0.1):			
 			state = CharacterState.Fall;
 			break;
 	}
-	
-	// set dynamic variable to default state if state changed
-	if (state != previousState) attackStarted = false;
 }
 
 // set atlas (and do anything else necessary) based on state
@@ -345,17 +334,17 @@ function determineAtlas() {
 	switch( state ) {
 		case CharacterState.Jump:
 			if (movingBack)
-				atlas = CharacterAtlas.Jump; // JumpBackward
+				atlas = CharacterAtlas.JumpBackward;
 			else
-				atlas = CharacterAtlas.Jump; // JumpForward
+				atlas = CharacterAtlas.JumpForward;
 			break;
 		case CharacterState.Drop:
 			if (previousState == CharacterState.Drop) staticFrame = (taRenderer.getFrameCount() / 2);
 			
 			if (movingBack)
-				atlas = CharacterAtlas.Jump; // JumpBackward
+				atlas = CharacterAtlas.JumpBackward;
 			else
-				atlas = CharacterAtlas.Jump; // JumpForward
+				atlas = CharacterAtlas.JumpForward;
 			break;
 		case CharacterState.Walk:
 			atlas = CharacterAtlas.Walk;
@@ -371,12 +360,12 @@ function determineAtlas() {
 			shadowUseTAC = true;
 			canJump = canMove = false; // Input.ResetInputAxes(); ???
 			break;
-		/*case CharacterState.Hit:
+		case CharacterState.Hit:
 			atlas = CharacterAtlas.Hit;
-			break;*/
+			loop = false;
+			break;
 		case CharacterState.Block:
-			//atlas = CharacterAtlas.Block;
-			atlas = CharacterAtlas.Idle;
+			atlas = CharacterAtlas.Block;
 			break;
 		case CharacterState.Attack1:			
 			atlas = CharacterAtlas.Attack1;
@@ -384,7 +373,7 @@ function determineAtlas() {
 			canMove = false;
 			break;
 		case CharacterState.Attack2:
-			atlas = CharacterAtlas.Attack1;
+			atlas = CharacterAtlas.Attack2;
 			offset = Vector3( -0.5, 0.0, 0.0 );
 			canMove = false;
 			break;
@@ -428,13 +417,7 @@ function scaleAnchorFix( v : Vector3 ) : Vector3 {
 // utility function to try an attack (utilizes timeToAttack())
 function raycastAttack( type : AttackType, passedVar ) : RaycastHit {	
 	var sizeOfGeometry : Vector3 = Global.getSize( textureAtlasCube.gameObject );
-	
-	var dist : float;
-	//if (taRenderer.scaleAnchorHoriz == ScaleAnchorH.Left)
-		dist = (Mathf.Abs( getScaledCenter().x ) + sizeOfGeometry.x + baseOffset.x + offset.x);
-	//else
-		//dist = (Mathf.Abs( getScaledCenter().x ) + sizeOfGeometry.x - baseOffset.x - offset.x);
-	
+	var dist : float = (Mathf.Abs( getScaledCenter().x ) + sizeOfGeometry.x + baseOffset.x + offset.x);
 	var dir : Vector3 = Vector3( (facing * 1.0), 0.0, 0.0 );
 	
 	if( timeToAttack( type, passedVar ) ) {
