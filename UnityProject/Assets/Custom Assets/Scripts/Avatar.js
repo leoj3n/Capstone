@@ -382,9 +382,9 @@ function determineAtlas() {
 			offset = Vector3( -0.5, 0.0, 0.0 );
 			canMove = false;
 			
-			var hit : RaycastHit = tryAttack( AttackType.Widest );
+			var hit : RaycastHit = raycastAttack( AttackType.WidestFrame );
 			if( hit.transform ) {
-				hitOtherAvatar( hit, attackOneForce, (attackOneForce / 5.0) );
+				hitOtherAvatar( hit, attackOneForce, (attackOneForce / 2.0) );
 			}
 			break;
 		case CharacterState.Attack2:
@@ -421,37 +421,54 @@ function determineAtlas() {
 function StateFinal() { /* override this function */ }
 
 // utility function to try an attack (utilizes timeToAttack())
-function tryAttack( type : AttackType ) : RaycastHit {
+function raycastAttack( type : AttackType, passedVar ) : RaycastHit {
 	var sizeOfGeometry : Vector3 = Global.getSize( textureAtlasCube.gameObject );
 	var dist : float = (Mathf.Abs( getScaledCenter().x ) + sizeOfGeometry.x + baseOffset.x + offset.x);
 	var dir : Vector3 = Vector3( (facing * 1.0), 0.0, 0.0 );
 	
-	if( timeToAttack() ) {
+	if( timeToAttack( type, passedVar ) ) {
 		var hits : RaycastHit[] = Physics.RaycastAll( getCenterInWorld(), dir, dist, GameManager.instance.avatarOnlyLayerMask );
 		if( hits ) {
 			var didHit : boolean = false;
 			for( var hit : RaycastHit in hits ) {
 				if (hit.transform == transform) continue;
 				
-				Debug.DrawRay( getCenterInWorld(), (dir * dist), Color.red, 1.0 );
+				Debug.DrawRay( getCenterInWorld(), (dir * dist), Color.red, 0.05 );
 				return hit;
 			}
 			
-			Debug.DrawRay( getCenterInWorld(), (dir * dist), Color.blue, 1.0 );
+			Debug.DrawRay( getCenterInWorld(), (dir * dist), Color.blue, 0.05 );
 		}
 	}
 	
 	Debug.DrawRay( getCenterInWorld(), (dir * dist) );
 }
+function raycastAttack( type : AttackType ) : RaycastHit {
+	return raycastAttack( type, false );
+}
 
 // utility function to determine if it is time to attack
-function timeToAttack() : boolean {
-	if( /*((Time.time - lastAttackTime) > 1.0) && */(taRenderer.getFrameIndex() == taRenderer.getWidestFrameIndex()) ) {
-		lastAttackTime = Time.time;
-		return true;
+function timeToAttack( type : AttackType, passedVar ) : boolean {
+	var isTime : boolean = false;
+	
+	switch( type ) {
+		case AttackType.SpecificFrame:
+			isTime = (taRenderer.getFrameIndex() == passedVar);
+			break;
+		case AttackType.WidestFrame:
+			isTime = (taRenderer.getFrameIndex() == taRenderer.getWidestFrameIndex());
+			break;
+		case AttackType.Timed:
+			isTime = ((Time.time - lastAttackTime) > passedVar);
+			break;
+		case AttackType.Constant:
+			isTime = true;
+			break;
 	}
 	
-	return false;
+	if (isTime) lastAttackTime = Time.time;
+	
+	return isTime;
 }
 
 // utility function to apply hit force to another avatar using a passed RaycastHit
