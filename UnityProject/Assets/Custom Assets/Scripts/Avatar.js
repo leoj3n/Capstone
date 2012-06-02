@@ -586,10 +586,38 @@ function addHitForce( pos : Vector3, force : float, damping : float ) {
 	addHitForce( pos, force, damping, (force / damping) );
 }
 
+// utility function to add power modify
+function addPowerModify( modify : PowerModifyEnum ) {
+	modify = PowerModifyEnum.PowerGaugeBoost; // debug
+	switch( modify ) {
+		case PowerModifyEnum.ShadowClone:
+			break;
+		case PowerModifyEnum.TimeWarp:
+			break;
+		case PowerModifyEnum.PowerGaugeBoost:
+			GameManager.instance.audioPlay( 'PowerGuageBoost', true, false, 1.0 );
+			break;
+		case PowerModifyEnum.HomingBeacon:
+			break;
+		case PowerModifyEnum.Invincibility:
+			break;
+	}
+}
+
 // push props away
 function OnControllerColliderHit( hit : ControllerColliderHit ) {
-	if (!hit.gameObject.CompareTag( 'Prop' )) return; // only do so for props
-	var body : Rigidbody = hit.collider.attachedRigidbody;
+	if( hit.gameObject.CompareTag( 'PowerModify' ) ) {
+		addPowerModify( hit.transform.GetComponent( PowerModify ).getModifyType() );
+		var particles : Transform = hit.transform.Find( 'Particles' );
+		particles.parent = transform;
+		particles.position = transform.position;
+		Destroy( hit.gameObject );
+	}
+		
+	// only do the following for props
+	if (!hit.gameObject.CompareTag( 'Prop' )) return;
+
+		var body : Rigidbody = hit.collider.attachedRigidbody;
 	if ((body == null) || body.isKinematic) return;
 	if (hit.moveDirection.y < -0.3) return; // dont push objects down
 	

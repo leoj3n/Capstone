@@ -41,12 +41,13 @@ enum AttackType {
 	Timed,
 	Constant
 }
-enum PowerModify {
+enum PowerModifyEnum {
 	ShadowClone, // Black
 	TimeWarp, // Blue
 	PowerGaugeBoost, // Green
 	HomingBeacon, // Purple
-	Invincibility // Orange
+	Invincibility, // Orange
+	Count
 }
 enum ControllerEnum { A, B, C, D, Count } // Unity supports a maximum of 4 controllers
 enum ControllerTeam { Green, Red, Blue, Orange, Count } // need at least 4 teams to support free-for-all
