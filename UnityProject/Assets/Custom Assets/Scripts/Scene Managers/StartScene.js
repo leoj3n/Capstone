@@ -68,7 +68,7 @@ class StartScene extends SceneManager {
 		var halfWidth : float = (width / 2);
 		var halfHeight : float = (height / 2);
 		
-		GUI.DrawTexture( Rect( 100, 200, Screen.width - 200, Screen.height - 200 ), backgroundImage );
+		GUI.DrawTexture( Rect( (halfScreenWidth - 250), (Screen.height - 393), 500, 393 ), backgroundImage );
 		
 		GUILayout.BeginArea( Rect( (halfScreenWidth - halfWidth), 20.0, width, height ) );
 		

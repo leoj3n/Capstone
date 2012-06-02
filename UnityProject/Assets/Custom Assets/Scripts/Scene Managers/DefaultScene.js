@@ -57,7 +57,8 @@ class DefaultScene extends SceneManager {
 						
 						for( var avatar : GameObject in avatars ) {
 							var component : Component = avatar.GetComponent( Avatar );
-							GUILayout.Box( component.getName() + '\n(Controller ' + parseInt( component.getController() ) + ')\nHP [' + parseInt( component.health ) + '] PM [0%]' );
+							var HPPM : String = ((component.health > 0.0) ? 'HP [' + parseInt( component.health ) + '] PM [0%]' : 'You are dead!' );
+							GUILayout.Box( component.getName() + '\n(Controller ' + parseInt( component.getController() ) + ')\n' + HPPM );
 						}
 					}
 				}

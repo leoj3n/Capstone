@@ -52,7 +52,7 @@ protected var offset : Vector3 = Vector3.zero;
 protected var fps : float = 16.0;
 
 // HEALTH
-protected var health : float = 100.0;
+protected var health : float = 10.0;
 
 // JUMPING
 protected var jumping : boolean = false;
@@ -108,9 +108,18 @@ function Update() {
 		
 		determineState();
 		determineAtlas();
+		
+		checkHealth();
 	}
 	
 	shadowProjector.enabled = isControllable;
+}
+
+// utility function to do things based on character health
+function checkHealth() {
+	if( health < 0.0 ) {
+		//health = 100;
+	}
 }
 
 // utility function to cause this avatar to face the nearest avatar
@@ -333,6 +342,9 @@ function determineState() {
 	
 	// game-activated states (overrides all)
 	switch( true ) {
+		case (health < 0.0):
+			state = CharacterState.Dead;
+			break;
 		case (Global.numIntrosPlaying > 0):
 			state = CharacterState.CutScene;
 			break;
@@ -348,6 +360,14 @@ function determineState() {
 // set atlas (and do anything else necessary) based on state
 function determineAtlas() {
 	switch( state ) {
+		case CharacterState.Dead:
+			Debug.Log( 'Dead!' );
+			atlas = CharacterAtlas.Fall;
+			staticFrame = (taRenderer.getFrameCount() - 1);
+			offset = Vector3( -1.0, -0.2, 0.0 );
+			shadowUseTAC = true;
+			canMove = canJump = false;
+			break;
 		case CharacterState.CutScene:
 			atlas = CharacterAtlas.Intro;
 			loop = false;
@@ -609,8 +629,10 @@ function OnControllerColliderHit( hit : ControllerColliderHit ) {
 	if( hit.gameObject.CompareTag( 'PowerModify' ) ) {
 		addPowerModify( hit.transform.GetComponent( PowerModify ).getModifyType() );
 		var particles : Transform = hit.transform.Find( 'Particles' );
-		particles.parent = transform;
-		particles.position = transform.position;
+		if( particles ) {
+			particles.parent = transform;
+			particles.position = transform.position;
+		}
 		Destroy( hit.gameObject );
 	}
 		
