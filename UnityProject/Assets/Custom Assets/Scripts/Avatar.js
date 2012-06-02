@@ -24,6 +24,8 @@ protected var inAirAcceleration : float = 3.0;
 protected var characterController : CharacterController;
 protected var taRenderer : TextureAtlasRenderer;
 protected var textureAtlasCube : Transform;
+protected var origShadowAspectRatio : float;
+protected var origFps : float;
 
 // STATE
 protected var facing : int = 1; // 1 = right, -1 = left
@@ -37,11 +39,11 @@ protected var reverse : boolean = false;
 private var lastAttackTime : float = 0.0;
 
 // OTHER
-protected var origShadowAspectRatio : float;
 protected var hitForce : Vector3; // force from a hit from another avatar
 protected var explosionForce : Vector3; // force from a meteor explosion or similar
 protected var loop : boolean = true;
 protected var offset : Vector3 = Vector3.zero;
+protected var fps : float = 16.0;
 
 // HEALTH
 protected var health : float = 100.0;
@@ -69,6 +71,8 @@ function Start() {
 	shadow = transform.Find( 'Shadow' );
 	shadowProjector = shadow.GetComponent( Projector );
 	origShadowAspectRatio = shadowProjector.aspectRatio;
+	
+	origFps = taRenderer.fps;
 }
 
 function Update() {
@@ -277,6 +281,7 @@ function determineState() {
 	loop = true;
 	offset = Vector3.zero;
 	reverse = false;
+	fps = 16.0;
 	canJump = true;
 	canMove = true;
 	shadowUseTAC = false;
@@ -367,7 +372,7 @@ function determineAtlas() {
 		case CharacterState.Block:
 			atlas = CharacterAtlas.Block;
 			break;
-		case CharacterState.Attack1:			
+		case CharacterState.Attack1:
 			atlas = CharacterAtlas.Attack1;
 			offset = Vector3( -0.5, 0.0, 0.0 );
 			canMove = false;
@@ -394,6 +399,7 @@ function determineAtlas() {
 	var finalOffset : Vector3 = Vector3( baseOffset.x, (baseOffset.y - (characterController.height / 2.0)), baseOffset.z );
 	taRenderer.setTextureAtlas( parseInt( atlas ), scaleAnchorFix( offset + finalOffset), loop );
 	taRenderer.reverse = reverse;
+	taRenderer.fps = fps;
 	if( staticFrame > -1) {
 		taRenderer.isStatic = true;
 		taRenderer.staticFrame = staticFrame;
