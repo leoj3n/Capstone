@@ -82,22 +82,43 @@ class StartScene extends SceneManager {
 			
 			var selecting : ControllerEnum[] = GameManager.instance.getControllerEnumsWithState( ControllerState.TeamSelect );
 			var ready : ControllerEnum[] = GameManager.instance.getControllerEnumsWithState( ControllerState.Ready );
+			var totalControllers : int = (selecting.Length + ready.Length);
 			
-			if( (selecting.Length + ready.Length) > 0 ) {
+			if( totalControllers == 1 ) {
+				GUILayout.Box( 'Two or more controllers are needed. Add another controller to continue!' );
+			} else if( totalControllers > 0 ) {
 				if( selecting.Length == 0 ) {
-					if (countdownStartTime == 0.0) countdownStartTime = Time.time;
-					var seconds : int = (Mathf.CeilToInt( countDownSeconds - (Time.time - countdownStartTime) ) % 60);
-					if (seconds == 1) Application.LoadLevel( SceneEnum.CharacterSelect );
-					GUILayout.Box( 'Character select in ' + seconds );
+					if( onSameTeam( ready ) ) {
+						GUILayout.Box( 'All players cannot be on the same team! A controller must change teams!' );
+					} else {
+						if (countdownStartTime == 0.0) countdownStartTime = Time.time;
+						var seconds : int = (Mathf.CeilToInt( countDownSeconds - (Time.time - countdownStartTime) ) % 60);
+						if (seconds == 1) Application.LoadLevel( SceneEnum.CharacterSelect );
+						GUILayout.Box( 'Character select in ' + seconds );
+					}
 				} else {
 					countdownStartTime = 0.0;
-					GUILayout.Box( 'Waiting for ' + selecting.Length + ' controllers to press Start' );
+					GUILayout.Box( 'Waiting for ' + selecting.Length + ' controllers to press Start to ready up' );
 				}
 			} else {
 				GUILayout.Box( 'No controllers added yet' );
 			}
 			
 		GUILayout.EndArea();
+	}
+	
+	private function onSameTeam( controllers : ControllerEnum[] ) : boolean {
+		for( var ce1 : ControllerEnum in controllers ) {
+			var team1 : ControllerTeam = GameManager.instance.controllers[ce1].team;
+			
+			for( var ce2 : ControllerEnum in controllers ) {
+				var team2 : ControllerTeam = GameManager.instance.controllers[ce2].team;
+				
+				if (team1 != team2) return false;
+			}
+		}
+		
+		return true;
 	}
 	
 	private function displayTeam( team : ControllerTeam ) {

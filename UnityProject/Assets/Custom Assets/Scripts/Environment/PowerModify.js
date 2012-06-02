@@ -6,7 +6,7 @@ private var modify : PowerModifyEnum;
 
 function Awake() {
 	modify = Random.Range( 0, PowerModifyEnum.Count );
-	renderer.material.SetColor( '_TintColor', Color.red );
+	transform.Find( 'Particles' ).renderer.material.SetColor( '_TintColor', Color.red );
 }
 
 function getModifyType() : PowerModifyEnum {
