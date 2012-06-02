@@ -6,7 +6,6 @@ public var debug : boolean = false;
 public var disable : boolean = false;
 
 private var lastSpawnTime : float;
-private var range : float;
 
 function Awake() {
 	lastSpawnTime = Time.time;
@@ -14,7 +13,7 @@ function Awake() {
 
 function Update() {
 	if( !disable && ((Time.time - lastSpawnTime) > timeBetween) ) {
-		range = Mathf.Clamp( (GetComponent( 'MainCamera' ).largestX / 2), Global.sharedMinX, Global.sharedMaxX );
+		var range : float = Mathf.Clamp( (GetComponent( 'MainCamera' ).largestX / 2), Global.sharedMinX, Global.sharedMaxX );
 		
 		var xPos : float = Random.Range( (transform.position.x - range), (transform.position.x + range) );
 		var yPos : float = (transform.position.y + camera.orthographicSize + yOffset);

@@ -42,6 +42,7 @@ protected var isNearlyGrounded : boolean = true;
 protected var staticFrame : int = -1;
 protected var reverse : boolean = false;
 private var lastAttackTime : float = 0.0;
+protected var introPlayed = false;
 
 // OTHER
 protected var hitForce : Vector3; // force from a hit from another avatar
@@ -78,6 +79,8 @@ function Start() {
 	origShadowAspectRatio = shadowProjector.aspectRatio;
 	
 	origFps = taRenderer.fps;
+	
+	Global.numIntrosPlaying++;
 }
 
 function Update() {
@@ -330,11 +333,14 @@ function determineState() {
 	
 	// game-activated states (overrides all)
 	switch( true ) {
-		case (hitForce.magnitude > 3.0):			
-			state = CharacterState.Hit;
+		case (Global.numIntrosPlaying > 0):
+			state = CharacterState.CutScene;
 			break;
 		case (explosionForce.magnitude > 0.1):			
 			state = CharacterState.Fall;
+			break;
+		case (hitForce.magnitude > 3.0):			
+			state = CharacterState.Hit;
 			break;
 	}
 }
@@ -342,6 +348,17 @@ function determineState() {
 // set atlas (and do anything else necessary) based on state
 function determineAtlas() {
 	switch( state ) {
+		case CharacterState.CutScene:
+			atlas = CharacterAtlas.Intro;
+			loop = false;
+			shadowUseTAC = true;
+			canMove = canJump = false;
+			
+			if( !introPlayed && (taRenderer.getLoopCount() == 1) ) {
+				Global.numIntrosPlaying--;
+				introPlayed = true;
+			}
+			break;
 		case CharacterState.Jump:
 			if (movingBack)
 				atlas = CharacterAtlas.JumpBackward;

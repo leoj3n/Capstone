@@ -1,7 +1,16 @@
 
 class DefaultScene extends SceneManager {
+	private var countDownSeconds : int = 3;
+	private var countdownStartTime : float;
+	private var timeBetweenPM : float = 5.0;
+	private var yOffsetPM : float = 10.0;
+	private var lastSpawnTimePM : float;
+	
 	function SceneLoaded() {
 		GameManager.instance.instantiateAvatars();
+		
+		countdownStartTime = Time.time;
+		GameManager.instance.audioPlay( 'Countdown' );
 	}
 	
 	function Update() {
@@ -19,12 +28,21 @@ class DefaultScene extends SceneManager {
 					Application.LoadLevel( SceneEnum.Start );
 					break;
 			}
+		} else {
+			if( (Time.time - lastSpawnTimePM) > timeBetweenPM ) {				
+				var xPos : float = Random.Range( Global.sharedMinX, Global.sharedMaxX );
+				var yPos : float = (Camera.main.transform.position.y + Camera.main.orthographicSize + yOffsetPM);
+					
+				Instantiate( GameManager.instance.powerModifyPrefab, Vector3( xPos, yPos, Global.sharedZ ), Quaternion.identity );
+				
+				lastSpawnTimePM = Time.time;
+			}
 		}
 	}
 	
-	function OnGUI() {		
-		var halfScreenWidth : float = (Screen.width / 2);
-		var halfScreenHeight : float = (Screen.height / 2);
+	function OnGUI() {
+		var halfScreenWidth : float = (Screen.width / 2.0);
+		var halfScreenHeight : float = (Screen.height / 2.0);
 		
 		GUILayout.BeginArea( Rect( 20.0, 20.0, 120.0, (Screen.height - 40.0) ) );
 			
@@ -48,12 +66,24 @@ class DefaultScene extends SceneManager {
 		
 		GUILayout.EndArea();
 		
-		if (!GameManager.instance.paused) return;
-		
-		var width : float = 300.0;
-		var height : float = 200.0;
+		var width : float = (halfScreenWidth / 2.0);
+		var height : float = width;
 		var halfWidth : float = (width / 2);
 		var halfHeight : float = (height / 2);
+		
+		if( Global.numIntrosPlaying > 0 ) {
+			var seconds : int = ((Mathf.CeilToInt( countDownSeconds - (Time.time - countdownStartTime) ) % 60) - 1);
+			if (seconds >= 0)
+				GUI.DrawTexture( Rect( (halfScreenWidth - halfWidth), (halfScreenHeight - halfHeight), width, height ), 
+					GameManager.instance.countdownTextures[seconds] );
+		}
+		
+		if (!GameManager.instance.paused) return;
+		
+		width = 300.0;
+		height = 200.0;
+		halfWidth = (width / 2);
+		halfHeight = (height / 2);
 		
 		GUILayout.BeginArea( Rect( (halfScreenWidth - halfWidth), (halfScreenHeight - halfHeight), width, height ) );
 		

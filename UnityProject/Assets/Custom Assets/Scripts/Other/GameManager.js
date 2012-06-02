@@ -14,6 +14,8 @@ class GameManager extends MonoBehaviour {
 	public var soundsBoundByName : AudioClip[]; // no order necessary
 	public var nearlyGroundedLayerMask : LayerMask = -1;
 	public var avatarOnlyLayerMask : LayerMask = -1;
+	public var countdownTextures : Texture[];
+	public var powerModifyPrefab : GameObject;
 		
 	// private variables (accessible via GameManager.instance)
 	private var _controllers : Controller[];
@@ -110,7 +112,7 @@ class GameManager extends MonoBehaviour {
 			var ce : ControllerEnum = readyControllers[i];
 			
 			var avatar : GameObject = GameObject.Instantiate( 
-				characterPrefabs[controllers[ce].character], Vector3( (3.0 * i), 4.0, 0.0 ), Quaternion.identity );
+				characterPrefabs[controllers[ce].character], Vector3( (-5.0 + (10.0 * i)), 4.0, 0.0 ), Quaternion.identity );
 			
 			Global.bindAvatarToController( avatar, ce ); // set a reference to the Controller in Avatar
 			avatars[i] = avatar;

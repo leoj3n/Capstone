@@ -41,6 +41,13 @@ enum AttackType {
 	Timed,
 	Constant
 }
+enum PowerModify {
+	ShadowClone, // Black
+	TimeWarp, // Blue
+	PowerGaugeBoost, // Green
+	HomingBeacon, // Purple
+	Invincibility // Orange
+}
 enum ControllerEnum { A, B, C, D, Count } // Unity supports a maximum of 4 controllers
 enum ControllerTeam { Green, Red, Blue, Orange, Count } // need at least 4 teams to support free-for-all
 enum ControllerState { SittingOut, TeamSelect, Ready }
@@ -52,6 +59,7 @@ static var sharedZ : float = 0.0;
 static var sharedMinX : float = -22.0;
 static var sharedMaxX : float = 22.0;
 static var debugScene : int = 0;
+static var numIntrosPlaying : int = 0;
 
 // an array of game controllers gets stored in GameManager
 class Controller {
