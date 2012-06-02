@@ -136,6 +136,21 @@ function getFrameCount() : int {
 	return textureAtlasArray[textureAtlasIndex].frames.Length;
 }
 
+function getWidestFrameIndex() : int {
+	widest = 0;
+	
+	for( var i = 0; i < getFrameCount(); i++ ) {
+		var frame : Rect = getFrame( i );
+		if (frame.width > getFrame( widest ).width) widest = i;
+	}
+	
+	return widest;
+}
+
+function getFrame( frame : int ) : Rect {
+	return textureAtlasArray[textureAtlasIndex].frames[frame];
+}
+
 class TextureAtlas {
 	public var texture : Texture2D;
 	public var data : TextAsset;

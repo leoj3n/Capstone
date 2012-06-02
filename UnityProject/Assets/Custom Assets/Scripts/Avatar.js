@@ -4,6 +4,8 @@
 public var atlas : CharacterAtlas;
 public var walkSpeed : float = 6.0;
 public var jumpHeight : float = 2.0;
+public var attackOneForce : float = 50.0;
+public var attackTwoForce : float = 80.0;
 public var sound : AudioClip[];
 public var expectedSounds : CharacterSound; // just for exposing expected order of sounds in inspector
 public var statsTexture : Texture2D;
@@ -380,9 +382,9 @@ function determineAtlas() {
 			offset = Vector3( -0.5, 0.0, 0.0 );
 			canMove = false;
 			
-			var hit : RaycastHit = tryAttack();
+			var hit : RaycastHit = tryAttack( AttackType.Widest );
 			if( hit.transform ) {
-				hitOtherAvatar( hit, 50, 10 );
+				hitOtherAvatar( hit, attackOneForce, (attackOneForce / 5.0) );
 			}
 			break;
 		case CharacterState.Attack2:
@@ -419,7 +421,7 @@ function determineAtlas() {
 function StateFinal() { /* override this function */ }
 
 // utility function to try an attack (utilizes timeToAttack())
-function tryAttack() : RaycastHit {
+function tryAttack( type : AttackType ) : RaycastHit {
 	var sizeOfGeometry : Vector3 = Global.getSize( textureAtlasCube.gameObject );
 	var dist : float = (Mathf.Abs( getScaledCenter().x ) + sizeOfGeometry.x + baseOffset.x + offset.x);
 	var dir : Vector3 = Vector3( (facing * 1.0), 0.0, 0.0 );
@@ -444,19 +446,9 @@ function tryAttack() : RaycastHit {
 
 // utility function to determine if it is time to attack
 function timeToAttack() : boolean {
-	if( attackStarted ) {
-		if( attackWaiting && ((Time.time - lastAttackTime) > 3.0) && (taRenderer.getFrameIndex() > (taRenderer.getFrameCount() / 2)) ) {
-			attackWaiting = false;
-			lastAttackTime = Time.time;
-			return true;
-		} else if( taRenderer.getLoopCount() > attackCount ) {
-			attackWaiting = true;
-			attackCount++;
-		}
-	} else {
-		attackStarted = true;
-		attackWaiting = true;
-		attackCount = 0;
+	if( /*((Time.time - lastAttackTime) > 1.0) && */(taRenderer.getFrameIndex() == taRenderer.getWidestFrameIndex()) ) {
+		lastAttackTime = Time.time;
+		return true;
 	}
 	
 	return false;
