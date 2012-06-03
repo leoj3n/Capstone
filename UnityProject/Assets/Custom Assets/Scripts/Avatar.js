@@ -99,7 +99,7 @@ function Update() {
 		doMovement();
 		enforceBounds();
 		
-		if( health > 0.0 ) {
+		if( isAlive() ) {
 			if (GameManager.instance.avatars.Length == 2)
 				faceNearestEnemy();
 			else
@@ -122,9 +122,14 @@ function Update() {
 
 // utility function to do things based on character health
 function checkHealth() {
-	if( health < 0.0 ) {
+	if( !isAlive() ) {
 		//health = 100;
 	}
+}
+
+// is health greater than zero?
+function isAlive() : boolean {
+	return (health > 0.0);
 }
 
 // utility function to cause this avatar to face the nearest avatar
@@ -357,7 +362,7 @@ function determineState() {
 	
 	// game-activated states (overrides all)
 	switch( true ) {
-		case (health < 0.0):
+		case (!isAlive()):
 			state = CharacterState.Dead;
 			break;
 		case (Global.numIntrosPlaying > 0):
@@ -707,7 +712,7 @@ function addPowerModify( modify : PowerModifyEnum ) {
 
 // push props away
 function OnControllerColliderHit( hit : ControllerColliderHit ) {
-	if( hit.gameObject.CompareTag( 'PowerModify' ) && (health > 0.0) ) {
+	if( hit.gameObject.CompareTag( 'PowerModify' ) && (isAlive()) ) {
 		addPowerModify( hit.transform.GetComponent( PowerModify ).getModifyType() );
 		var particles : Transform = hit.transform.Find( 'Particles' );
 		if( particles ) {
