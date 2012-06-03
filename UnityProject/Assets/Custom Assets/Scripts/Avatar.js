@@ -56,7 +56,7 @@ protected var fps : float = 16.0;
 protected var ccHeight : float = 4.0;
 
 // HEALTH
-protected var health : float = 5.0;
+protected var health : float = 0.1;
 
 // JUMPING
 protected var jumping : boolean = false;
@@ -142,6 +142,7 @@ function isAlive() : boolean {
 	return (health > 0.0);
 }
 
+// has this avatar been eliminated?
 function isEliminated() {
 	return eliminated;
 }

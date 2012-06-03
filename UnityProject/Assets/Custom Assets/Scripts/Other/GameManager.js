@@ -104,7 +104,6 @@ class GameManager extends MonoBehaviour {
 	// utility function for loading rounds
 	public function nextRoundOrScoreboard() {
 		if( round == 3 ) {
-			round = 1; // set the round back to one
 			Application.LoadLevel( SceneEnum.Scoreboard ); // end
 		} else {
 			round++; // increment to the next round
@@ -114,8 +113,7 @@ class GameManager extends MonoBehaviour {
 	
 	// utility function for loading levels that need to have rounds
 	public function loadLevel( id : LevelEnum) {
-		round = 1;
-		
+		round = 1; // set the round back to one
 		// SceneEnum.Count is used to offset LevelEnum
 		Application.LoadLevel( parseInt( SceneEnum.Count ) + id );
 	}

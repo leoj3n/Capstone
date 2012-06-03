@@ -46,7 +46,6 @@ class DefaultScene extends SceneManager {
 			for( var avatar : GameObject in GameManager.instance.avatars ) {
 				if (avatar.GetComponent( Avatar ).isEliminated()) numEliminated++;
 			}
-			Debug.Log( numEliminated + ' . ' + GameManager.instance.avatars.Length );
 			if( ((GameManager.instance.avatars.Length - numEliminated) < 2) && // 1 or 0 characters still alive
 				!GameManager.instance.audioIsPlaying( 'Eliminated' ) ) { // not playing eliminated sound
 				
@@ -60,7 +59,8 @@ class DefaultScene extends SceneManager {
 		var halfScreenWidth : float = (Screen.width / 2.0);
 		var halfScreenHeight : float = (Screen.height / 2.0);
 		
-		GUI.Box( Rect( (halfScreenWidth - 50.0), 20.0, 100.0, 22.0 ), ('Round ' + GameManager.instance.round) );
+		GUI.Box( Rect( (halfScreenWidth - 50.0), 20.0, 100.0, 22.0 ), 
+			((GameManager.instance.round == 3) ? 'Final Round' : ('Round ' + GameManager.instance.round)) );
 		
 		GUILayout.BeginArea( Rect( 20.0, 20.0, 120.0, (Screen.height - 40.0) ) );
 			
@@ -75,7 +75,7 @@ class DefaultScene extends SceneManager {
 						
 						for( var avatar : GameObject in avatars ) {
 							var component : Component = avatar.GetComponent( Avatar );
-							var HPPM : String = ((component.health > 0.0) ? 'HP [' + parseInt( component.health ) + '] PM [0%]' : 'You are dead!' );
+							var HPPM : String = ((component.isAlive()) ? 'HP [' + parseInt( Mathf.Max( component.health, 1.0 ) ) + '] PM [0%]' : 'You are dead!' );
 							GUILayout.Box( component.getName() + '\n(Controller ' + parseInt( component.getController() ) + ')\n' + HPPM );
 						}
 					}
