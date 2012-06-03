@@ -42,6 +42,10 @@ enum AttackType {
 	Timed,
 	Constant
 }
+enum CastType {
+	Raycast,
+	Capsule
+}
 enum PowerModifyEnum {
 	ShadowClone, // Black
 	TimeWarp, // Blue

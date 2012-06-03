@@ -28,6 +28,7 @@ protected var taRenderer : TextureAtlasRenderer;
 protected var textureAtlasCube : Transform;
 protected var origShadowAspectRatio : float;
 protected var origFps : float;
+protected var ccOrigHeight : float;
 
 // STATE
 protected var facing : int = 1; // 1 = right, -1 = left
@@ -50,9 +51,10 @@ protected var explosionForce : Vector3; // force from a meteor explosion or simi
 protected var loop : boolean = true;
 protected var offset : Vector3 = Vector3.zero;
 protected var fps : float = 16.0;
+protected var ccHeight : float = 4.0;
 
 // HEALTH
-protected var health : float = 10.0;
+protected var health : float = 5.0;
 
 // JUMPING
 protected var jumping : boolean = false;
@@ -79,6 +81,7 @@ function Start() {
 	origShadowAspectRatio = shadowProjector.aspectRatio;
 	
 	origFps = taRenderer.fps;
+	ccOrigHeight = characterController.height;
 	
 	Global.numIntrosPlaying++;
 }
@@ -96,10 +99,12 @@ function Update() {
 		doMovement();
 		enforceBounds();
 		
-		if (GameManager.instance.avatars.Length == 2)
-			faceNearestEnemy();
-		else
-			faceMoveDirection();
+		if( health > 0.0 ) {
+			if (GameManager.instance.avatars.Length == 2)
+				faceNearestEnemy();
+			else
+				faceMoveDirection();
+		}
 		
 		checkIfMovingBack();
 		checkIfNearlyGrounded();
@@ -302,6 +307,7 @@ function determineState() {
 	canJump = true;
 	canMove = true;
 	shadowUseTAC = false;
+	ccHeight = ccOrigHeight;
 	
 	// joystick-activated states
 	switch( true ) {
@@ -361,11 +367,11 @@ function determineState() {
 function determineAtlas() {
 	switch( state ) {
 		case CharacterState.Dead:
-			Debug.Log( 'Dead!' );
 			atlas = CharacterAtlas.Fall;
-			staticFrame = (taRenderer.getFrameCount() - 1);
+			if (previousState == state) staticFrame = (taRenderer.getFrameCount() - 1);
 			offset = Vector3( -1.0, -0.2, 0.0 );
 			shadowUseTAC = true;
+			ccHeight = 1.5;
 			canMove = canJump = false;
 			break;
 		case CharacterState.CutScene:
@@ -375,6 +381,7 @@ function determineAtlas() {
 			canMove = canJump = false;
 			
 			if( !introPlayed && (taRenderer.getLoopCount() == 1) ) {
+				Debug.Log( getName() + ' not playing' );
 				Global.numIntrosPlaying--;
 				introPlayed = true;
 			}
@@ -405,6 +412,7 @@ function determineAtlas() {
 			offset = Vector3( -1.0, -0.2, 0.0 );
 			loop = false;
 			shadowUseTAC = true;
+			ccHeight = 1.5;
 			canJump = canMove = false; // Input.ResetInputAxes(); ???
 			break;
 		case CharacterState.Hit:
@@ -437,6 +445,10 @@ function determineAtlas() {
 	
 	CharacterStateSwitch();
 	
+	// resize character controller height
+	resizeCharacterControllerHeight( ccHeight );
+	
+	// have we attacked this loop?
 	if ((taRenderer.getLoopCount() != previousLoopCount) || (previousAtlas != atlas)) attackedThisLoop = false;
 	previousAtlas = atlas;
 	previousLoopCount = taRenderer.getLoopCount();
@@ -466,31 +478,91 @@ function scaleAnchorFix( v : Vector3 ) : Vector3 {
 		return v;
 }
 
+// utility function to resize character controller height (from bottom)
+function resizeCharacterControllerHeight( h : float ) {
+	if( characterController.height != h ) {
+		transform.position.y += Mathf.Max( (h - characterController.height), 0.0 );
+		characterController.height = h;
+	}
+}
+
+// utility function for doing capsule casts
+function capsuleCast( dir : Vector3, dist : float, layerMask : LayerMask ) : RaycastHit[] {	
+	var p1 : Vector3;
+	var p2 : Vector3;
+	var center : Vector3;
+	var radius : float = getScaledRadius();
+	var halfHeight : float = (getScaledHeight() * 0.5);
+	p1 = p2 = getCenterInWorld();
+	p1.y += halfHeight;
+	p2.y -= halfHeight;
+	
+	var p1Real : Vector3 = (p1 + (dist * dir));
+	var p2Real : Vector3 = (p2 + (dist * dir));
+	var duration : float = 0.05;
+	
+	// draw the casting path
+	Debug.DrawLine( p1, p1Real, Color.blue, duration );
+	Debug.DrawLine( p2, p2Real, Color.blue, duration );
+	debugDrawCapsule( p1Real, p2Real, radius, Color.red, duration ); // draw capsule in final place
+	debugDrawCapsule( p1, p2, radius, Color.green, duration ); // draw capsule in initial place
+	
+	return Physics.CapsuleCastAll( p1, p2, radius, dir, dist, layerMask );
+}
+
+// helper function
+function debugDrawCapsule( p1 : Vector3, p2 : Vector3, radius : float, color : Color, duration : float ) {
+	var radiusVector : Vector3 = Vector3( radius, 0.0, 0.0 );
+	Debug.DrawLine( p1, (p1 + radiusVector), color, duration );
+	Debug.DrawLine( p1, (p1 - radiusVector), color, duration );
+	Debug.DrawLine( p1, p2, color, duration );
+	Debug.DrawLine( p2, (p2 + radiusVector), color, duration );
+	Debug.DrawLine( p2, (p2 - radiusVector), color, duration );
+}
+
 // utility function to try an attack (utilizes timeToAttack())
-function raycastAttack( type : AttackType, passedVar ) : RaycastHit {	
+function tryAttack( attackType : AttackType, passedVar, castType : CastType ) : RaycastHit {	
+	if (!timeToAttack( attackType, passedVar )) return;
+	
 	var sizeOfGeometry : Vector3 = Global.getSize( textureAtlasCube.gameObject );
 	var dist : float = (Mathf.Abs( getScaledCenter().x ) + sizeOfGeometry.x + baseOffset.x + offset.x);
 	var dir : Vector3 = Vector3( (facing * 1.0), 0.0, 0.0 );
 	
-	if( timeToAttack( type, passedVar ) ) {
-		var hits : RaycastHit[] = Physics.RaycastAll( getCenterInWorld(), dir, dist, GameManager.instance.avatarOnlyLayerMask );
-		if( hits ) {
-			var didHit : boolean = false;
-			for( var hit : RaycastHit in hits ) {
-				if (hit.transform == transform) continue;
-				
-				Debug.DrawRay( getCenterInWorld(), (dir * dist), Color.red, 0.05 );
-				return hit;
-			}
-			
-			Debug.DrawRay( getCenterInWorld(), (dir * dist), Color.blue, 0.05 );
-		}
+	var hits : RaycastHit[];
+	switch( castType ) {
+		case CastType.Raycast:
+			hits = Physics.RaycastAll( getCenterInWorld(), dir, dist, GameManager.instance.avatarOnlyLayerMask );
+			break;
+		case CastType.Capsule:
+			hits = capsuleCast( dir, dist, GameManager.instance.avatarOnlyLayerMask );
+			break;
 	}
 	
-	Debug.DrawRay( getCenterInWorld(), (dir * dist) );
+	if( hits ) {
+		for( var hit : RaycastHit in hits ) {
+			if (hit.transform == transform) continue; // skip self
+			
+			Debug.DrawRay( getCenterInWorld(), (dir * dist), Color.red, 0.05 );
+			return hit; // return first non-self
+		}
+		
+		Debug.DrawRay( getCenterInWorld(), (dir * dist), Color.blue, 0.05 );
+	}
+}
+
+// 
+function raycastAttack( type : AttackType, passedVar ) : RaycastHit {
+	return tryAttack( type, passedVar, CastType.Raycast );
 }
 function raycastAttack( type : AttackType ) : RaycastHit {
-	return raycastAttack( type, false );
+	return tryAttack( type, false, CastType.Raycast );
+}
+
+function capsuleAttack( type : AttackType, passedVar ) : RaycastHit {
+	return tryAttack( type, passedVar, CastType.Capsule );
+}
+function capsuleAttack( type : AttackType ) : RaycastHit {
+	return tryAttack( type, false, CastType.Capsule );
 }
 
 // utility function to determine if it is time to attack
@@ -515,7 +587,6 @@ function timeToAttack( type : AttackType, passedVar ) : boolean {
 	}
 	
 	if( isTime ) {
-		Debug.Log( attackedThisLoop );
 		lastAttackTime = Time.time;
 		attackedThisLoop = true;
 	}
@@ -634,19 +705,20 @@ function OnControllerColliderHit( hit : ControllerColliderHit ) {
 			particles.position = transform.position;
 		}
 		Destroy( hit.gameObject );
-	}
 		
-	// only do the following for props
-	if (!hit.gameObject.CompareTag( 'Prop' )) return;
-
-		var body : Rigidbody = hit.collider.attachedRigidbody;
-	if ((body == null) || body.isKinematic) return;
+		return;
+	}
+	
 	if (hit.moveDirection.y < -0.3) return; // dont push objects down
-	
 	var pushDir : Vector3 = Vector3( hit.moveDirection.x, 0, hit.moveDirection.z );
-	
-	body.velocity = (Mathf.Max( 2.5, ((hitForce.magnitude + explosionForce.magnitude) / 2.0) ) * 
-		(pushDir + (pushDir / body.mass)));
+	if( hit.gameObject.CompareTag( 'Prop' ) ) {
+		var body : Rigidbody = hit.collider.attachedRigidbody;
+		
+		if ((body == null) || body.isKinematic) return;
+		
+		body.velocity = (Mathf.Max( 2.5, ((hitForce.magnitude + explosionForce.magnitude) / 2.0) ) * 
+			(pushDir + (pushDir / body.mass)));
+	}
 }
 
 // use SendMessage to call this

@@ -10,7 +10,7 @@ class ZipperFace extends Avatar {
 			case CharacterState.Attack2:
 				fps = 20.0;
 				
-				var hit : RaycastHit = raycastAttack( AttackType.SpecificFrame, 5 );
+				var hit : RaycastHit = capsuleAttack( AttackType.SpecificFrame, 5 );
 				if( hit.transform ) {
 					hitOtherAvatar( hit, attackOneForce, attackOneDamping );
 				}
