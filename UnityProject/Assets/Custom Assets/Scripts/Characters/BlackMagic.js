@@ -1,9 +1,5 @@
 
-class BlackMagic extends Avatar {
-	function Awake() {
-		Debug.Log( 'BlackMagic is alive!' );
-	}
-	
+class BlackMagic extends Avatar {	
 	function CharacterStateSwitch() {
 		switch( state ) {
 			case CharacterState.Attack1:

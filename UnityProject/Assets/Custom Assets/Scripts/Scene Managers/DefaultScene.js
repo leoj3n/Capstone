@@ -9,6 +9,8 @@ class DefaultScene extends SceneManager {
 	function SceneLoaded() {
 		GameManager.instance.instantiateAvatars();
 		
+		Global.numIntrosPlaying = GameManager.instance.avatars.Length;
+		
 		countdownStartTime = Time.time;
 		GameManager.instance.audioPlay( 'Countdown' );
 	}

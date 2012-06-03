@@ -1,9 +1,5 @@
 
-class ZipperFace extends Avatar {
-	function Awake() {
-		Debug.Log( 'ZipperFace is alive!' );
-	}
-	
+class ZipperFace extends Avatar {	
 	function CharacterStateSwitch() {
 		switch( state ) {
 			case CharacterState.Attack1:

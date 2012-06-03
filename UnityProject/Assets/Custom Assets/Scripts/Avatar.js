@@ -71,19 +71,19 @@ protected var moveSpeed : float = 0.0;
 protected var movingBack : boolean = false;
 protected var isMoving : boolean = false;
 
-function Start() {
+function Awake() {
 	characterController = GetComponent( CharacterController );
 	taRenderer = GetComponentInChildren( TextureAtlasRenderer );
 	textureAtlasCube = transform.Find( 'TextureAtlasCube' );
 	
 	shadow = transform.Find( 'Shadow' );
 	shadowProjector = shadow.GetComponent( Projector );
+}
+
+function Start() {
 	origShadowAspectRatio = shadowProjector.aspectRatio;
-	
 	origFps = taRenderer.fps;
 	ccOrigHeight = characterController.height;
-	
-	Global.numIntrosPlaying++;
 }
 
 function Update() {
