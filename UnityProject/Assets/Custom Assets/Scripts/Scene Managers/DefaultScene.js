@@ -91,6 +91,16 @@ class DefaultScene extends SceneManager {
 		
 		GUILayout.EndArea();
 		
+		// character labels
+		
+		for( var avatar : GameObject in GameManager.instance.avatars ) {
+			var componentA : Avatar = avatar.GetComponent( Avatar );
+			var txt : String = ('Controller ' + parseInt( componentA.getController() ) + '\n(' + componentA.getTeam().ToString() + ' Team)');
+			characterLabel( componentA.getCenterInWorld(), ((componentA.getScaledHeight() / 2.0) + 1.5), txt );
+		}
+		
+		// 3-2-1
+		
 		var width : float = (halfScreenWidth / 2.0);
 		var height : float = width;
 		var halfWidth : float = (width / 2);
@@ -118,5 +128,12 @@ class DefaultScene extends SceneManager {
 			GUILayout.Box( 'Press [Back] to return to the Main Menu.' );
 						
 		GUILayout.EndArea();
+	}
+	
+	// utility function to make character labels
+	function characterLabel( worldPoint : Vector3, yOffset : float, text : String ) {
+		var point = Camera.main.WorldToScreenPoint( worldPoint + Vector2( 0, yOffset ) );
+		var rect : Rect = Rect( (point.x - 30.0), (Screen.height - point.y), 100.0, 60.0 );
+		GUI.Label( rect, text );
 	}
 }
