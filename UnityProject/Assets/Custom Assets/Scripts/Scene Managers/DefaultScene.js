@@ -66,7 +66,7 @@ class DefaultScene extends SceneManager {
 		var halfScreenHeight : float = (Screen.height / 2.0);
 		
 		GUI.Box( Rect( (halfScreenWidth - 50.0), 20.0, 100.0, 22.0 ), 
-			((GameManager.instance.round == 3) ? 'Final Round' : ('Round ' + GameManager.instance.round)) );
+			((GameManager.instance.round == 2) ? 'Final Round' : ('Round ' + (GameManager.instance.round + 1))) );
 		
 		GUILayout.BeginArea( Rect( 20.0, 20.0, 120.0, (Screen.height - 40.0) ) );
 			

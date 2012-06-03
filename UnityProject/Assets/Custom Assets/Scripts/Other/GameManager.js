@@ -8,7 +8,7 @@ class GameManager extends MonoBehaviour {
 	// the only static variable, points to singleton
 	public static var instance : GameManager;
 	
-	// variables available in the inspector (accessible via GameManager.instance)
+	// variables available in the inspector (accessible via GameManager.instance.(variable))
 	public var characterPrefabs : GameObject[];
 	public var expectedOrder : CharacterEnum; // just to expose the expected order in the Inspector
 	public var soundsBoundByName : AudioClip[]; // no order necessary
@@ -16,8 +16,8 @@ class GameManager extends MonoBehaviour {
 	public var avatarOnlyLayerMask : LayerMask = -1;
 	public var countdownTextures : Texture[];
 	public var powerModifyPrefab : GameObject;
-		
-	// private variables (accessible via GameManager.instance)
+	
+	// non-inspector variables still accessible via GameManager.instance.(variable)
 	private var _controllers : Controller[];
 	public function get controllers() : Controller[] { return _controllers; }
 	private function set controllers( value : Controller[] ) { _controllers = value; }
@@ -34,7 +34,7 @@ class GameManager extends MonoBehaviour {
 	public function get level() : LevelEnum { return _level; }
 	public function set level( value : LevelEnum ) { _level = value; }
 	
-	private var _round : int = 1;
+	private var _round : int = 0;
 	public function get round() : int { return _round; }
 	private function set round( value : int ) { _round = value; }
 	
@@ -44,6 +44,8 @@ class GameManager extends MonoBehaviour {
 	
 	// private variables not accessible outside of this class
 	private var audioSources : Hashtable;
+	private var roundResults : ControllerTeam[];
+	private var resetRound : boolean = false;
 	
 	// MAIN FUNCTIONS
 	
@@ -55,6 +57,14 @@ class GameManager extends MonoBehaviour {
 	
 	function OnApplicationQuit() {
 		instance = null; // unset singleton
+	}
+	
+	function OnLevelWasLoaded( level : int ) {
+		if( resetRound ) {
+			round = 0; // set the round back to zero
+			nullifyRoundResults();
+			resetRound = false;
+		}
 	}
 	
 	// PRIVATE FUNCTIONS
@@ -81,6 +91,15 @@ class GameManager extends MonoBehaviour {
 		audioSources = new Hashtable();
 		for (var clip : AudioClip in soundsBoundByName)
 			GameManager.instance.audioBind( clip.name, clip );
+			
+		// setup round results
+		roundResults = new ControllerTeam[3]; // there are at most 3 rounds
+		nullifyRoundResults();
+	}
+	
+	function nullifyRoundResults() {
+		// set to nothing value
+		roundResults[0] = roundResults[1] = roundResults[2] = ControllerTeam.Count;
 	}
 	
 	// PUBLIC FUNCTIONS
@@ -103,7 +122,12 @@ class GameManager extends MonoBehaviour {
 	
 	// utility function for loading rounds
 	public function nextRoundOrScoreboard() {
-		if( round == 3 ) {
+		var aliveTeamEnums : ControllerTeam[] = GameManager.instance.getAliveControllerTeamEnums();
+		roundResults[round] = aliveTeamEnums[0]; // set last living team as winner
+		Debug.Log( aliveTeamEnums[0] );
+		
+		// if last round or same team won first two in a row
+		if( (round == 2) || (roundResults[0] == roundResults[1]) ) {
 			Application.LoadLevel( SceneEnum.Scoreboard ); // end
 		} else {
 			round++; // increment to the next round
@@ -111,11 +135,46 @@ class GameManager extends MonoBehaviour {
 		}
 	}
 	
+	// utility function to get the currently winning team or teams if tied
+	public function getWinningTeamOrTeams() : ControllerTeam[] {
+		var teamArray : Array = new Array();
+		
+		switch( round ) {
+			case 0:
+				Debug.LogWarning( 'Nobody has won yet. Cannot return winning teams.' );
+				break;
+			case 1:
+				if( roundResults[0] == roundResults[1] ) {
+					teamArray.Push( roundResults[0] );
+				} else { // 2-way tie
+					 teamArray.Push( roundResults[0] );
+					 teamArray.Push( roundResults[1] );
+				}
+				break;
+			case 2:
+				if( (roundResults[0] == roundResults[1]) && (roundResults[0] == roundResults[2]) ) {
+					teamArray.Push( roundResults[0] );
+				} else if( roundResults[0] == roundResults[1] ) {
+					 teamArray.Push( roundResults[0] );
+				} else if( roundResults[1] == roundResults[2] ) {
+					 teamArray.Push( roundResults[1] );
+				} else { // 3-way tie
+					teamArray.Push( roundResults[0] );
+					teamArray.Push( roundResults[1] );
+					teamArray.Push( roundResults[2] );
+				}
+				break;
+		}
+		
+		return teamArray.ToBuiltin( ControllerTeam );
+	}
+	
 	// utility function for loading levels that need to have rounds
 	public function loadLevel( id : LevelEnum) {
-		round = 1; // set the round back to one
 		// SceneEnum.Count is used to offset LevelEnum
 		Application.LoadLevel( parseInt( SceneEnum.Count ) + id );
+		
+		resetRound = true;
 	}
 	
 	// utility function for instantiating avatars

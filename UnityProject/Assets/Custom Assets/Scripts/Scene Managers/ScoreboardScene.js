@@ -5,7 +5,6 @@ class ScoreboardScene extends SceneManager {
 	function Update() {
 		switch( true ) {
 			case Global.isButtonDown( 'A', GameManager.instance.readyControllers ):
-				Debug.Log( GameManager.instance.level );
 				GameManager.instance.loadLevel( GameManager.instance.level ); // replay
 				break;
 			case Global.isButtonDown( 'B', GameManager.instance.readyControllers ):
@@ -27,7 +26,19 @@ class ScoreboardScene extends SceneManager {
 		
 		GUILayout.BeginArea( Rect( (halfScreenWidth - halfWidth), 20.0, width, height ) );
 			
-			GUILayout.Box( 'Score Board' );
+			var winningTeams : ControllerTeam[] = GameManager.instance.getWinningTeamOrTeams();
+			
+			switch( winningTeams.Length ) {
+				case 1:
+					GUILayout.Box( winningTeams[0] + ' Team Wins!' );
+					break;
+				case 2:
+					GUILayout.Box( 'It was a tie between the ' + winningTeams[0] + ' Team and ' + winningTeams[1] + ' Team.' );
+					break;
+				case 3:
+					GUILayout.Box( ' It was a three-way tie between the ' + winningTeams[0] + ' Team, ' + winningTeams[1] + ' Team and ' + winningTeams[1] + ' Team.' );
+					break;
+			}
 			
 			for( var i = 0; i < ControllerTeam.Count; i++ ) {
 				var controllers : ControllerEnum[] = GameManager.instance.getControllerEnumsOnTeam( i );

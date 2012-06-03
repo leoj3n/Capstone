@@ -360,7 +360,7 @@ function determineState() {
 	
 	// game-activated states (overrides all)
 	switch( true ) {
-		case cutScenePlaying:
+		case (cutScenePlaying || (activeCutScene == CutScene.Victory)):
 			state = CharacterState.CutScene;
 			break;
 		case (!isAlive()):

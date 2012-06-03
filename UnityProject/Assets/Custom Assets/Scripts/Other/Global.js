@@ -70,11 +70,18 @@ static var sharedZ : float = 0.0;
 static var sharedMinX : float = -22.0;
 static var sharedMaxX : float = 22.0;
 
+class Score {
+	public var damageTaken : float;
+	public var damageDealt : float;
+	public var deaths : int;
+}
+
 // an array of game controllers gets stored in GameManager
 class Controller {
 	public var team : ControllerTeam;
 	public var state : ControllerState;
 	public var character : CharacterEnum;
+	public var score : Score;
 }
 
 class SceneManager extends MonoBehaviour {
