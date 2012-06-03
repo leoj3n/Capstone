@@ -57,7 +57,7 @@ protected var fps : float = 16.0;
 protected var ccHeight : float = 4.0;
 
 // HEALTH
-protected var health : float = 0.1;
+protected var health : float = 100.0;
 
 // JUMPING
 protected var jumping : boolean = false;
@@ -775,7 +775,7 @@ function onSameTeam( avatar : GameObject ) : boolean {
 
 // returns literal name of character
 function getName() : String {
-	return typeof( this ).ToString();
+	return GameManager.instance.controllers[boundController].character.ToString();
 }
 
 // use SendMessage to call this

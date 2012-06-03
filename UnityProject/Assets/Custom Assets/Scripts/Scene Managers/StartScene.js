@@ -134,12 +134,12 @@ class StartScene extends SceneManager {
 						text = 'Press [Start]';
 						break;
 					case ControllerState.Ready:
-						text = 'READY';
+						text = 'Ready!';
 						break;
 				}
 				
 				if (text && (GameManager.instance.controllers[i].team == team))
-					GUILayout.Box( 'Controller ' + i + '\n[' + text + ']' );
+					GUILayout.Box( 'Controller ' + i + '\n' + text );
 			}
 			
 		GUILayout.EndVertical();

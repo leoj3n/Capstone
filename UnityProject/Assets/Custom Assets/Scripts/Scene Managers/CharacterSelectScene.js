@@ -128,9 +128,9 @@ class CharacterSelectScene extends SceneManager {
 					else if (controller > selectingController)
 						text = 'Waiting';
 					else
-						text = 'Selected';
+						text = 'Selected!';
 						
-					GUILayout.Box( 'Controller ' + parseInt( controller ) + '\n[' + text + ']' );
+					GUILayout.Box( 'Controller ' + parseInt( controller ) + '\n' + text + '' );
 				}
 			
 			GUILayout.EndHorizontal();
