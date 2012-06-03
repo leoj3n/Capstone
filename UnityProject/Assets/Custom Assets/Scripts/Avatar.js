@@ -362,8 +362,6 @@ function determineState() {
 			state = CharacterState.Hit;
 			break;
 	}
-	
-	Debug.Log( state );
 }
 
 // set atlas (and do anything else necessary) based on state
@@ -698,16 +696,6 @@ function addPowerModify( modify : PowerModifyEnum ) {
 			break;
 	}
 }
-
-/*
-// this gets called on each new round
-function resetAvatar() {
-	health = 100.0;
-	eliminated = false;
-	hitForce = explosionForce = Vector3.zero;
-	transform.position = startPos;
-}
-*/
 
 // push props away
 function OnControllerColliderHit( hit : ControllerColliderHit ) {

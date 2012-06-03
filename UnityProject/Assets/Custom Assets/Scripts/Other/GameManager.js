@@ -34,6 +34,10 @@ class GameManager extends MonoBehaviour {
 	public function get level() : LevelEnum { return _level; }
 	public function set level( value : LevelEnum ) { _level = value; }
 	
+	private var _round : int = 1;
+	public function get round() : int { return _round; }
+	private function set round( value : int ) { _round = value; }
+	
 	private var _paused : boolean = false;
 	public function get paused() : boolean { return _paused; }
 	private function set paused( value : boolean ) { _paused = value; }
@@ -104,6 +108,23 @@ class GameManager extends MonoBehaviour {
 		}
 	}
 	
+	// utility function for loading rounds
+	public function nextRoundOrEnd() {
+		if( round == 3 ) {
+			round = 1; // set the round back to one
+			Application.LoadLevel( SceneEnum.LevelSelect ); // end
+		} else {
+			round++; // increment to the next round
+			Application.LoadLevel( Application.loadedLevel ); // reload the level
+		}
+	}
+	
+	// utility function for loading levels that need to have rounds
+	public function loadLevelWithRounds( id : LevelEnum) {
+		round = 1;
+		Application.LoadLevel( id );
+	}
+	
 	// utility function for instantiating avatars
 	public function instantiateAvatars() {
 		avatars = new GameObject[readyControllers.Length];
@@ -116,13 +137,6 @@ class GameManager extends MonoBehaviour {
 			
 			Global.bindAvatarToController( avatar, ce ); // set a reference to the Controller in Avatar
 			avatars[i] = avatar;
-		}
-	}
-	
-	// utility function for resetting avatars
-	public function resetAvatars() {
-		for( var avatar : GameObject in avatars ) {
-			avatar.GetComponent( Avatar ).resetAvatar();
 		}
 	}
 	

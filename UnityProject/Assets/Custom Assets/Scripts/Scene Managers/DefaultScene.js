@@ -5,8 +5,6 @@ class DefaultScene extends SceneManager {
 	private var timeBetweenPM : float = 5.0;
 	private var yOffsetPM : float = 10.0;
 	private var lastSpawnTimePM : float;
-	private var round : int = 1;
-	private var totalRounds : int = 3;
 	
 	function SceneLoaded() {
 		GameManager.instance.instantiateAvatars();
@@ -48,11 +46,12 @@ class DefaultScene extends SceneManager {
 			for( var avatar : GameObject in GameManager.instance.avatars ) {
 				if (avatar.GetComponent( Avatar ).isEliminated()) numEliminated++;
 			}
-			if( (numEliminated > (GameManager.instance.avatars.Length - 1)) && 
-				!GameManager.instance.audioIsPlaying( 'Eliminated' ) ) {
+			Debug.Log( numEliminated + ' . ' + GameManager.instance.avatars.Length );
+			if( ((GameManager.instance.avatars.Length - numEliminated) < 2) && // 1 or 0 characters still alive
+				!GameManager.instance.audioIsPlaying( 'Eliminated' ) ) { // not playing eliminated sound
 				
-				GameManager.instance.resetAvatars();
-				round++;
+				// progress to next round
+				GameManager.instance.nextRoundOrEnd();
 			}
 		}
 	}
@@ -61,7 +60,7 @@ class DefaultScene extends SceneManager {
 		var halfScreenWidth : float = (Screen.width / 2.0);
 		var halfScreenHeight : float = (Screen.height / 2.0);
 		
-		GUI.Box( Rect( (halfScreenWidth - 50.0), 20.0, 100.0, 22.0 ), ('Round ' + round) );
+		GUI.Box( Rect( (halfScreenWidth - 50.0), 20.0, 100.0, 22.0 ), ('Round ' + GameManager.instance.round) );
 		
 		GUILayout.BeginArea( Rect( 20.0, 20.0, 120.0, (Screen.height - 40.0) ) );
 			
