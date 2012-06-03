@@ -57,8 +57,8 @@ enum PowerModifyEnum {
 enum ControllerEnum { A, B, C, D, Count } // Unity supports a maximum of 4 controllers
 enum ControllerTeam { Green, Red, Blue, Orange, Count } // need at least 4 teams to support free-for-all
 enum ControllerState { SittingOut, TeamSelect, Ready }
-enum SceneEnum { Start, CharacterSelect, LevelSelect, Count }
-enum LevelEnum { Rooftop, Bridge, Fountain, Count }
+enum SceneEnum { Start, CharacterSelect, LevelSelect, Scoreboard, Count }
+enum LevelEnum { Rooftop, Bridge, Fountain, Count } // use SceneEnum.Count to offset LevelEnum
 
 // use these bounds to restrict avatar movement
 static var sharedZ : float = 0.0;
@@ -85,27 +85,33 @@ class SceneManager extends MonoBehaviour {
 			Instantiate( gameManager );
 			
 			// simulate start scene
-			if( Application.loadedLevel > 0 ) {
+			if( Application.loadedLevel > SceneEnum.Start ) {
 				GameManager.instance.controllers[0].state = ControllerState.Ready;
 				GameManager.instance.controllers[1].state = ControllerState.Ready;
 				GameManager.instance.controllers[1].team = ControllerTeam.Red;
 			}
 			
 			// simulate character select
-			if( Application.loadedLevel > 1 ) {
+			if( Application.loadedLevel > SceneEnum.CharacterSelect ) {
 				GameManager.instance.controllers[0].character = CharacterEnum.ZipperFace;
 				GameManager.instance.controllers[1].character = CharacterEnum.BlackMagic;
 			}
 			
 			// simulate level select
-			if (Application.loadedLevel > 2) GameManager.instance.level = LevelEnum.Rooftop;
+			if (Application.loadedLevel > SceneEnum.LevelSelect) GameManager.instance.level = LevelEnum.Rooftop;
+			
+			// simulate for scoreboard
+			if( Application.loadedLevel == SceneEnum.Scoreboard ) {
+				// simulated deaths, etc...
+				GameManager.instance.level = LevelEnum.Rooftop;
+			}
 		}
 	}
 	
 	// put anything you want to have happen at the beginning of every scene in this function
 	function Start() {
+		GameManager.instance.audioStopAll();
 		GameManager.instance.setBackgroundMusic( backgroundMusic, fadeInBackgroundMusic );
-		
 		GameManager.instance.updateReadyControllers();
 		
 		SceneLoaded(); // call the overloaded function

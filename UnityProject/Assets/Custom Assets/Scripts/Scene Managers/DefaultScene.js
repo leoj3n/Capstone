@@ -51,7 +51,7 @@ class DefaultScene extends SceneManager {
 				!GameManager.instance.audioIsPlaying( 'Eliminated' ) ) { // not playing eliminated sound
 				
 				// progress to next round
-				GameManager.instance.nextRoundOrEnd();
+				GameManager.instance.nextRoundOrScoreboard();
 			}
 		}
 	}
@@ -71,7 +71,7 @@ class DefaultScene extends SceneManager {
 					
 					if( avatars.Length > 0 ) {
 						if (i != 0) GUILayout.Space( 20.0 );
-						GUILayout.Box( 'Team ' + ControllerTeam.GetName( ControllerTeam, i ) );
+						GUILayout.Box( ControllerTeam.GetName( ControllerTeam, i ) + ' Team' );
 						
 						for( var avatar : GameObject in avatars ) {
 							var component : Component = avatar.GetComponent( Avatar );

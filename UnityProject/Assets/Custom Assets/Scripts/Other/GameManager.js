@@ -77,7 +77,7 @@ class GameManager extends MonoBehaviour {
 		for (var i = 0; i < ControllerEnum.Count; i++)
 			controllers[i] = new Controller();
 		
-		// setup audio
+		// setup by-name audio
 		audioSources = new Hashtable();
 		for (var clip : AudioClip in soundsBoundByName)
 			GameManager.instance.audioBind( clip.name, clip );
@@ -88,13 +88,6 @@ class GameManager extends MonoBehaviour {
 	// this function gets called at the start of every scene by SceneManager
 	function updateReadyControllers() {
 		readyControllers = getControllerEnumsWithState( ControllerState.Ready );
-	}
-	
-	// utility function for setting the background music
-	function setBackgroundMusic( clip : AudioClip, fade : boolean) {
-		audioBind( 'backgroundMusic', clip );
-		var a : AudioSource = audioPlay( 'backgroundMusic', true, true, 0.60 );
-		if (fade) audioFadeIn( a, 3.0 );
 	}
 	
 	// utility function for toggling the pause state of the game
@@ -109,10 +102,10 @@ class GameManager extends MonoBehaviour {
 	}
 	
 	// utility function for loading rounds
-	public function nextRoundOrEnd() {
+	public function nextRoundOrScoreboard() {
 		if( round == 3 ) {
 			round = 1; // set the round back to one
-			Application.LoadLevel( SceneEnum.LevelSelect ); // end
+			Application.LoadLevel( SceneEnum.Scoreboard ); // end
 		} else {
 			round++; // increment to the next round
 			Application.LoadLevel( Application.loadedLevel ); // reload the level
@@ -120,9 +113,11 @@ class GameManager extends MonoBehaviour {
 	}
 	
 	// utility function for loading levels that need to have rounds
-	public function loadLevelWithRounds( id : LevelEnum) {
+	public function loadLevel( id : LevelEnum) {
 		round = 1;
-		Application.LoadLevel( id );
+		
+		// SceneEnum.Count is used to offset LevelEnum
+		Application.LoadLevel( parseInt( SceneEnum.Count ) + id );
 	}
 	
 	// utility function for instantiating avatars
@@ -171,6 +166,13 @@ class GameManager extends MonoBehaviour {
 		}
 	}
 	
+	// utility function for setting the background music
+	function setBackgroundMusic( clip : AudioClip, fade : boolean) {
+		audioBind( 'backgroundMusic', clip );
+		var a : AudioSource = audioPlay( 'backgroundMusic', true, true, 0.60 );
+		if (fade) audioFadeIn( a, 3.0 );
+	}
+	
 	// utility function for binding audio
 	public function audioBind( uid, clip : AudioClip ) {
 		var a : AudioSource;
@@ -186,6 +188,15 @@ class GameManager extends MonoBehaviour {
 		
 		a.playOnAwake = false;
 		a.clip = clip;
+	}
+	
+	// utility function for stopping all audio except background
+	public function audioStopAll() {
+		for( var key in audioSources.Keys ) {
+			if (key == 'backgroundMusic') continue; // do not stop background music
+			
+			audioStop( key );
+		}
 	}
 	
 	// utility function for stopping audio
