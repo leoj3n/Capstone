@@ -131,6 +131,25 @@ class GameManager extends MonoBehaviour {
 		return avatarArray.ToBuiltin( GameObject );
 	}
 	
+	// utility function to ignore collisions between characters on the same team
+	public function setupTeamPhysics() {
+		for( var i = 0; i < ControllerTeam.Count; i++ ) {					
+			var avatars : GameObject[] = getAvatarsOnTeam( i );
+			
+			for( var avatar1 : GameObject in avatars ) {
+				var collider1 : Collider = avatar1.GetComponent( CharacterController ).GetComponent( Collider );
+				
+				for( var avatar2 : GameObject in avatars ) {
+					if (avatar1 == avatar2) continue; // do not ignore collisions with self
+					
+					var collider2 : Collider = avatar2.GetComponent( CharacterController ).GetComponent( Collider );
+					
+					Physics.IgnoreCollision( collider1, collider2 );
+				}
+			}
+		}
+	}
+	
 	// utility function for binding audio
 	public function audioBind( uid, clip : AudioClip ) {
 		var a : AudioSource;

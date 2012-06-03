@@ -135,7 +135,7 @@ function faceNearestEnemy() {
 	var side : int = 1; // 1 = right, -1 = left
 	var p1 : Vector3 = getCenterInWorld();
 	for( var avatar : GameObject in GameManager.instance.avatars ) {
-		if (gameObject == avatar) continue; // continue if self
+		if (onSameTeam( avatar )) continue; // continue if on same team (includes self)
 		
 		var p2 : Vector3 = avatar.GetComponent( Avatar ).getCenterInWorld();
 		
@@ -144,6 +144,13 @@ function faceNearestEnemy() {
 			closestDist = dist;
 			side = ((p1.x < p2.x) ? 1 : -1); // if p2 is greater, it is on right
 		}
+	}
+	
+	// handle the rare case (should never happen in real gameplay)
+	if( closestDist == 9999.0 ) {
+		faceMoveDirection();
+		Debug.LogWarning( 'Cannot face nearest enemy; No enemies found!' );
+		return;
 	}
 	
 	// face left or right (to face closest enemy)
@@ -250,9 +257,9 @@ function checkIfMovingBack() {
 
 // set isNearlyGrounded variable
 function checkIfNearlyGrounded() {	
-	var p1 : Vector3;
+/*	var p1 : Vector3;
 	var p2 : Vector3;
-	var dist : float = 1.0; // change this as needed
+	var dist : float = 2.0; // change this as needed
 	var dir : Vector3 = Vector3.down;
 	var radius : float = getScaledRadius();
 	var halfHeight : float = (getScaledHeight() * 0.5);
@@ -276,6 +283,8 @@ function checkIfNearlyGrounded() {
 	Debug.DrawLine( p2Real, p2Real - radiusVector, Color.red );
 	
 	var hits : RaycastHit[] = Physics.CapsuleCastAll( p1, p2, radius, dir, distReal, GameManager.instance.nearlyGroundedLayerMask );
+*/
+	var hits : RaycastHit[] = capsuleCast( Vector3.down, 2.0, GameManager.instance.nearlyGroundedLayerMask, Vector3( 0.0, 1.0, 0.0 ) );
 	
 	isNearlyGrounded = false;
 	for( var hit : RaycastHit in hits ) {
@@ -381,7 +390,6 @@ function determineAtlas() {
 			canMove = canJump = false;
 			
 			if( !introPlayed && (taRenderer.getLoopCount() == 1) ) {
-				Debug.Log( getName() + ' not playing' );
 				Global.numIntrosPlaying--;
 				introPlayed = true;
 			}
@@ -487,13 +495,13 @@ function resizeCharacterControllerHeight( h : float ) {
 }
 
 // utility function for doing capsule casts
-function capsuleCast( dir : Vector3, dist : float, layerMask : LayerMask ) : RaycastHit[] {	
+function capsuleCast( dir : Vector3, dist : float, layerMask : LayerMask, offset : Vector3 ) : RaycastHit[] {	
 	var p1 : Vector3;
 	var p2 : Vector3;
 	var center : Vector3;
 	var radius : float = getScaledRadius();
 	var halfHeight : float = (getScaledHeight() * 0.5);
-	p1 = p2 = getCenterInWorld();
+	p1 = p2 = (getCenterInWorld() + offset);
 	p1.y += halfHeight;
 	p2.y -= halfHeight;
 	
@@ -519,6 +527,9 @@ function debugDrawCapsule( p1 : Vector3, p2 : Vector3, radius : float, color : C
 	Debug.DrawLine( p2, (p2 + radiusVector), color, duration );
 	Debug.DrawLine( p2, (p2 - radiusVector), color, duration );
 }
+function capsuleCast( dir : Vector3, dist : float, layerMask : LayerMask ) : RaycastHit[] {
+	return capsuleCast( dir, dist, layerMask, Vector3.zero );
+}
 
 // utility function to try an attack (utilizes timeToAttack())
 function tryAttack( attackType : AttackType, passedVar, castType : CastType ) : RaycastHit {	
@@ -540,7 +551,7 @@ function tryAttack( attackType : AttackType, passedVar, castType : CastType ) : 
 	
 	if( hits ) {
 		for( var hit : RaycastHit in hits ) {
-			if (hit.transform == transform) continue; // skip self
+			if (onSameTeam( hit.transform.gameObject )) continue; // skip if on same team (includes self)
 			
 			Debug.DrawRay( getCenterInWorld(), (dir * dist), Color.red, 0.05 );
 			return hit; // return first non-self
@@ -550,14 +561,13 @@ function tryAttack( attackType : AttackType, passedVar, castType : CastType ) : 
 	}
 }
 
-// 
+// helper functions
 function raycastAttack( type : AttackType, passedVar ) : RaycastHit {
 	return tryAttack( type, passedVar, CastType.Raycast );
 }
 function raycastAttack( type : AttackType ) : RaycastHit {
 	return tryAttack( type, false, CastType.Raycast );
 }
-
 function capsuleAttack( type : AttackType, passedVar ) : RaycastHit {
 	return tryAttack( type, passedVar, CastType.Capsule );
 }
@@ -697,7 +707,7 @@ function addPowerModify( modify : PowerModifyEnum ) {
 
 // push props away
 function OnControllerColliderHit( hit : ControllerColliderHit ) {
-	if( hit.gameObject.CompareTag( 'PowerModify' ) ) {
+	if( hit.gameObject.CompareTag( 'PowerModify' ) && (health > 0.0) ) {
 		addPowerModify( hit.transform.GetComponent( PowerModify ).getModifyType() );
 		var particles : Transform = hit.transform.Find( 'Particles' );
 		if( particles ) {
@@ -729,6 +739,18 @@ function SetController( ce : ControllerEnum ) {
 // returns bound controller
 function getController() : ControllerEnum {
 	return boundController;
+}
+
+// returns team of bound controller
+function getTeam() : ControllerTeam {
+	return GameManager.instance.controllers[boundController].team;
+}
+
+// returns true if passed avatar game object is on same team
+function onSameTeam( avatar : GameObject ) : boolean {
+	if (!Global.isAvatar( avatar )) return false;
+	
+	return Global.avatarsOnSameTeam( avatar, gameObject );
 }
 
 // returns literal name of character

@@ -8,7 +8,7 @@ class DefaultScene extends SceneManager {
 	
 	function SceneLoaded() {
 		GameManager.instance.instantiateAvatars();
-		
+		GameManager.instance.setupTeamPhysics();
 		Global.numIntrosPlaying = GameManager.instance.avatars.Length;
 		
 		countdownStartTime = Time.time;

@@ -154,6 +154,14 @@ static function isAvatar( object : System.Object ) {
 	return (object.gameObject.CompareTag( 'Player' ) || object.gameObject.GetComponent( Avatar ));
 }
 
+
+	
+// utility function so see if avatars are on same team
+static function avatarsOnSameTeam( avatar1 : GameObject, avatar2 : GameObject ) : boolean {
+	return (avatar1.GetComponent( Avatar ).getTeam() == avatar2.GetComponent( Avatar ).getTeam());
+}
+
+// utility function to set reference to controller in avatar
 static function bindAvatarToController( avatar : GameObject, ce : ControllerEnum ) {
 	avatar.SendMessage( 'SetController', ce );
 	avatar.name = 'Avatar (' + ce + ')'; // mainly for easier debugging
