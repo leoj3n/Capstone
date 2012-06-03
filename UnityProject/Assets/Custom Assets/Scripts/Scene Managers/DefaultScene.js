@@ -107,9 +107,9 @@ class DefaultScene extends SceneManager {
 		GUILayout.BeginArea( Rect( (halfScreenWidth - halfWidth), (halfScreenHeight - halfHeight), width, height ) );
 		
 			GUILayout.Box( 'Game Paused', GUILayout.Width( 150 ) );
-			GUILayout.Box( 'Press "Start" to unpause the game.' );
-			GUILayout.Box( 'Press "B" to return to Level Select.' );
-			GUILayout.Box( 'Press "Back" to return to the Main Menu.' );
+			GUILayout.Box( 'Press [Start] to unpause the game.' );
+			GUILayout.Box( 'Press [B] to return to Level Select.' );
+			GUILayout.Box( 'Press [Back] to return to the Main Menu.' );
 						
 		GUILayout.EndArea();
 	}

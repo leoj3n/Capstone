@@ -48,5 +48,18 @@ class ScoreboardScene extends SceneManager {
 			}
 			
 		GUILayout.EndArea();
+		
+		width = 300.0;
+		height = 80.0;
+		halfWidth = (width / 2);
+		halfHeight = (height / 2);
+		
+		GUILayout.BeginArea( Rect( (halfScreenWidth - halfWidth), (Screen.height - height), width, height ) );
+						
+			GUILayout.Box( 'Press [A] to replay ' + GameManager.instance.level + '.' );
+			GUILayout.Box( 'Press [B] to return to Level Select.' );
+			GUILayout.Box( 'Press [Back] to return to the Main Menu.' );
+			
+		GUILayout.EndArea();
 	}
 }

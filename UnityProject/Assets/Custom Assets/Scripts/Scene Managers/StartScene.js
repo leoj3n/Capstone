@@ -72,7 +72,7 @@ class StartScene extends SceneManager {
 		
 		GUILayout.BeginArea( Rect( (halfScreenWidth - halfWidth), 20.0, width, height ) );
 		
-			GUILayout.Box( 'Press Start or Back to add or remove your controller\nChange teams using A/B/X/Y (button colors correspond to team colors)' );
+			GUILayout.Box( 'Press [Start] or [Back] to add or remove your controller\nChange teams using [A] [B] [X] [Y] (button colors correspond to team colors)' );
 			
 			GUILayout.BeginHorizontal();
 			
@@ -98,7 +98,7 @@ class StartScene extends SceneManager {
 					}
 				} else {
 					countdownStartTime = 0.0;
-					GUILayout.Box( 'Waiting for ' + selecting.Length + ' controllers to press Start to ready up' );
+					GUILayout.Box( 'Waiting for ' + selecting.Length + ' controllers to press [Start] to ready up' );
 				}
 			} else {
 				GUILayout.Box( 'No controllers added yet' );
@@ -131,7 +131,7 @@ class StartScene extends SceneManager {
 				
 				switch( GameManager.instance.controllers[i].state ) {
 					case ControllerState.TeamSelect:
-						text = 'Press Start';
+						text = 'Press [Start]';
 						break;
 					case ControllerState.Ready:
 						text = 'READY';
