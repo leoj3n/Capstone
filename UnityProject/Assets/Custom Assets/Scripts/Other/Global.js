@@ -35,6 +35,7 @@ enum CharacterAtlas {
 	Special1, // 13
 	Special2, // 14
 	Ultimate, // 15
+	Victory // 16
 }
 enum AttackType {
 	SpecificFrame,
@@ -45,6 +46,10 @@ enum AttackType {
 enum CastType {
 	Raycast,
 	Capsule
+}
+enum CutScene {
+	Intro,
+	Victory
 }
 enum PowerModifyEnum {
 	ShadowClone, // Black
@@ -64,8 +69,6 @@ enum LevelEnum { Rooftop, Bridge, Fountain, Count } // use SceneEnum.Count to of
 static var sharedZ : float = 0.0;
 static var sharedMinX : float = -22.0;
 static var sharedMaxX : float = 22.0;
-static var debugScene : int = 0;
-static var numIntrosPlaying : int = 0;
 
 // an array of game controllers gets stored in GameManager
 class Controller {
@@ -89,12 +92,16 @@ class SceneManager extends MonoBehaviour {
 				GameManager.instance.controllers[0].state = ControllerState.Ready;
 				GameManager.instance.controllers[1].state = ControllerState.Ready;
 				GameManager.instance.controllers[1].team = ControllerTeam.Red;
+				
+				GameManager.instance.controllers[2].state = ControllerState.Ready;
 			}
 			
 			// simulate character select
 			if( Application.loadedLevel > SceneEnum.CharacterSelect ) {
 				GameManager.instance.controllers[0].character = CharacterEnum.ZipperFace;
 				GameManager.instance.controllers[1].character = CharacterEnum.BlackMagic;
+				
+				GameManager.instance.controllers[2].character = CharacterEnum.BlackMagic;
 			}
 			
 			// simulate level select
@@ -102,7 +109,7 @@ class SceneManager extends MonoBehaviour {
 			
 			// simulate for scoreboard
 			if( Application.loadedLevel == SceneEnum.Scoreboard ) {
-				// simulated deaths, etc...
+				// simulated deaths stats, etc...
 				GameManager.instance.level = LevelEnum.Rooftop;
 			}
 		}

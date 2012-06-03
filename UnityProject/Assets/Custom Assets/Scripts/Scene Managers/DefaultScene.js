@@ -5,11 +5,11 @@ class DefaultScene extends SceneManager {
 	private var timeBetweenPM : float = 5.0;
 	private var yOffsetPM : float = 10.0;
 	private var lastSpawnTimePM : float;
+	private var initial : boolean = true;
 	
 	function SceneLoaded() {
 		GameManager.instance.instantiateAvatars();
 		GameManager.instance.setupTeamPhysics();
-		Global.numIntrosPlaying = GameManager.instance.avatars.Length;
 		
 		countdownStartTime = Time.time;
 		GameManager.instance.audioPlay( 'Countdown' );
@@ -42,15 +42,21 @@ class DefaultScene extends SceneManager {
 			}
 			
 			// do the rounds
-			var numEliminated : int = 0;
-			for( var avatar : GameObject in GameManager.instance.avatars ) {
-				if (avatar.GetComponent( Avatar ).isEliminated()) numEliminated++;
-			}
-			if( ((GameManager.instance.avatars.Length - numEliminated) < 2) && // 1 or 0 characters still alive
-				!GameManager.instance.audioIsPlaying( 'Eliminated' ) ) { // not playing eliminated sound
-				
-				// progress to next round
-				GameManager.instance.nextRoundOrScoreboard();
+			var aliveTeamEnums : ControllerTeam[] = GameManager.instance.getAliveControllerTeamEnums();
+			if( aliveTeamEnums.Length == 1 ) { // only 1 team still alive
+				if( initial ) {
+					var avatars : GameObject[] = GameManager.instance.getAvatarsOnTeam( aliveTeamEnums[0] );
+					
+					// play victory for all avatars on this team
+					for( var avatar : GameObject in avatars ) {
+						avatar.GetComponent( Avatar ).playCutScene( CutScene.Victory );
+					}
+					
+					initial = false;
+				} else if( !GameManager.instance.cutScenePlaying() ) {
+					// progress to next round if cutscenes finished
+					GameManager.instance.nextRoundOrScoreboard();
+				}
 			}
 		}
 	}
@@ -90,7 +96,7 @@ class DefaultScene extends SceneManager {
 		var halfWidth : float = (width / 2);
 		var halfHeight : float = (height / 2);
 		
-		if( Global.numIntrosPlaying > 0 ) {
+		if( GameManager.instance.cutScenePlaying() ) {
 			var seconds : int = ((Mathf.CeilToInt( countDownSeconds - (Time.time - countdownStartTime) ) % 60) - 1);
 			if (seconds >= 0)
 				GUI.DrawTexture( Rect( (halfScreenWidth - halfWidth), (halfScreenHeight - halfHeight), width, height ), 

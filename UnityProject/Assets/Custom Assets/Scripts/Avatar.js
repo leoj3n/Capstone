@@ -44,7 +44,8 @@ protected var isNearlyGrounded : boolean = true;
 protected var staticFrame : int = -1;
 protected var reverse : boolean = false;
 private var lastAttackTime : float = 0.0;
-protected var introPlayed = false;
+protected var cutScenePlaying = false;
+protected var activeCutScene : CutScene;
 protected var eliminated = false;
 
 // OTHER
@@ -123,6 +124,20 @@ function Update() {
 	shadowProjector.enabled = isControllable;
 }
 
+// utility function to safely decrement health
+function decrementHealth( hp : float ) {
+	// don't decrement if on last alive team
+	var aliveTeamEnums : ControllerTeam[] = GameManager.instance.getAliveControllerTeamEnums();
+	if ((aliveTeamEnums.Length == 1) && (aliveTeamEnums[0] == getTeam())) return;
+	
+	health -= hp;
+}
+
+// utility function to check if health is greater than zero
+function isAlive() : boolean {
+	return (health > 0.0);
+}
+
 // utility function to do things based on character health
 function checkHealth() {
 	if( !isAlive() ) {
@@ -135,16 +150,6 @@ function checkHealth() {
 	} else {
 		eliminated = false;
 	}
-}
-
-// is health greater than zero?
-function isAlive() : boolean {
-	return (health > 0.0);
-}
-
-// has this avatar been eliminated?
-function isEliminated() {
-	return eliminated;
 }
 
 // utility function to cause this avatar to face the nearest avatar
@@ -260,7 +265,12 @@ function setVerticalMovement() {
 }
 
 // move the character controller
-function doMovement() {	
+function doMovement() {
+	if( GameManager.instance.cutScenePlaying() ) {
+		characterController.Move( Time.deltaTime * (Vector3( 0, verticalSpeed, 0 ) + inAirVelocity) );
+		return; // only do gravity during cutscenes
+	}
+	
 	characterController.Move( Time.deltaTime * 
 		((moveDirection * moveSpeed) + Vector3( 0, verticalSpeed, 0 ) + inAirVelocity + hitForce + explosionForce) );
 	
@@ -350,11 +360,11 @@ function determineState() {
 	
 	// game-activated states (overrides all)
 	switch( true ) {
+		case cutScenePlaying:
+			state = CharacterState.CutScene;
+			break;
 		case (!isAlive()):
 			state = CharacterState.Dead;
-			break;
-		case (Global.numIntrosPlaying > 0):
-			state = CharacterState.CutScene;
 			break;
 		case (explosionForce.magnitude > 0.1):			
 			state = CharacterState.Fall;
@@ -377,15 +387,21 @@ function determineAtlas() {
 			canMove = canJump = false;
 			break;
 		case CharacterState.CutScene:
-			atlas = CharacterAtlas.Intro;
+			switch( activeCutScene ) {
+				case CutScene.Intro:
+					atlas = CharacterAtlas.Intro;
+					break;
+				case CutScene.Victory:
+					atlas = CharacterAtlas.Victory;
+					break;
+			}
+			
 			loop = false;
 			shadowUseTAC = true;
 			canMove = canJump = false;
 			
-			if( !introPlayed && (taRenderer.getLoopCount() == 1) ) {
-				Global.numIntrosPlaying--;
-				introPlayed = true;
-			}
+			if ((previousState == state) && (taRenderer.getLoopCount() == 1))
+				cutScenePlaying = false;
 			break;
 		case CharacterState.Jump:
 			if (movingBack)
@@ -641,7 +657,7 @@ function addExplosionForce( pos : Vector3, radius : float, force : float, dampin
 	var explForce : Vector3 = (force * dir * percentage);
 	var modifier : float = (force * percentage / damping);
 	if (characterController.isGrounded) explForce.y = Mathf.Max( explForce.y, (modifier / 2) );
-	health -= modifier;
+	decrementHealth( modifier );
 	
 	// apply explosion force via co-routine
 	var initial : boolean = true;
@@ -661,7 +677,7 @@ function addHitForce( pos : Vector3, force : float, damping : float, hp : float 
 	dir.z = 0.0;
 	
 	var hForce : Vector3 = (force * dir);
-	health -= hp;
+	decrementHealth( hp );
 	
 	audioPlay( CharacterSound.Hit );
 	
@@ -722,6 +738,17 @@ function OnControllerColliderHit( hit : ControllerColliderHit ) {
 		body.velocity = (Mathf.Max( 2.5, ((hitForce.magnitude + explosionForce.magnitude) / 2.0) ) * 
 			(pushDir + (pushDir / body.mass)));
 	}
+}
+
+// is the cutscene playing?
+function isCutScenePlaying() : boolean {
+	return cutScenePlaying;
+}
+
+// utility function to play a passed cutscene
+function playCutScene( scene : CutScene ) {
+	activeCutScene = scene;
+	cutScenePlaying = true;
 }
 
 // use SendMessage to call this

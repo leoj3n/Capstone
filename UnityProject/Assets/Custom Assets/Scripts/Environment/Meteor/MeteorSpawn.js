@@ -12,7 +12,7 @@ function Awake() {
 }
 
 function Update() {
-	if( !disable && ((Time.time - lastSpawnTime) > timeBetween) ) {
+	if( !disable && !GameManager.instance.cutScenePlaying() && ((Time.time - lastSpawnTime) > timeBetween) ) {
 		var range : float = Mathf.Clamp( (GetComponent( 'MainCamera' ).largestX / 2), Global.sharedMinX, Global.sharedMaxX );
 		
 		var xPos : float = Random.Range( (transform.position.x - range), (transform.position.x + range) );

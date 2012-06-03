@@ -129,6 +129,8 @@ class GameManager extends MonoBehaviour {
 				characterPrefabs[controllers[ce].character], Vector3( (-5.0 + (10.0 * i)), 4.0, 0.0 ), Quaternion.identity );
 			
 			Global.bindAvatarToController( avatar, ce ); // set a reference to the Controller in Avatar
+			avatar.GetComponent( Avatar ).playCutScene( CutScene.Intro ); // assume intro should be played for now
+			
 			avatars[i] = avatar;
 		}
 	}
@@ -138,16 +140,44 @@ class GameManager extends MonoBehaviour {
 		var avatarArray : Array = new Array();
 		
 		for( var avatar : GameObject in avatars ) {
-			if (controllers[avatar.GetComponent( Avatar ).getController()].team == team)
+			if (avatar.GetComponent( Avatar ).getTeam() == team)
 				avatarArray.Push( avatar );
 		}
 		
 		return avatarArray.ToBuiltin( GameObject );
 	}
 	
+	// utility function to get alive controller team enums
+	public function getAliveControllerTeamEnums() : ControllerTeam[] {
+		var teamArray : Array = new Array();
+		
+		for( var i = 0; i < ControllerTeam.Count; i++ ) {
+			var avatars : GameObject[] = getAvatarsOnTeam( i );
+			
+			for( var avatar : GameObject in avatars ) {
+				if (!avatar.GetComponent( Avatar ).isAlive()) continue;
+				
+				teamArray.Push( i ); // push if someone is alive
+				break; // only need to add a team once
+			}
+		}
+		
+		return teamArray.ToBuiltin( ControllerTeam );
+	}
+	
+	// utility function to check if a cutscene is playing
+	public function cutScenePlaying() : boolean {
+		// loop through avatars and see if any are playing a cutscene
+		for( var avatar : GameObject in avatars ) {
+			if (avatar.GetComponent( Avatar ).isCutScenePlaying()) return true;
+		}
+		
+		return false;
+	}
+	
 	// utility function to ignore collisions between characters on the same team
 	public function setupTeamPhysics() {
-		for( var i = 0; i < ControllerTeam.Count; i++ ) {					
+		for( var i = 0; i < ControllerTeam.Count; i++ ) {
 			var avatars : GameObject[] = getAvatarsOnTeam( i );
 			
 			for( var avatar1 : GameObject in avatars ) {
