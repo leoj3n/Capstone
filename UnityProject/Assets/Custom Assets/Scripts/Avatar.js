@@ -29,6 +29,7 @@ protected var textureAtlasCube : Transform;
 protected var origShadowAspectRatio : float;
 protected var origFps : float;
 protected var ccOrigHeight : float;
+protected var startPos : Vector3;
 
 // STATE
 protected var facing : int = 1; // 1 = right, -1 = left
@@ -55,7 +56,7 @@ protected var fps : float = 16.0;
 protected var ccHeight : float = 4.0;
 
 // HEALTH
-protected var health : float = 100.0;
+protected var health : float = 5.0;
 
 // JUMPING
 protected var jumping : boolean = false;
@@ -85,6 +86,7 @@ function Start() {
 	origShadowAspectRatio = shadowProjector.aspectRatio;
 	origFps = taRenderer.fps;
 	ccOrigHeight = characterController.height;
+	startPos = transform.position;
 }
 
 function Update() {
@@ -138,6 +140,10 @@ function checkHealth() {
 // is health greater than zero?
 function isAlive() : boolean {
 	return (health > 0.0);
+}
+
+function isEliminated() {
+	return eliminated;
 }
 
 // utility function to cause this avatar to face the nearest avatar
@@ -356,6 +362,8 @@ function determineState() {
 			state = CharacterState.Hit;
 			break;
 	}
+	
+	Debug.Log( state );
 }
 
 // set atlas (and do anything else necessary) based on state
@@ -473,10 +481,10 @@ function scaleAnchorFix( v : Vector3 ) : Vector3 {
 }
 
 // utility function to resize character controller height (from bottom)
-function resizeCharacterControllerHeight( h : float ) {
-	if( characterController.height != h ) {
-		transform.position.y += Mathf.Max( (h - characterController.height), 0.0 );
-		characterController.height = h;
+function resizeCharacterControllerHeight( newHeight : float ) {
+	if( characterController.height != newHeight ) {
+		transform.position.y += Mathf.Max( ((newHeight - characterController.height) / 2.0), 0.0 );
+		characterController.height = newHeight;
 	}
 }
 
@@ -690,6 +698,16 @@ function addPowerModify( modify : PowerModifyEnum ) {
 			break;
 	}
 }
+
+/*
+// this gets called on each new round
+function resetAvatar() {
+	health = 100.0;
+	eliminated = false;
+	hitForce = explosionForce = Vector3.zero;
+	transform.position = startPos;
+}
+*/
 
 // push props away
 function OnControllerColliderHit( hit : ControllerColliderHit ) {

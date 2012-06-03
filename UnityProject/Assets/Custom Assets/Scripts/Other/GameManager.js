@@ -119,6 +119,13 @@ class GameManager extends MonoBehaviour {
 		}
 	}
 	
+	// utility function for resetting avatars
+	public function resetAvatars() {
+		for( var avatar : GameObject in avatars ) {
+			avatar.GetComponent( Avatar ).resetAvatar();
+		}
+	}
+	
 	// utility function to get avatars on a specific team
 	public function getAvatarsOnTeam( team : ControllerTeam ) : GameObject[] {
 		var avatarArray : Array = new Array();

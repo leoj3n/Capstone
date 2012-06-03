@@ -33,6 +33,7 @@ class DefaultScene extends SceneManager {
 					break;
 			}
 		} else {
+			// instantiate power modifies
 			if( (Time.time - lastSpawnTimePM) > timeBetweenPM ) {				
 				var xPos : float = Random.Range( Global.sharedMinX, Global.sharedMaxX );
 				var yPos : float = (Camera.main.transform.position.y + Camera.main.orthographicSize + yOffsetPM);
@@ -41,12 +42,26 @@ class DefaultScene extends SceneManager {
 				
 				lastSpawnTimePM = Time.time;
 			}
+			
+			// do the rounds
+			var numEliminated : int = 0;
+			for( var avatar : GameObject in GameManager.instance.avatars ) {
+				if (avatar.GetComponent( Avatar ).isEliminated()) numEliminated++;
+			}
+			if( (numEliminated > (GameManager.instance.avatars.Length - 1)) && 
+				!GameManager.instance.audioIsPlaying( 'Eliminated' ) ) {
+				
+				GameManager.instance.resetAvatars();
+				round++;
+			}
 		}
 	}
 	
 	function OnGUI() {
 		var halfScreenWidth : float = (Screen.width / 2.0);
 		var halfScreenHeight : float = (Screen.height / 2.0);
+		
+		GUI.Box( Rect( (halfScreenWidth - 50.0), 20.0, 100.0, 22.0 ), ('Round ' + round) );
 		
 		GUILayout.BeginArea( Rect( 20.0, 20.0, 120.0, (Screen.height - 40.0) ) );
 			
