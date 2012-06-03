@@ -44,6 +44,7 @@ protected var staticFrame : int = -1;
 protected var reverse : boolean = false;
 private var lastAttackTime : float = 0.0;
 protected var introPlayed = false;
+protected var eliminated = false;
 
 // OTHER
 protected var hitForce : Vector3; // force from a hit from another avatar
@@ -54,7 +55,7 @@ protected var fps : float = 16.0;
 protected var ccHeight : float = 4.0;
 
 // HEALTH
-protected var health : float = 5.0;
+protected var health : float = 100.0;
 
 // JUMPING
 protected var jumping : boolean = false;
@@ -123,7 +124,14 @@ function Update() {
 // utility function to do things based on character health
 function checkHealth() {
 	if( !isAlive() ) {
-		//health = 100;
+		health = 0.0;
+		
+		if( !eliminated && !audioIsPlaying( CharacterSound.AnnouncerName ) ) {
+			GameManager.instance.audioPlay( 'Eliminated' );
+			eliminated = true;
+		}
+	} else {
+		eliminated = false;
 	}
 }
 
@@ -261,34 +269,7 @@ function checkIfMovingBack() {
 }
 
 // set isNearlyGrounded variable
-function checkIfNearlyGrounded() {	
-/*	var p1 : Vector3;
-	var p2 : Vector3;
-	var dist : float = 2.0; // change this as needed
-	var dir : Vector3 = Vector3.down;
-	var radius : float = getScaledRadius();
-	var halfHeight : float = (getScaledHeight() * 0.5);
-	p1 = p2 = (getCenterInWorld() + Vector3( 0.0, dist, 0.0 ));
-	p1.y += halfHeight;
-	p2.y -= halfHeight;
-	
-	var radiusVector : Vector3 = Vector3( radius, 0.0, 0.0 );
-		
-	Debug.DrawLine( p1, p1 + radiusVector );
-	Debug.DrawLine( p1, p1 - radiusVector );
-	Debug.DrawLine( p1, p2 );
-	Debug.DrawLine( p2, p2 + radiusVector );
-	Debug.DrawLine( p2, p2 - radiusVector );
-	
-	var distReal : float = (dist * 2.0);
-	var p2Real : Vector3 = (p2 + (distReal * dir));
-	
-	Debug.DrawLine( p2, p2Real, Color.red );
-	Debug.DrawLine( p2Real, p2Real + radiusVector, Color.red );
-	Debug.DrawLine( p2Real, p2Real - radiusVector, Color.red );
-	
-	var hits : RaycastHit[] = Physics.CapsuleCastAll( p1, p2, radius, dir, distReal, GameManager.instance.nearlyGroundedLayerMask );
-*/
+function checkIfNearlyGrounded() {
 	var hits : RaycastHit[] = capsuleCast( Vector3.down, 2.0, GameManager.instance.nearlyGroundedLayerMask, Vector3( 0.0, 1.0, 0.0 ) );
 	
 	isNearlyGrounded = false;
@@ -774,6 +755,11 @@ function audioPlay( sid : int ) {
 	var uid : int = (GetInstanceID() + sid);
 	GameManager.instance.audioBind( uid, sound[sid] );
 	GameManager.instance.audioPlay( uid, true );
+}
+
+// utility function to check if a character sound is playing
+function audioIsPlaying( sid : int ) : boolean {
+	return GameManager.instance.audioIsPlaying( GetInstanceID() + sid );
 }
 
 // this is called when using the Reset command in the inspector

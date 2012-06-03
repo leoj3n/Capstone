@@ -5,6 +5,8 @@ class DefaultScene extends SceneManager {
 	private var timeBetweenPM : float = 5.0;
 	private var yOffsetPM : float = 10.0;
 	private var lastSpawnTimePM : float;
+	private var round : int = 1;
+	private var totalRounds : int = 3;
 	
 	function SceneLoaded() {
 		GameManager.instance.instantiateAvatars();
