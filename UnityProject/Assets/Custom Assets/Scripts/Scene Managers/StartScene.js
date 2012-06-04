@@ -109,6 +109,7 @@ class StartScene extends SceneManager {
 		GUILayout.EndArea();
 	}
 	
+	// utility function to check if all passed controllers are on the same team
 	private function onSameTeam( controllers : ControllerEnum[] ) : boolean {
 		for( var ce1 : ControllerEnum in controllers ) {
 			var team1 : ControllerTeam = GameManager.instance.controllers[ce1].team;

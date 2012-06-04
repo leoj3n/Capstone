@@ -52,7 +52,6 @@ enum CutScene {
 	Victory
 }
 enum PowerModifyEnum {
-	ShadowClone, // Black
 	TimeWarp, // Blue
 	PowerGaugeBoost, // Green
 	HomingBeacon, // Purple

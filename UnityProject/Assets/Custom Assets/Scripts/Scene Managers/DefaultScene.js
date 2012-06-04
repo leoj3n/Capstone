@@ -70,7 +70,7 @@ class DefaultScene extends SceneManager {
 		GUI.Box( Rect( (halfScreenWidth - 50.0), 20.0, 100.0, 22.0 ), 
 			((GameManager.instance.round == 2) ? 'Final Round' : ('Round ' + (GameManager.instance.round + 1))) );
 		
-		GUILayout.BeginArea( Rect( 20.0, 20.0, 120.0, (Screen.height - 40.0) ) );
+		/*GUILayout.BeginArea( Rect( 20.0, 20.0, 120.0, (Screen.height - 40.0) ) );
 			
 			GUILayout.BeginVertical();
 				
@@ -91,14 +91,21 @@ class DefaultScene extends SceneManager {
 				
 			GUILayout.EndVertical();
 		
-		GUILayout.EndArea();
+		GUILayout.EndArea();*/
 		
 		// character labels
 		
-		for( var avatar : GameObject in GameManager.instance.avatars ) {
+		/*for( var avatar : GameObject in GameManager.instance.avatars ) {
 			var componentA : Avatar = avatar.GetComponent( Avatar );
 			var txt : String = ('Controller ' + parseInt( componentA.getController() ) + '\n(' + componentA.getTeam().ToString() + ' Team)');
 			characterLabel( componentA.getCenterInWorld(), ((componentA.getScaledHeight() / 2.0) + 1.5), txt );
+		}*/
+		
+		for( var avatar : GameObject in GameManager.instance.avatars ) {
+			var component : Avatar = avatar.GetComponent( Avatar );
+			var point = Camera.main.WorldToScreenPoint( component.getCenterInWorld() + Vector2( 0.0, component.getScaledHeight() ) );
+			var rect : Rect = Rect( (point.x - 30.0), (Screen.height - point.y), 100.0, 60.0 );
+			GUI.Label( rect, ('Controller ' + parseInt( component.getController() )) );
 		}
 		
 		// 3-2-1
@@ -115,6 +122,8 @@ class DefaultScene extends SceneManager {
 					GameManager.instance.countdownTextures[seconds] );
 		}
 		
+		// game paused
+		 
 		if (!GameManager.instance.paused) return;
 		
 		width = 300.0;

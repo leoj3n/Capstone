@@ -12,6 +12,7 @@ public var sound : AudioClip[];
 public var expectedSounds : CharacterSound; // just for exposing expected order of sounds in inspector
 public var statsTexture : Texture2D;
 public var statsAtlas : TextAsset;
+public var impactEffect : GameObject;
 public var baseOffset : Vector3 = Vector3.zero;
 public var isControllable : boolean = true;
 
@@ -615,8 +616,26 @@ function timeToAttack( type : AttackType, passedVar ) : boolean {
 
 // utility function to apply hit force to another avatar using a passed RaycastHit
 function hitOtherAvatar( hit : RaycastHit, force : float, damping : float ) {
-	if (Global.isAvatar( hit.transform ))
-		hit.transform.gameObject.GetComponent( Avatar ).addHitForce( getCenterInWorld(), force, damping );
+	if( !Global.isAvatar( hit.transform.gameObject ) ) {
+		Debug.LogWarning( 'Cannot apply hit. This function only deals with avatars.' );
+		return;
+	}
+	
+	var other : Avatar = hit.transform.GetComponent( Avatar );
+	var myCenter : Vector3 = getCenterInWorld();
+	var otherCenter : Vector3 = other.getCenterInWorld();
+	var hitPoint : Vector3 = hit.point;
+	
+	// move hit point up if below the belts of both avatars
+	if ((hit.point.y < otherCenter.y) && (hit.point.y < myCenter.y))
+		 hitPoint = Vector3( hit.point.x, myCenter.y, hit.point.z );
+	
+	// impact effect	 
+	var effect : GameObject = Instantiate( impactEffect, hitPoint, Quaternion.identity );
+	var effectEmitter : ParticleEmitter = effect.GetComponent( ParticleEmitter );
+	effectEmitter.localVelocity = Vector3.Scale( effectEmitter.localVelocity, -hit.normal );
+	
+	other.addHitForce( hitPoint, force, damping );
 }
 
 // utility function to get the avatar center in world coordinates
@@ -700,12 +719,10 @@ function addHitForce( pos : Vector3, force : float, damping : float ) {
 function addPowerModify( modify : PowerModifyEnum ) {
 	modify = PowerModifyEnum.PowerGaugeBoost; // debug
 	switch( modify ) {
-		case PowerModifyEnum.ShadowClone:
-			break;
 		case PowerModifyEnum.TimeWarp:
 			break;
 		case PowerModifyEnum.PowerGaugeBoost:
-			GameManager.instance.audioPlay( 'PowerGuageBoost', true, false, 1.0 );
+			GameManager.instance.audioPlay( 'PowerGuageBoost', true );
 			break;
 		case PowerModifyEnum.HomingBeacon:
 			break;
