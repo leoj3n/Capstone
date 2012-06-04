@@ -5,11 +5,11 @@ class StartScene extends SceneManager {
 	public var buttonTimeout : float = 0.3;
 	public var connectSound : AudioClip;
 	public var disconnectSound : AudioClip;
-	public var clickSound : AudioClip;
 	public var readySound : AudioClip;
 	
 	private var countdownStartTime : float;
 	private var lastSelectTime : float[];
+	private var previousSecond : int = -1;
 	
 	function SceneLoaded() {		
 		countdownStartTime = 0.0;
@@ -24,7 +24,6 @@ class StartScene extends SceneManager {
 		
 		GameManager.instance.audioBind( 'connect', connectSound );
 		GameManager.instance.audioBind( 'disconnect', disconnectSound );
-		GameManager.instance.audioBind( 'click', clickSound );
 		GameManager.instance.audioBind( 'ready', readySound );
 	}
 	
@@ -35,13 +34,13 @@ class StartScene extends SceneManager {
 				case Global.isButtonDown( 'Start', i ):
 					switch( GameManager.instance.controllers[i].state ) {
 						case ControllerState.SittingOut:
-							GameManager.instance.audioPlay( 'connect' );
+							GameManager.instance.audioPlay( 'connect', true );
 							GameManager.instance.controllers[i].state = ControllerState.TeamSelect;
 							GameManager.instance.controllers[i].team = i; // hopefully will reduce confusion
 							break;
 						case ControllerState.TeamSelect:
 							GameManager.instance.controllers[i].state = ControllerState.Ready;
-							GameManager.instance.audioPlay( 'ready' );
+							GameManager.instance.audioPlay( 'ready', true );
 							break;
 					}
 					break;
@@ -51,7 +50,7 @@ class StartScene extends SceneManager {
 							GameManager.instance.controllers[i].state = ControllerState.TeamSelect;
 							break;
 						case ControllerState.TeamSelect:
-							GameManager.instance.audioPlay( 'disconnect' );
+							GameManager.instance.audioPlay( 'disconnect', true );
 							GameManager.instance.controllers[i].state = ControllerState.SittingOut;
 							break;
 					}
@@ -69,7 +68,7 @@ class StartScene extends SceneManager {
 				
 				if( left || right ) {
 					lastSelectTime[i] = Time.time;
-					GameManager.instance.audioPlay( 'click' );
+					GameManager.instance.audioPlay( 'click', true );
 				}
 				
 				var countInt : int = ControllerTeam.Count;
@@ -120,7 +119,7 @@ class StartScene extends SceneManager {
 			var totalControllers : int = (selecting.Length + ready.Length);
 			
 			if( totalControllers == 1 ) {
-				GUILayout.Box( 'Two or more controllers are needed. Add another controller to continue!' );
+				GUILayout.Box( 'Add another controller to continue!' );
 			} else if( totalControllers > 0 ) {
 				if( selecting.Length == 0 ) {
 					if( onSameTeam( ready ) ) {
@@ -128,10 +127,14 @@ class StartScene extends SceneManager {
 					} else {
 						if (countdownStartTime == 0.0) countdownStartTime = Time.time;
 						var seconds : int = (Mathf.CeilToInt( countDownSeconds - (Time.time - countdownStartTime) ) % 60);
-						GameManager.instance.audioPlay( seconds.ToString() );
-						Debug.Log( seconds );
-						if (seconds == 1) Application.LoadLevel( SceneEnum.CharacterSelect );
-						GUILayout.Box( 'Character select in ' + seconds );
+						var second : int = Mathf.Max( seconds, 1 );
+						
+						if (second != previousSecond) GameManager.instance.audioPlay( second.ToString() );
+						previousSecond = second;
+						
+						GUILayout.Box( 'Character select in ' + second );
+						
+						if (seconds == 0) Application.LoadLevel( SceneEnum.CharacterSelect );
 					}
 				} else {
 					countdownStartTime = 0.0;
