@@ -81,9 +81,10 @@ function Update() {
 		if (z > (minimumSize * -2.5)) z = (minimumSize * -2.5);
 	}
 	
+	// TODO: this needs some work.
 	if( swayAmount > 0.0 ) {
-		var temp : float = (Mathf.PingPong( (Time.time * 0.5), swayAmount ) - (swayAmount / 2.0)); // eg: -0.5 to 0.5 for swayAmount of 1.0
-		sway = Vector3.Lerp( sway, Vector3( -temp, (temp / 2.0), temp ), Time.deltaTime );
+		var temp : float = (Mathf.PingPong( (Time.time * 0.25), swayAmount ) - (swayAmount / 2.0)); // eg: -0.5 to 0.5 for swayAmount of 1.0
+		sway = Vector3.Lerp( sway, Vector3( 0.0, (temp / 2.0), temp ), Time.deltaTime );
 	}
 	
 	//transform.position = Vector3.Lerp( transform.position, Vector3( averagePosition.x, averagePosition.y, z ), t );	

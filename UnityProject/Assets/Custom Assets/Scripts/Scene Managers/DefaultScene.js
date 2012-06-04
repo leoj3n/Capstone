@@ -70,7 +70,7 @@ class DefaultScene extends SceneManager {
 		GUI.Box( Rect( (halfScreenWidth - 50.0), 20.0, 100.0, 22.0 ), 
 			((GameManager.instance.round == 2) ? 'Final Round' : ('Round ' + (GameManager.instance.round + 1))) );
 		
-		/*GUILayout.BeginArea( Rect( 20.0, 20.0, 120.0, (Screen.height - 40.0) ) );
+		GUILayout.BeginArea( Rect( 20.0, 20.0, 120.0, (Screen.height - 40.0) ) );
 			
 			GUILayout.BeginVertical();
 				
@@ -82,8 +82,8 @@ class DefaultScene extends SceneManager {
 						GUILayout.Box( ControllerTeam.GetName( ControllerTeam, i ) + ' Team' );
 						
 						for( var avatar : GameObject in avatars ) {
-							var component : Component = avatar.GetComponent( Avatar );
-							var HPPM : String = ((component.isAlive()) ? 'HP [' + parseInt( Mathf.Max( component.health, 1.0 ) ) + '] PM [0%]' : 'You are dead!' );
+							var component : Avatar = avatar.GetComponent( Avatar );
+							var HPPM : String = ((component.isAlive()) ? 'HP [' + parseInt( Mathf.Max( component.getHealth(), 1.0 ) ) + '] PM [0%]' : 'You are dead!' );
 							GUILayout.Box( component.getName() + '\n(Controller ' + parseInt( component.getController() ) + ')\n' + HPPM );
 						}
 					}
@@ -91,7 +91,7 @@ class DefaultScene extends SceneManager {
 				
 			GUILayout.EndVertical();
 		
-		GUILayout.EndArea();*/
+		GUILayout.EndArea();
 		
 		// character labels
 		
@@ -102,8 +102,8 @@ class DefaultScene extends SceneManager {
 		}*/
 		
 		for( var avatar : GameObject in GameManager.instance.avatars ) {
-			var component : Avatar = avatar.GetComponent( Avatar );
-			var point = Camera.main.WorldToScreenPoint( component.getCenterInWorld() + Vector2( 0.0, component.getScaledHeight() ) );
+			component = avatar.GetComponent( Avatar );
+			var point = Camera.main.WorldToScreenPoint( component.getCenterInWorld() + Vector2( 0.0, (component.getScaledHeight() * 0.80) ) );
 			var rect : Rect = Rect( (point.x - 30.0), (Screen.height - point.y), 100.0, 60.0 );
 			GUI.Label( rect, ('Controller ' + parseInt( component.getController() )) );
 		}

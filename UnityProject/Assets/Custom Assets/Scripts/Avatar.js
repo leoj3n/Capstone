@@ -139,6 +139,11 @@ function isAlive() : boolean {
 	return (health > 0.0);
 }
 
+// utility function to get health
+function getHealth() : float {
+	return Mathf.Max( health, 0.0 );
+}
+
 // utility function to do things based on character health
 function checkHealth() {
 	if( !isAlive() ) {
