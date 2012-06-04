@@ -16,6 +16,8 @@ class GameManager extends MonoBehaviour {
 	public var avatarOnlyLayerMask : LayerMask = -1;
 	public var countdownTextures : Texture[];
 	public var powerModifyPrefab : GameObject;
+	public var audioListenerVolume : float = 1.0;
+	public var customSkin : GUISkin;
 	
 	// non-inspector variables still accessible via GameManager.instance.(variable)
 	private var _controllers : Controller[];
@@ -46,6 +48,7 @@ class GameManager extends MonoBehaviour {
 	private var audioSources : Hashtable;
 	private var roundResults : ControllerTeam[];
 	private var resetRound : boolean = false;
+	private var audioListener : AudioListener;
 	
 	// MAIN FUNCTIONS
 	
@@ -65,6 +68,10 @@ class GameManager extends MonoBehaviour {
 			nullifyRoundResults();
 			resetRound = false;
 		}
+	}
+	
+	function Update() {
+		audioListener.volume = audioListenerVolume;
 	}
 	
 	// PRIVATE FUNCTIONS
@@ -95,6 +102,8 @@ class GameManager extends MonoBehaviour {
 		// setup round results
 		roundResults = new ControllerTeam[3]; // there are at most 3 rounds
 		nullifyRoundResults();
+		
+		audioListener = Camera.main.GetComponent( AudioListener );
 	}
 	
 	function nullifyRoundResults() {

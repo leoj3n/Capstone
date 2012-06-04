@@ -111,6 +111,8 @@ class CharacterSelectScene extends SceneManager {
 	}
 	
 	function OnGUI() {
+		GUI.skin = GameManager.instance.customSkin;
+		
 		var halfScreenWidth : float = (Screen.width / 2);
 		var halfScreenHeight : float = (Screen.height / 2);
 		var width : float = 300.0;

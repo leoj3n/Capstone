@@ -4,7 +4,6 @@ public var minimumY : float = 6.75;
 public var minimumSize : float = 8.0;
 public var padding : float = 2.0;
 public var maximumShake : float = 2.0;
-public var audioListenerVolume : float = 1.0;
 
 private var averagePosition : Vector3;
 private var largestDistance : float;
@@ -12,18 +11,11 @@ static var largestX : float;
 private var largestY : float;
 private var t : float;
 private var shake : float = 0.0;
-private var audioListener : AudioListener;
 
 private var averagePositionY_Save : float;
 private var largestY_Save : float;
 
-function Start() {
-	audioListener = GetComponent( AudioListener );
-}
-
 function Update() {
-	audioListener.volume = audioListenerVolume;
-	
 	largestDistance = largestX = largestY = 0.0;
 	averagePosition = Vector3.zero;
 	t = (damping * Time.deltaTime);

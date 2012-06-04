@@ -61,9 +61,11 @@ class StartScene extends SceneManager {
 	}
 	
 	function OnGUI() {
+		GUI.skin = GameManager.instance.customSkin;
+		
 		var halfScreenWidth : float = (Screen.width / 2);
 		var halfScreenHeight : float = (Screen.height / 2);
-		var width : float = 500.0;
+		var width : float = (Screen.width * 0.90);
 		var height : float = 300.0;
 		var halfWidth : float = (width / 2);
 		var halfHeight : float = (height / 2);
@@ -73,12 +75,6 @@ class StartScene extends SceneManager {
 		GUILayout.BeginArea( Rect( (halfScreenWidth - halfWidth), 20.0, width, height ) );
 		
 			GUILayout.Box( 'Press [Start] or [Back] to add or remove your controller\nChange teams using [A] [B] [X] [Y] (button colors correspond to team colors)' );
-			
-			GUILayout.BeginHorizontal();
-			
-				for (var i = 0; i < ControllerTeam.Count; i++) displayTeam( i );
-				
-			GUILayout.EndHorizontal();
 			
 			var selecting : ControllerEnum[] = GameManager.instance.getControllerEnumsWithState( ControllerState.TeamSelect );
 			var ready : ControllerEnum[] = GameManager.instance.getControllerEnumsWithState( ControllerState.Ready );
@@ -103,6 +99,12 @@ class StartScene extends SceneManager {
 			} else {
 				GUILayout.Box( 'No controllers added yet' );
 			}
+			
+			GUILayout.BeginHorizontal();
+			
+				for (var i = 0; i < ControllerTeam.Count; i++) displayTeam( i );
+				
+			GUILayout.EndHorizontal();
 			
 		GUILayout.EndArea();
 	}
