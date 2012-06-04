@@ -2,12 +2,14 @@
 public var modifierPrefabs : GameObject[];
 public var expectedModifies : PowerModifyEnum; // just to expose expected modifies in Inspector
 
-private var modify : PowerModifyEnum;
+private var modifier : PowerModifyEnum;
 
 function Awake() {
-	modify = Random.Range( 0, PowerModifyEnum.Count );
+	modifier = Random.Range( 0, PowerModifyEnum.Count );
+	var object : GameObject = Instantiate( modifierPrefabs[modifier], transform.position, Quaternion.identity );
+	object.transform.parent = transform;
 }
 
-function getModifyType() : PowerModifyEnum {
-	return modify;
+function Update() {
+	Global.enforceBounds( transform );
 }

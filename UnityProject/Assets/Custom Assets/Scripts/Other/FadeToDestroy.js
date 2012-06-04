@@ -11,7 +11,7 @@ function Awake() {
 }
 
 function Update() {
-	var timeSinceStart = (Time.time - startTime);
+	var timeSinceStart : float = (Time.time - startTime);
 	
 	if( delay > 0.0 ) {
 		if( timeSinceStart > delay ) {
@@ -19,7 +19,7 @@ function Update() {
 			startTime = Time.time;
 		}
 	} else {
-		renderer.material.color.a = origAlpha * (1 - (timeSinceStart / timeUntilDestroy));
+		renderer.material.color.a = origAlpha * (1.0 - (timeSinceStart / timeUntilDestroy));
 		if (timeSinceStart > timeUntilDestroy) Destroy( gameObject );
 	}
 }

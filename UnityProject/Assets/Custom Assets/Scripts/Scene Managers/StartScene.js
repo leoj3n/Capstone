@@ -68,7 +68,7 @@ class StartScene extends SceneManager {
 				
 				if( left || right ) {
 					lastSelectTime[i] = Time.time;
-					GameManager.instance.audioPlay( 'click', true );
+					GameManager.instance.audioPlay( 'Click', true );
 				}
 				
 				var countInt : int = ControllerTeam.Count;

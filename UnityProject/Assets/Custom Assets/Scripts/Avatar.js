@@ -102,7 +102,7 @@ function Update() {
 		setHorizontalMovement();
 		setVerticalMovement();
 		doMovement();
-		enforceBounds();
+		Global.enforceBounds( transform );
 		
 		if( isAlive() ) {
 			if (GameManager.instance.avatars.Length == 2)
@@ -145,7 +145,7 @@ function getHealth() : float {
 }
 
 // utility function to do things based on character health
-function checkHealth() {
+function checkHealth() {	
 	if( !isAlive() ) {
 		health = 0.0;
 		
@@ -155,6 +155,8 @@ function checkHealth() {
 		}
 	} else {
 		eliminated = false;
+		
+		if (health < 10.0) GameManager.instance.audioPlay( 'Warning' );
 	}
 }
 
@@ -667,13 +669,6 @@ function getScaledHeight() : float {
 	return Mathf.Abs( transform.localScale.y * characterController.height );
 }
 
-// utility function to enforce the bounds set in Global
-function enforceBounds() {
-	transform.position.z = Global.sharedZ;
-	if (transform.position.x > Global.sharedMaxX) transform.position.x = Global.sharedMaxX;
-	if (transform.position.x < Global.sharedMinX) transform.position.x = Global.sharedMinX;
-}
-
 // utility function to add an explosion force to this avatar
 function addExplosionForce( pos : Vector3, radius : float, force : float, damping : float ) {
 	var percentage : float = (1.0 - Mathf.Clamp01( 
@@ -724,31 +719,12 @@ function addHitForce( pos : Vector3, force : float, damping : float ) {
 	addHitForce( pos, force, damping, (force / damping) );
 }
 
-// utility function to add power modify
-function addPowerModify( modify : PowerModifyEnum ) {
-	modify = PowerModifyEnum.PowerGaugeBoost; // debug
-	switch( modify ) {
-		case PowerModifyEnum.TimeWarp:
-			break;
-		case PowerModifyEnum.PowerGaugeBoost:
-			GameManager.instance.audioPlay( 'PowerGuageBoost', true );
-			break;
-		case PowerModifyEnum.Invincibility:
-			break;
-	}
-}
-
 // push props away
 function OnControllerColliderHit( hit : ControllerColliderHit ) {
 	if( hit.gameObject.CompareTag( 'PowerModify' ) && (isAlive()) ) {
-		addPowerModify( hit.transform.GetComponent( PowerModify ).getModifyType() );
-		var particles : Transform = hit.transform.Find( 'Particles' );
-		if( particles ) {
-			particles.parent = transform;
-			particles.position = transform.position;
-		}
-		Destroy( hit.gameObject );
-		
+		var modifier : Modifier = hit.transform.GetComponentInChildren( Modifier );
+		if (modifier) modifier.pickup( this );
+		Destroy( hit.transform.gameObject );
 		return;
 	}
 	

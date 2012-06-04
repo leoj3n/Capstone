@@ -154,6 +154,13 @@ static function getSize( object ) : Vector3 {
 	return absoluteVector( Vector3.Scale( size, object.transform.localScale ) ); // apply scaling to get final size
 }
 
+// utility function to enforce the bounds set in Global
+static function enforceBounds( transform : Transform ) {
+	transform.position.z = Global.sharedZ;
+	if (transform.position.x > Global.sharedMaxX) transform.position.x = Global.sharedMaxX;
+	if (transform.position.x < Global.sharedMinX) transform.position.x = Global.sharedMinX;
+}
+
 // utility functions for making the values of a vector absolute
 static function absoluteVector( v : Vector3 ) { 
 	return Vector3( Mathf.Abs( v.x ), Mathf.Abs( v.y ), Mathf.Abs( v.z ) );
