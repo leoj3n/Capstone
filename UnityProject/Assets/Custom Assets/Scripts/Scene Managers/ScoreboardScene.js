@@ -21,12 +21,12 @@ class ScoreboardScene extends SceneManager {
 		
 		var halfScreenWidth : float = (Screen.width / 2);
 		var halfScreenHeight : float = (Screen.height / 2);
-		var width : float = 500.0;
-		var height : float = 300.0;
+		var width : float = (Screen.width * 0.90);
+		var height : float = (Screen.height * 0.90);
 		var halfWidth : float = (width / 2);
 		var halfHeight : float = (height / 2);
 		
-		GUILayout.BeginArea( Rect( (halfScreenWidth - halfWidth), 20.0, width, height ) );
+		GUILayout.BeginArea( Rect( (halfScreenWidth - halfWidth), (halfScreenHeight - halfHeight), width, height ) );
 			
 			var winningTeams : ControllerTeam[] = GameManager.instance.getWinningTeamOrTeams();
 			
@@ -63,11 +63,11 @@ class ScoreboardScene extends SceneManager {
 		GUILayout.EndArea();
 		
 		width = 300.0;
-		height = 80.0;
+		height = 90.0;
 		halfWidth = (width / 2);
 		halfHeight = (height / 2);
 		
-		GUILayout.BeginArea( Rect( (halfScreenWidth - halfWidth), (Screen.height - height), width, height ) );
+		GUILayout.BeginArea( Rect( (halfScreenWidth - halfWidth), (Screen.height - (Screen.height * 0.05) - height), width, height ) );
 						
 			GUILayout.Box( 'Press [A] to replay ' + GameManager.instance.level + '.' );
 			GUILayout.Box( 'Press [B] to return to Level Select.' );

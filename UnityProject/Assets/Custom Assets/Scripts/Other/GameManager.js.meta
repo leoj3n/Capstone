@@ -3,4 +3,4 @@ guid: a36eaf6682a6407458175b34eb8ead55
 MonoImporter:
   importerVersion: 1
   defaultReferences:
-    avatarPrefab: {fileID: 100002, guid: e87c7942e68496e45989a745f6282ce2, type: 2}
+    avatarPrefab: {fileID: 100002, guid: 00000000000000000000000000000000, type: 0}

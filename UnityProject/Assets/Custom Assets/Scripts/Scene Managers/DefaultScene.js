@@ -2,7 +2,7 @@
 class DefaultScene extends SceneManager {
 	private var countDownSeconds : int = 3;
 	private var countdownStartTime : float;
-	private var timeBetweenPM : float = 5.0;
+	private var timeBetweenPM : float = 10.0;
 	private var yOffsetPM : float = 10.0;
 	private var lastSpawnTimePM : float;
 	private var initial : boolean = true;
@@ -32,13 +32,13 @@ class DefaultScene extends SceneManager {
 			}
 		} else {
 			// instantiate power modifies
-			if( (Time.time - lastSpawnTimePM) > timeBetweenPM ) {				
+			if( (Time.timeSinceLevelLoad - lastSpawnTimePM) > timeBetweenPM ) {				
 				var xPos : float = Random.Range( Global.sharedMinX, Global.sharedMaxX );
 				var yPos : float = (Camera.main.transform.position.y + Camera.main.orthographicSize + yOffsetPM);
 					
 				Instantiate( GameManager.instance.powerModifyPrefab, Vector3( xPos, yPos, Global.sharedZ ), Quaternion.identity );
 				
-				lastSpawnTimePM = Time.time;
+				lastSpawnTimePM = Time.timeSinceLevelLoad;
 			}
 			
 			// do the rounds
@@ -70,7 +70,7 @@ class DefaultScene extends SceneManager {
 		GUI.Box( Rect( (halfScreenWidth - 50.0), 20.0, 100.0, 22.0 ), 
 			((GameManager.instance.round == 2) ? 'Final Round' : ('Round ' + (GameManager.instance.round + 1))) );
 		
-		GUILayout.BeginArea( Rect( 20.0, 20.0, 120.0, (Screen.height - 40.0) ) );
+		GUILayout.BeginArea( Rect( 20.0, (Screen.height * 0.05), 140.0, (Screen.height * 0.90) ) );
 			
 			GUILayout.BeginVertical();
 				
@@ -84,7 +84,7 @@ class DefaultScene extends SceneManager {
 						for( var avatar : GameObject in avatars ) {
 							var component : Avatar = avatar.GetComponent( Avatar );
 							var HPPM : String = ((component.isAlive()) ? 'HP [' + parseInt( Mathf.Max( component.getHealth(), 1.0 ) ) + '] PM [0%]' : 'You are dead!' );
-							GUILayout.Box( component.getName() + '\n(Controller ' + parseInt( component.getController() ) + ')\n' + HPPM );
+							GUILayout.Box( 'Controller ' + parseInt( component.getController() ) + '\n' + component.getName() + '\n' + HPPM );
 						}
 					}
 				}

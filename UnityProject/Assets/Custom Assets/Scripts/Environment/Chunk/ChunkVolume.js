@@ -7,8 +7,7 @@ private var lastReset : float;
 private var chunks : ArrayList;
 private var chunkScaleVector : Vector3;
 
-function Start() {	
-	lastReset = Time.time;
+function Start() {
 	chunkScaleVector = Vector3( chunkScale, chunkScale, chunkScale );
 	renderer.enabled = false; // hide the scene object
 
@@ -52,9 +51,9 @@ function Start() {
 }
 
 function Update() {
-	if( (Time.time - lastReset) > timeUntilReset ) {
+	if( (Time.timeSinceLevelLoad - lastReset) > timeUntilReset ) {
 		for (var chunk : GameObject in chunks) chunk.SendMessage( 'Return' );
-		lastReset = Time.time;
+		lastReset = Time.timeSinceLevelLoad;
 	}
 }
 
