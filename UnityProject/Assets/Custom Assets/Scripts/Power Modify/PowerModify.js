@@ -1,12 +1,11 @@
 
-public var modifyParticles : GameObject[];
+public var modifierPrefabs : GameObject[];
 public var expectedModifies : PowerModifyEnum; // just to expose expected modifies in Inspector
 
 private var modify : PowerModifyEnum;
 
 function Awake() {
 	modify = Random.Range( 0, PowerModifyEnum.Count );
-	transform.Find( 'Particles' ).renderer.material.SetColor( '_TintColor', Color.red );
 }
 
 function getModifyType() : PowerModifyEnum {

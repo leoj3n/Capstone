@@ -78,7 +78,7 @@ protected var isMoving : boolean = false;
 function Awake() {
 	characterController = GetComponent( CharacterController );
 	taRenderer = GetComponentInChildren( TextureAtlasRenderer );
-	textureAtlasCube = transform.Find( 'TextureAtlasCube' );
+	textureAtlasCube = transform.Find( 'Texture Atlas Cube' );
 	
 	shadow = transform.Find( 'Shadow' );
 	shadowProjector = shadow.GetComponent( Projector );
