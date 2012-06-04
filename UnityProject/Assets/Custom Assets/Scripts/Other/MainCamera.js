@@ -4,6 +4,7 @@ public var minimumY : float = 6.75;
 public var minimumSize : float = 8.0;
 public var padding : float = 2.0;
 public var maximumShake : float = 2.0;
+public var swayAmount : float = 3.0;
 
 private var averagePosition : Vector3;
 private var largestDistance : float;
@@ -11,9 +12,10 @@ static var largestX : float;
 private var largestY : float;
 private var t : float;
 private var shake : float = 0.0;
-
 private var averagePositionY_Save : float;
 private var largestY_Save : float;
+private var sway : Vector3 = Vector3.zero;
+private var cameraVelocity = Vector3.zero;
 
 function Update() {
 	largestDistance = largestX = largestY = 0.0;
@@ -79,7 +81,13 @@ function Update() {
 		if (z > (minimumSize * -2.5)) z = (minimumSize * -2.5);
 	}
 	
-	transform.position = Vector3.Lerp( transform.position, Vector3( averagePosition.x, averagePosition.y, z ), t );	
+	if( swayAmount > 0.0 ) {
+		var temp : float = (Mathf.PingPong( (Time.time * 0.5), swayAmount ) - (swayAmount / 2.0)); // eg: -0.5 to 0.5 for swayAmount of 1.0
+		sway = Vector3.Lerp( sway, Vector3( -temp, (temp / 2.0), temp ), Time.deltaTime );
+	}
+	
+	//transform.position = Vector3.Lerp( transform.position, Vector3( averagePosition.x, averagePosition.y, z ), t );	
+	transform.position = Vector3.SmoothDamp( transform.position, (sway + Vector3( averagePosition.x, averagePosition.y, z )), cameraVelocity, 0.3 );
 	transform.LookAt( averagePosition );
 }
 

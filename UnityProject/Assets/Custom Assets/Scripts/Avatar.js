@@ -630,7 +630,7 @@ function hitOtherAvatar( hit : RaycastHit, force : float, damping : float ) {
 	
 	// move hit point up if below the belts of both avatars
 	if ((hit.point.y < otherCenter.y) && (hit.point.y < myCenter.y))
-		 hitPoint = Vector3( hit.point.x, myCenter.y, hit.point.z );
+		 hitPoint = Vector3( hit.point.x, (myCenter.y + Random.Range( -0.5, 1.0 )), hit.point.z );
 	
 	// impact effect	 
 	var effect : GameObject = Instantiate( impactEffect, hitPoint, Quaternion.identity );
