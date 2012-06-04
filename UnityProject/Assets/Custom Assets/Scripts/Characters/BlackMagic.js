@@ -2,6 +2,9 @@
 class BlackMagic extends Avatar {	
 	function CharacterStateSwitch() {
 		switch( state ) {
+			case CharacterState.CutScene:
+				offset = Vector3( -1.0, 0.0, 0.0 );
+				break;
 			case CharacterState.Attack1:
 			case CharacterState.Attack2:
 				fps = 25.0;

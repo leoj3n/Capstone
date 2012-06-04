@@ -63,7 +63,7 @@ function Update() {
 }
 
 function OnCollisionEnter( collision : Collision ) {
-	if (frame == 0) GameManager.instance.audioPlay( GetInstanceID(), true, false, (collision.impactForceSum.magnitude / 10) );
+	if (frame == 0) GameManager.instance.audioPlay( GetInstanceID(), true, false, Global.collisionVolume( collision, 6.0 ) );
 	
 	if( !dislodged && collision.collider.CompareTag( 'Meteor' ) ) {
 		transform.parent = null;

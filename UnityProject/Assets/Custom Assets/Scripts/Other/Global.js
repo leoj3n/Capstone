@@ -247,3 +247,13 @@ static function getAxis( axis : String, controllers : ControllerEnum[] ) : float
 	
 	return largest;
 }
+
+// returns volume based on impact force and mass (if available)
+// expects mass of objects to be between 0.1 and 10.0 (hence the multiplication by 0.01)
+static function collisionVolume( collision : Collision, fallbackMass : float ) : float {
+	return Mathf.Clamp01( collision.impactForceSum.magnitude * 
+		(collision.gameObject.rigidbody ? collision.gameObject.rigidbody.mass : fallbackMass ) * 0.01 );
+}
+static function collisionVolume( collision : Collision ) : float {
+	return collisionVolume( collision, 1.0 );
+}
