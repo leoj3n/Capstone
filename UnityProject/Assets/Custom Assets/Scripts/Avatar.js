@@ -564,8 +564,10 @@ function tryAttack( attackType : AttackType, passedVar, castType : CastType ) : 
 			if (onSameTeam( hit.transform.gameObject )) continue; // skip if on same team (includes self)
 			
 			Debug.DrawRay( getCenterInWorld(), (dir * dist), Color.red, 0.05 );
-			return hit; // return first non-self
+			return hit; // return first non-self hit
 		}
+		
+		audioPlay( Random.Range( 0, 2 ) ? CharacterSound.AttackMissA : CharacterSound.AttackMissB );
 		
 		Debug.DrawRay( getCenterInWorld(), (dir * dist), Color.blue, 0.05 );
 	}
@@ -636,6 +638,8 @@ function hitOtherAvatar( hit : RaycastHit, force : float, damping : float ) {
 	effectEmitter.localVelocity = Vector3.Scale( effectEmitter.localVelocity, -hit.normal );
 	
 	other.addHitForce( hitPoint, force, damping );
+	
+	audioPlay( Random.Range( 0, 2 ) ? CharacterSound.AttackImpactA : CharacterSound.AttackImpactB );
 }
 
 // utility function to get the avatar center in world coordinates
@@ -698,7 +702,7 @@ function addHitForce( pos : Vector3, force : float, damping : float, hp : float 
 	var hForce : Vector3 = (force * dir);
 	decrementHealth( hp );
 	
-	audioPlay( CharacterSound.Hit );
+	audioPlay( Random.Range( 0, 2 ) ? CharacterSound.HitA : CharacterSound.HitB );
 	
 	// apply explosion force via co-routine
 	var initial : boolean = true;
@@ -723,8 +727,6 @@ function addPowerModify( modify : PowerModifyEnum ) {
 			break;
 		case PowerModifyEnum.PowerGaugeBoost:
 			GameManager.instance.audioPlay( 'PowerGuageBoost', true );
-			break;
-		case PowerModifyEnum.HomingBeacon:
 			break;
 		case PowerModifyEnum.Invincibility:
 			break;

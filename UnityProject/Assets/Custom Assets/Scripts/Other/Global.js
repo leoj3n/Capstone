@@ -1,7 +1,17 @@
 
 // all shared enums are here
 enum CharacterEnum { ZipperFace, BlackMagic, KidCane, Dan, Mick }
-enum CharacterSound { AnnouncerName, Selected, Jump, Hit }
+enum CharacterSound {
+	AnnouncerName, // 0
+	Selected, // 1
+	Jump, // 2
+	HitA, // 3
+	HitB, // 4
+	AttackImpactA, // 5
+	AttackImpactB, // 6
+	AttackMissA, // 7
+	AttackMissB // 8
+}
 enum CharacterState {
 	Dead,
 	CutScene,
@@ -54,7 +64,6 @@ enum CutScene {
 enum PowerModifyEnum {
 	TimeWarp, // Blue
 	PowerGaugeBoost, // Green
-	HomingBeacon, // Purple
 	Invincibility, // Orange
 	Count
 }
