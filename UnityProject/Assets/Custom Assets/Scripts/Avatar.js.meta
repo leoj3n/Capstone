@@ -1,7 +1,0 @@
-fileFormatVersion: 1
-guid: 2ac98777ea372be4ab09b79830cb0647
-MonoImporter:
-  importerVersion: 1
-  defaultReferences:
-    statsTexture: {fileID: 2800000, guid: 43bfb0da16374304bbecc25d8fdd81af, type: 1}
-    statsAtlas: {fileID: 4900000, guid: 12dcdeea4231a3a41b3a04f9f4b24018, type: 1}

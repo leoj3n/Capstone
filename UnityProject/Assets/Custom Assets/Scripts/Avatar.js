@@ -57,8 +57,9 @@ protected var offset : Vector3 = Vector3.zero;
 protected var fps : float = 16.0;
 protected var ccHeight : float = 4.0;
 
-// HEALTH
+// HEALTH AND GUAGE
 protected var health : float = 100.0;
+protected var power : float = 100.0;
 
 // JUMPING
 protected var jumping : boolean = false;
@@ -131,7 +132,7 @@ function decrementHealth( hp : float ) {
 	var aliveTeamEnums : ControllerTeam[] = GameManager.instance.getAliveControllerTeamEnums();
 	if ((aliveTeamEnums.Length == 1) && (aliveTeamEnums[0] == getTeam())) return;
 	
-	health -= hp;
+	health = Mathf.Max( (health - hp), 0.0 );
 }
 
 // utility function to check if health is greater than zero
@@ -144,11 +145,24 @@ function getHealth() : float {
 	return Mathf.Max( health, 0.0 );
 }
 
+// utility function to get power
+function getPower() : float {
+	return Mathf.Max( power, 0.0 );
+}
+
+// utility function to add to power
+function incrementPower( amount : int ) {
+	power = Mathf.Min( (power + amount), 100.0 );
+}
+
+// utility function to remove from power
+function decrementPower( amount : int ) {
+	power -= Mathf.Max( (power - amount), 0.0 );
+}
+
 // utility function to do things based on character health
 function checkHealth() {	
 	if( !isAlive() ) {
-		health = 0.0;
-		
 		if( !eliminated && !audioIsPlaying( CharacterSound.AnnouncerName ) ) {
 			GameManager.instance.audioPlay( 'Eliminated' );
 			eliminated = true;

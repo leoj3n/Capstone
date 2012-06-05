@@ -12,6 +12,19 @@ function Start() {
 
 function Update() {
 	//apply modify
+	//Debug.Log( modifier + ' .. ' + typeof( PowerModifyEnum.TimeWarp ) );
+	/*switch( modifier ) {
+		case PowerModifyEnum.TimeWarp:
+			//
+			break;
+		case PowerModifyEnum.PowerGuageBoost:
+			//
+			break;
+		case PowerModifyEnum.Invincibility:
+			if (owner.getPower() > 0) Debug.Log( 'dec power' );
+			break;
+	}*/
+	
 	if( owner ) {
 		transform.position = owner.getCenterInWorld();
 		var doubleRadius : float = (owner.getScaledRadius() * 2.0);
