@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 15da6619604f7e843aec9aef1b5d9cc8
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - debrisPrefab: {fileID: 100004, guid: 647508ae338bc734e8ab7c2b33321640, type: 2}
+  - hitSound: {fileID: 8300000, guid: eecc43771870fb7409ad36b029453ab6, type: 1}
+  executionOrder: 0
+  icon: {instanceID: 0}

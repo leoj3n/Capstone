@@ -28,7 +28,7 @@ function Awake() {
 	GameManager.instance.audioBind( 'meteorCrackle', crackleSound );
 	GameManager.instance.audioBind( 'meteorDebris', crackleSound );
 	
-	crackleAudioSource = GameManager.instance.audioPlay( 'meteorCrackle', true, true, maxCrackleVolume );
+	crackleAudioSource = GameManager.instance.audioPlay( 'meteorCrackle', true, true, 0.0 );
 }
 
 function Update() {
@@ -67,8 +67,9 @@ function OnCollisionEnter( collision : Collision ) {
 		Camera.main.SendMessage( 'AddShake', 0.5 );
 		GameManager.instance.audioPlay( 'meteorExplode' );
 		
-		var a : AudioSource = GameManager.instance.audioPlay( 'meteorDebris', true, true, 1.0 );
-		GameManager.instance.audioFadeOut( a, 3.0, 1.0 ); //a.clip.length
+		var a : AudioSource = GameManager.instance.audioPlay( 'meteorDebris', true, true, maxCrackleVolume );
+		//GameManager.instance.audioFadeOut( a, 3.0, 1.0 ); //a.clip.length
+		GameManager.instance.audioFadeToVolume( a, 0.0, a.clip.length );
 		
 		// instantiate a detonator
 		GameObject.Instantiate( detonatorPrefab, transform.position, Quaternion.identity );
@@ -80,7 +81,7 @@ function OnCollisionEnter( collision : Collision ) {
 		// add a crater decal to the floor
 		if (collision.collider.CompareTag( 'Floor' ))
 			Instantiate( craterPrefab, 
-				Vector3( collision.contacts[0].point.x, (collision.contacts[0].point.y + 0.001), Global.sharedZ ), 
+				Vector3( collision.contacts[0].point.x, (collision.contacts[0].point.y + 0.01), Global.sharedZ ), 
 				Quaternion.identity );
 		
 		// detach particle emitters from meteor so they don't get destroyed

@@ -17,22 +17,24 @@ class GameManager extends MonoBehaviour {
 	public var countdownTextures : Texture[];
 	public var powerModifyPrefab : GameObject;
 	public var audioListenerVolume : float = 1.0;
+	public var defaultAudioVolume : float = 1.0;
 	public var customSkin : GUISkin;
 	
 	// non-inspector variables still accessible via GameManager.instance.(variable)
+	private var _paused : boolean = false;
+	public function get paused() : boolean { return _paused; }
+	private function set paused( value : boolean ) { _paused = value; }
+	
 	private var _controllers : Controller[];
 	public function get controllers() : Controller[] { return _controllers; }
 	private function set controllers( value : Controller[] ) { _controllers = value; }
-	
-	private var _avatars : GameObject[];
-	public function get avatars() : GameObject[] { return _avatars; }
-	private function set avatars( value : GameObject[] ) { _avatars = value; }
 	
 	private var _readyControllers : ControllerEnum[];
 	public function get readyControllers() : ControllerEnum[] { return _readyControllers; }
 	private function set readyControllers( value : ControllerEnum[] ) { _readyControllers = value; }
 	
-	private var _level : LevelEnum = LevelEnum.Rooftop;
+	// variables geared towards levels (instead of scenes in general)
+	private var _level : LevelEnum;
 	public function get level() : LevelEnum { return _level; }
 	public function set level( value : LevelEnum ) { _level = value; }
 	
@@ -40,9 +42,13 @@ class GameManager extends MonoBehaviour {
 	public function get round() : int { return _round; }
 	private function set round( value : int ) { _round = value; }
 	
-	private var _paused : boolean = false;
-	public function get paused() : boolean { return _paused; }
-	private function set paused( value : boolean ) { _paused = value; }
+	private var _avatars : GameObject[];
+	public function get avatars() : GameObject[] { return _avatars; }
+	private function set avatars( value : GameObject[] ) { _avatars = value; }
+	
+	private var _lastModifier : ModifierEnum;
+	public function get lastModifier() : ModifierEnum { return _lastModifier; }
+	public function set lastModifier( value : ModifierEnum ) { _lastModifier = value; }
 	
 	// private variables not accessible outside of this class
 	private var audioSources : Hashtable;
@@ -133,13 +139,12 @@ class GameManager extends MonoBehaviour {
 	public function nextRoundOrScoreboard() {
 		var aliveTeamEnums : ControllerTeam[] = GameManager.instance.getAliveControllerTeamEnums();
 		roundResults[round] = aliveTeamEnums[0]; // set last living team as winner
-		Debug.Log( aliveTeamEnums[0] );
 		
 		// if last round or same team won first two in a row
 		if( (round == 2) || (roundResults[0] == roundResults[1]) ) {
 			Application.LoadLevel( SceneEnum.Scoreboard ); // end
 		} else {
-			round++; // increment to the next round
+			round++; // continue to the next round
 			Application.LoadLevel( Application.loadedLevel ); // reload the level
 		}
 	}
@@ -237,7 +242,7 @@ class GameManager extends MonoBehaviour {
 	public function cutScenePlaying() : boolean {
 		// loop through avatars and see if any are playing a cutscene
 		for( var avatar : GameObject in avatars ) {
-			if (avatar.GetComponent( Avatar ).isCutScenePlaying()) return true;
+			if (avatar.GetComponent( Avatar ).isPlayingCutScene()) return true;
 		}
 		
 		return false;
@@ -263,10 +268,13 @@ class GameManager extends MonoBehaviour {
 	}
 	
 	// utility function for setting the background music
-	function setBackgroundMusic( clip : AudioClip, fade : boolean) {
+	function setBackgroundMusic( clip : AudioClip, volume : float, fade : boolean) {
 		audioBind( 'backgroundMusic', clip );
-		var a : AudioSource = audioPlay( 'backgroundMusic', true, true, 0.60 );
-		if (fade) audioFadeIn( a, 3.0 );
+		var a : AudioSource = audioPlay( 'backgroundMusic', fade, true, volume ); // force if fading in
+		if( fade ) {
+			a.volume = 0.0;
+			audioFadeToVolume( a, volume, 3.0 );
+		}
 	}
 	
 	// utility function for binding audio
@@ -330,7 +338,7 @@ class GameManager extends MonoBehaviour {
 		return a;
 	}
 	public function audioPlay( uid, force : boolean, loop : boolean ) : AudioSource {
-		return audioPlay( uid, force, loop, 1.0 );
+		return audioPlay( uid, force, loop, defaultAudioVolume );
 	}
 	public function audioPlay( uid, force : boolean ) : AudioSource {
 		return audioPlay( uid, force, false );
@@ -345,28 +353,34 @@ class GameManager extends MonoBehaviour {
 		return false;
 	}
 	
-	// utility function for fading in audio
-	public function audioFadeIn( a : AudioSource, duration : float ) {
-		var startTime : float = Time.time;
-		var endTime : float = (startTime + duration);
-		var origVolume : float = a.volume;
-		
-		while( Time.time < endTime ) {
-			a.volume = (origVolume * ((Time.time - startTime) / duration));
+	// utility function for fading audio from current pitch to target pitch
+	public function audioFadeToPitch( a : AudioSource, targetPitch : float, duration : float ) {
+		while( a.pitch != targetPitch ) {
+			a.pitch = Mathf.MoveTowards( a.pitch, targetPitch, (Time.time / duration) );
+			yield;
+		}
+	}
+	
+	// utility function for fading audio to target volume
+	public function audioFadeToVolume( a : AudioSource, targetVolume : float, duration : float ) {
+		while( a.volume != targetVolume ) {
+			a.volume = Mathf.MoveTowards( a.volume, targetVolume, (Time.deltaTime / duration) );
 			yield;
 		}
 	}
 	
 	// utility function for fading out audio
-	public function audioFadeOut( a : AudioSource, duration : float, delay : float ) {
+	/*public function audioFadeOut( a : AudioSource, duration : float, delay : float ) {
 		var endTime : float = (Time.time + (a.clip.length - a.time));
 		var startTime : float = (endTime - duration);
 		var origVolume : float = a.volume;
 		
-		// delay only used for looping audio
+		// delay can only be used for looping audio
 		if( a.loop ) {
 			endTime = (delay + Time.time + duration);
 			startTime = (delay + Time.time);
+		} else if( delay > 0.0 ) {
+			Debug.LogWarning( 'Cannot delay fading out of non-looping audio. Delay will be ingored.' );
 		}
 		
 		while( Time.time < endTime ) {
@@ -377,7 +391,7 @@ class GameManager extends MonoBehaviour {
 	}
 	public function audioFadeOut( a : AudioSource, duration : float ) {
 		audioFadeOut( a, duration, 0 );
-	}
+	}*/
 	
 	// utility function for returning an array of ControllerEnum(s) with the passed state
 	public function getControllerEnumsWithState( state : ControllerState ) : ControllerEnum[] {

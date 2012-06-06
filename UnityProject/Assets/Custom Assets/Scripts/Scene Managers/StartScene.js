@@ -58,15 +58,15 @@ class StartScene extends SceneManager {
 			}
 			
 			if( GameManager.instance.controllers[i].state == ControllerState.TeamSelect ) {
-				var left : boolean;
-				var right : boolean;
+				var up : boolean;
+				var down : boolean;
 				if( ((Time.time - lastSelectTime[i]) > buttonTimeout) ) {
-					var h : float = Global.getAxis( 'Horizontal', i );
-					left = (h < -0.1);
-					right = (h > 0.1);
+					var v : float = Global.getAxis( 'Vertical', i );
+					up = (v > 0.1);
+					down = (v < -0.1);
 				}
 				
-				if( left || right ) {
+				if( up || down ) {
 					lastSelectTime[i] = Time.time;
 					GameManager.instance.audioPlay( 'Click', true );
 				}
@@ -74,25 +74,13 @@ class StartScene extends SceneManager {
 				var countInt : int = ControllerTeam.Count;
 				var teamInt : int = GameManager.instance.controllers[i].team;
 				switch( true ) {
-					case left:
+					case up:
 						GameManager.instance.controllers[i].team = teamInt = ((teamInt - 1) % countInt);
 						if (teamInt < 0) GameManager.instance.controllers[i].team = (countInt - 1);
 						break;
-					case right:
+					case down:
 						GameManager.instance.controllers[i].team = ((teamInt + 1) % countInt);
 						break;
-					/*case Global.isButtonDown( 'A', i ):
-						GameManager.instance.controllers[i].team = ControllerTeam.Green;
-						break;
-					case Global.isButtonDown( 'B', i ):
-						GameManager.instance.controllers[i].team = ControllerTeam.Red;
-						break;
-					case Global.isButtonDown( 'X', i ):
-						GameManager.instance.controllers[i].team = ControllerTeam.Blue;
-						break;
-					case Global.isButtonDown( 'Y', i ):
-						GameManager.instance.controllers[i].team = ControllerTeam.Orange;
-						break;*/
 				}
 			}
 		}
@@ -101,6 +89,10 @@ class StartScene extends SceneManager {
 	function OnGUI() {
 		GUI.skin = GameManager.instance.customSkin;
 		
+		var selecting : ControllerEnum[] = GameManager.instance.getControllerEnumsWithState( ControllerState.TeamSelect );
+		var ready : ControllerEnum[] = GameManager.instance.getControllerEnumsWithState( ControllerState.Ready );
+		var totalControllers : int = (selecting.Length + ready.Length);
+		
 		var halfScreenWidth : float = (Screen.width / 2);
 		var halfScreenHeight : float = (Screen.height / 2);
 		var width : float = (Screen.width * 0.90);
@@ -108,16 +100,12 @@ class StartScene extends SceneManager {
 		var halfWidth : float = (width / 2);
 		var halfHeight : float = (height / 2);
 		
+		// background
 		GUI.DrawTexture( Rect( (halfScreenWidth - 250), (Screen.height - 393), 500, 393 ), backgroundImage );
 		
 		GUILayout.BeginArea( Rect( (halfScreenWidth - halfWidth), (halfScreenHeight - halfHeight), width, height ) );
-		
-			GUILayout.Box( 'Press [Start] or [Back] to add or remove your controller' );//\nChange teams using [A] [B] [X] [Y] (button colors correspond to team colors)' );
 			
-			var selecting : ControllerEnum[] = GameManager.instance.getControllerEnumsWithState( ControllerState.TeamSelect );
-			var ready : ControllerEnum[] = GameManager.instance.getControllerEnumsWithState( ControllerState.Ready );
-			var totalControllers : int = (selecting.Length + ready.Length);
-			
+			// information
 			if( totalControllers == 1 ) {
 				GUILayout.Box( 'Add another controller to continue!' );
 			} else if( totalControllers > 0 ) {
@@ -138,19 +126,48 @@ class StartScene extends SceneManager {
 					}
 				} else {
 					countdownStartTime = 0.0;
+					previousSecond = 0;
 					GUILayout.Box( 'Waiting for ' + selecting.Length + ' controllers to press [Start] to ready up' );
 				}
 			} else {
 				GUILayout.Box( 'No controllers added yet' );
 			}
 			
-			GUILayout.BeginHorizontal();
+			GUILayout.Box( 'Press [Start] or [Back] to add or remove your controller' );
 			
+			// teams
+			GUILayout.BeginVertical();
+				
 				for (var i = 0; i < ControllerTeam.Count; i++) displayTeam( i );
 				
-			GUILayout.EndHorizontal();
+			GUILayout.EndVertical();
 			
 		GUILayout.EndArea();
+	}
+	
+	// helper function to display a team
+	private function displayTeam( team : ControllerTeam ) {
+		GUILayout.BeginHorizontal();
+					
+			GUILayout.Box( team + '\nTeam', GUILayout.Width( 100 ) );
+		
+			for( var i = 0; i < ControllerEnum.Count; i++ ) {
+				var text : String;
+				
+				switch( GameManager.instance.controllers[i].state ) {
+					case ControllerState.TeamSelect:
+						text = 'Press [Start] again...';
+						break;
+					case ControllerState.Ready:
+						text = 'Ready!';
+						break;
+				}
+				
+				if (text && (GameManager.instance.controllers[i].team == team))
+					GUILayout.Box( 'Controller ' + i + '\n' + text, GUILayout.Width( 200 ) );
+			}
+			
+		GUILayout.EndHorizontal();
 	}
 	
 	// utility function to check if all passed controllers are on the same team
@@ -166,29 +183,5 @@ class StartScene extends SceneManager {
 		}
 		
 		return true;
-	}
-	
-	private function displayTeam( team : ControllerTeam ) {
-		GUILayout.BeginVertical();
-					
-			GUILayout.Box( team + ' Team' );
-		
-			for( var i = 0; i < ControllerEnum.Count; i++ ) {
-				var text : String;
-				
-				switch( GameManager.instance.controllers[i].state ) {
-					case ControllerState.TeamSelect:
-						text = 'Press [Start] again...';
-						break;
-					case ControllerState.Ready:
-						text = 'Ready!';
-						break;
-				}
-				
-				if (text && (GameManager.instance.controllers[i].team == team))
-					GUILayout.Box( 'Controller ' + i + '\n' + text );
-			}
-			
-		GUILayout.EndVertical();
 	}
 }

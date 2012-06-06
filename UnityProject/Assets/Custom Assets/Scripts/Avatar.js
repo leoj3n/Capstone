@@ -59,7 +59,7 @@ protected var ccHeight : float = 4.0;
 
 // HEALTH AND GUAGE
 protected var health : float = 100.0;
-protected var power : float = 100.0;
+protected var power : float = 0.0;
 
 // JUMPING
 protected var jumping : boolean = false;
@@ -150,14 +150,17 @@ function getPower() : float {
 	return Mathf.Max( power, 0.0 );
 }
 
-// utility function to add to power
-function incrementPower( amount : int ) {
-	power = Mathf.Min( (power + amount), 100.0 );
+// utility function to check if power is greater than passed amount
+function hasPower( amount : float ) : boolean {
+	return (power > amount);
+}
+function hasPower() : boolean {
+	return hasPower( 0.0 ); // check if power is greater than zero
 }
 
-// utility function to remove from power
-function decrementPower( amount : int ) {
-	power -= Mathf.Max( (power - amount), 0.0 );
+// utility function to add or remove from power
+function changePower( amount : int ) {
+	power = Mathf.Max( (power + amount), 0.0 );
 }
 
 // utility function to do things based on character health
@@ -754,8 +757,8 @@ function OnControllerColliderHit( hit : ControllerColliderHit ) {
 	}
 }
 
-// is the cutscene playing?
-function isCutScenePlaying() : boolean {
+// retun whether or not this avatar is playing a cutscene
+function isPlayingCutScene() : boolean {
 	return cutScenePlaying;
 }
 

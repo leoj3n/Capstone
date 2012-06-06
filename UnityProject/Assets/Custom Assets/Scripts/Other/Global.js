@@ -61,7 +61,7 @@ enum CutScene {
 	Intro,
 	Victory
 }
-enum PowerModifyEnum {
+enum ModifierEnum {
 	TimeWarp, // Blue
 	PowerGaugeBoost, // Green
 	Invincibility, // Orange
@@ -133,7 +133,7 @@ class SceneManager extends MonoBehaviour {
 	// put anything you want to have happen at the beginning of every scene in this function
 	function Start() {
 		GameManager.instance.audioStopAll();
-		GameManager.instance.setBackgroundMusic( backgroundMusic, fadeInBackgroundMusic );
+		GameManager.instance.setBackgroundMusic( backgroundMusic, backgroundMusicVolume, fadeInBackgroundMusic );
 		GameManager.instance.updateReadyControllers();
 		
 		SceneLoaded(); // call the overloaded function

@@ -1,0 +1,8 @@
+fileFormatVersion: 2
+guid: a36eaf6682a6407458175b34eb8ead55
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - avatarPrefab: {fileID: 100002, guid: 00000000000000000000000000000000, type: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}

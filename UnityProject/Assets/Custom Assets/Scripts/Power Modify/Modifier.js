@@ -1,9 +1,10 @@
 
-public var modifier : PowerModifyEnum;
+public var modifier : ModifierEnum;
 public var duration : float;
 public var pickupSound : AudioClip;
 
 private var owner : Avatar;
+private var pickedUp : boolean = false;
 
 function Start() {
 	GameManager.instance.audioBind( modifier, pickupSound );
@@ -11,24 +12,26 @@ function Start() {
 }
 
 function Update() {
-	//apply modify
-	//Debug.Log( modifier + ' .. ' + typeof( PowerModifyEnum.TimeWarp ) );
-	/*switch( modifier ) {
-		case PowerModifyEnum.TimeWarp:
-			//
-			break;
-		case PowerModifyEnum.PowerGuageBoost:
-			//
-			break;
-		case PowerModifyEnum.Invincibility:
-			if (owner.getPower() > 0) Debug.Log( 'dec power' );
-			break;
-	}*/
-	
 	if( owner ) {
+		if( !pickedUp ) {
+			switch( modifier ) {
+				case ModifierEnum.TimeWarp:
+					Debug.Log( 'time warp' );
+					break;
+				case ModifierEnum.PowerGaugeBoost:
+					owner.changePower( 25.0 );
+					break;
+				case ModifierEnum.Invincibility:
+					Debug.Log( 'invincibility' );
+					break;
+			}
+		}
+		
 		transform.position = owner.getCenterInWorld();
 		var doubleRadius : float = (owner.getScaledRadius() * 2.0);
 		transform.localScale = Vector3( doubleRadius, owner.getScaledHeight(), doubleRadius );
+		
+		pickedUp = true;
 	}
 }
 

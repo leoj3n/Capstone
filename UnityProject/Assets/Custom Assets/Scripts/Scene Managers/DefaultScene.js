@@ -6,6 +6,7 @@ class DefaultScene extends SceneManager {
 	private var yOffsetPM : float = 10.0;
 	private var lastSpawnTimePM : float;
 	private var initial : boolean = true;
+	private var aliveTeamEnums : ControllerTeam[];
 	
 	function SceneLoaded() {
 		GameManager.instance.instantiateAvatars();
@@ -16,6 +17,8 @@ class DefaultScene extends SceneManager {
 	}
 	
 	function Update() {
+		aliveTeamEnums = GameManager.instance.getAliveControllerTeamEnums();
+		
 		if (Global.isButtonDown( 'Start', GameManager.instance.readyControllers ))
 			GameManager.instance.togglePause();
 		
@@ -42,15 +45,14 @@ class DefaultScene extends SceneManager {
 			}
 			
 			// do the rounds
-			var aliveTeamEnums : ControllerTeam[] = GameManager.instance.getAliveControllerTeamEnums();
 			if( aliveTeamEnums.Length == 1 ) { // only 1 team still alive
 				if( initial ) {
-					var avatars : GameObject[] = GameManager.instance.getAvatarsOnTeam( aliveTeamEnums[0] );
-					
 					// play victory for all avatars on this team
-					for( var avatar : GameObject in avatars ) {
-						avatar.GetComponent( Avatar ).playCutScene( CutScene.Victory );
-					}
+					var avatars : GameObject[] = GameManager.instance.getAvatarsOnTeam( aliveTeamEnums[0] );
+					for (var avatar : GameObject in avatars) avatar.GetComponent( Avatar ).playCutScene( CutScene.Victory );
+					
+					// fade the pitch of the background music
+					GameManager.instance.fadeAudioPitch(  );
 					
 					initial = false;
 				} else if( !GameManager.instance.cutScenePlaying() ) {
@@ -78,13 +80,28 @@ class DefaultScene extends SceneManager {
 					var avatars : GameObject[] = GameManager.instance.getAvatarsOnTeam( i );
 					
 					if( avatars.Length > 0 ) {
+						var teamWonLost : String;
+						var playerWonLost : String;
+						if( aliveTeamEnums.Length == 1 ) {
+							if( i == aliveTeamEnums[0] ) {
+								teamWonLost = ' wins!';
+								playerWonLost = 'You won the round!';
+							} else {
+								playerWonLost = 'You lost.';
+							}
+						}
+					
 						if (i != 0) GUILayout.Space( 20.0 );
-						GUILayout.Box( ControllerTeam.GetName( ControllerTeam, i ) + ' Team' );
+						GUILayout.Box( ControllerTeam.GetName( ControllerTeam, i ) + ' Team' + teamWonLost );
 						
 						for( var avatar : GameObject in avatars ) {
 							var component : Avatar = avatar.GetComponent( Avatar );
-							var HPPM : String = ((component.isAlive()) ? 'HP [' + parseInt( Mathf.Max( component.getHealth(), 1.0 ) ) + '] PM [0%]' : 'You are dead!' );
-							GUILayout.Box( 'Controller ' + parseInt( component.getController() ) + '\n' + component.getName() + '\n' + HPPM );
+							
+							var HPPM : String = (component.isAlive() ? ('HP [' + parseInt( Mathf.Max( component.getHealth(), 1.0 ) ) + '] Power [' + 
+								component.getPower() + ']') : 'You are dead!');
+							
+							GUILayout.Box( 'Controller ' + parseInt( component.getController() ) + '\n' + component.getName() + '\n' + 
+								(playerWonLost ? playerWonLost : HPPM ) ); // win/loss message or health/power
 						}
 					}
 				}
@@ -94,12 +111,6 @@ class DefaultScene extends SceneManager {
 		GUILayout.EndArea();
 		
 		// character labels
-		
-		/*for( var avatar : GameObject in GameManager.instance.avatars ) {
-			var componentA : Avatar = avatar.GetComponent( Avatar );
-			var txt : String = ('Controller ' + parseInt( componentA.getController() ) + '\n(' + componentA.getTeam().ToString() + ' Team)');
-			characterLabel( componentA.getCenterInWorld(), ((componentA.getScaledHeight() / 2.0) + 1.5), txt );
-		}*/
 		
 		for( var avatar : GameObject in GameManager.instance.avatars ) {
 			component = avatar.GetComponent( Avatar );

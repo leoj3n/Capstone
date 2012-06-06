@@ -1,0 +1,12 @@
+fileFormatVersion: 2
+guid: 60c3f8e913962d4449f06f9a3193d4b3
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - gameManager: {fileID: 100000, guid: 34446a2bfe961664f8dcc8dd4722c14e, type: 2}
+  - backgroundMusic: {fileID: 8300000, guid: 77dd027f7c451364caba4f94f227d06e, type: 1}
+  - hudPrefab: {fileID: 100006, guid: b8d3c163e4414ea489e13120771dd5c5, type: 2}
+  - chooseYourFighter: {fileID: 8300000, guid: 2b01299618c3ec5429d8c4ea29cb6926, type: 1}
+  - swoosh: {fileID: 8300000, guid: dcd43fcf13b9e3f4cb6e4839e098845b, type: 1}
+  executionOrder: 0
+  icon: {instanceID: 0}

@@ -1,11 +1,21 @@
 
 public var modifierPrefabs : GameObject[];
-public var expectedModifies : PowerModifyEnum; // just to expose expected modifies in Inspector
-
-private var modifier : PowerModifyEnum;
+public var expectedModifiers : ModifierEnum; // just to expose expected modifies in Inspector
+public var random : boolean = true;
 
 function Awake() {
-	modifier = Random.Range( 0, PowerModifyEnum.Count );
+	var count : int = ModifierEnum.Count;
+	var modifier : ModifierEnum;
+	
+	if( random ) {
+		modifier = Random.Range( 0, count );
+	} else {
+		modifier = (parseInt( GameManager.instance.lastModifier + 1 ) % count);
+		if (modifier > (count - 1)) modifier = 0;
+	}
+	
+	GameManager.instance.lastModifier = modifier;
+	
 	var object : GameObject = Instantiate( modifierPrefabs[modifier], transform.position, Quaternion.identity );
 	object.transform.parent = transform;
 }
