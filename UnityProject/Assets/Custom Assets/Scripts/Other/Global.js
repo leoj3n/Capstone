@@ -105,7 +105,7 @@ class AudioSourceManaged {
 	function AudioSourceManaged( a : AudioSource ) {
 		audioSource = a;
 		targetPitch = origPitch = a.pitch;
-		targetVolume = origVolume = a.pitch;
+		targetVolume = origVolume = a.volume;
 	}
 	
 	function Update() {
@@ -119,10 +119,9 @@ class AudioSourceManaged {
 	function Play( force : boolean, loop : boolean, volume : float, pitch : float ) {
 		if( !audioSource.isPlaying || force ) {
 			Stop();
+			SetPitch( pitch );
+			SetVolume( volume );
 			audioSource.loop = loop;
-			audioSource.volume = volume;
-			Debug.Log( volume );
-			audioSource.pitch = pitch;
 			audioSource.Play();
 		}
 	}
@@ -324,7 +323,6 @@ static function getAxis( axis : String, controllers : ControllerEnum[] ) : float
 // returns volume based on impact force and mass (if available)
 // expects mass of objects to be between 0.1 and 10.0 (hence the multiplication by 0.01)
 static function collisionVolume( collision : Collision, fallbackMass : float ) : float {
-	//return 0.15;
 	return Mathf.Clamp01( collision.impactForceSum.magnitude * 
 		(collision.gameObject.rigidbody ? collision.gameObject.rigidbody.mass : fallbackMass) * 0.01 );
 }
