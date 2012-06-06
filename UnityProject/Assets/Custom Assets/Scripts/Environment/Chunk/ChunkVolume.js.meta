@@ -1,8 +1,2 @@
-fileFormatVersion: 2
+fileFormatVersion: 1
 guid: e35ee4f1caf4a354997d7ddf9c47147a
-MonoImporter:
-  serializedVersion: 2
-  defaultReferences:
-  - chunkPrefab: {fileID: 100000, guid: 6d2567049601dbe40b818161a8535157, type: 2}
-  executionOrder: 0
-  icon: {instanceID: 0}

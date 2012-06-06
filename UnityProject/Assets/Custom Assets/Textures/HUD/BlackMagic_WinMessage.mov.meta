@@ -1,6 +1,5 @@
-fileFormatVersion: 2
+fileFormatVersion: 1
 guid: 99a19fd96e4c2584cb1873d0127e5dd5
 MovieImporter:
-  serializedVersion: 1
-  quality: .5
-  linearTexture: 0
+  importerVersion: 1
+  quality: 0.5

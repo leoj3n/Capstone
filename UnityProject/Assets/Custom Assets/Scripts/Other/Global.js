@@ -92,6 +92,72 @@ class Controller {
 	public var score : Score;
 }
 
+class AudioSourceManaged {
+	public var audioSource : AudioSource;
+	public var targetPitch : float;
+	public var pitchDuration : float;
+	public var targetVolume : float;
+	public var volumeDuration : float;
+	
+	private var origPitch : float;
+	private var origVolume : float;
+	
+	function AudioSourceManaged( a : AudioSource ) {
+		audioSource = a;
+		targetPitch = origPitch = a.pitch;
+		targetVolume = origVolume = a.pitch;
+	}
+	
+	function Update() {
+		if (audioSource.pitch != targetPitch)
+			audioSource.pitch = Mathf.MoveTowards( audioSource.pitch, targetPitch, (Time.deltaTime / pitchDuration) );
+			
+		if (audioSource.volume != targetVolume)
+			audioSource.volume = Mathf.MoveTowards( audioSource.volume, targetVolume, (Time.deltaTime / volumeDuration) );
+	}
+	
+	function Play( force : boolean, loop : boolean, volume : float, pitch : float ) {
+		if( !audioSource.isPlaying || force ) {
+			Stop();
+			audioSource.loop = loop;
+			audioSource.volume = volume;
+			Debug.Log( volume );
+			audioSource.pitch = pitch;
+			audioSource.Play();
+		}
+	}
+	
+	function Stop() {
+		Reset();
+		audioSource.Stop();
+	}
+	
+	function IsPlaying() : boolean {
+		return audioSource.isPlaying;
+	}
+	
+	function ResetPitch() {
+		SetPitch( origPitch );
+	}
+	
+	function ResetVolume() {
+		SetPitch( origVolume );
+	}
+	
+	function Reset() {
+		ResetPitch();
+		ResetVolume();
+	}
+	
+	function SetPitch( p : float ) {
+		audioSource.pitch = targetPitch = p;
+	}
+	
+	function SetVolume( v : float ) {
+		audioSource.volume = targetVolume = v;
+	}
+}
+
 class SceneManager extends MonoBehaviour {
 	public var gameManager : GameObject;
 	public var backgroundMusic : AudioClip;
@@ -258,8 +324,9 @@ static function getAxis( axis : String, controllers : ControllerEnum[] ) : float
 // returns volume based on impact force and mass (if available)
 // expects mass of objects to be between 0.1 and 10.0 (hence the multiplication by 0.01)
 static function collisionVolume( collision : Collision, fallbackMass : float ) : float {
+	//return 0.15;
 	return Mathf.Clamp01( collision.impactForceSum.magnitude * 
-		(collision.gameObject.rigidbody ? collision.gameObject.rigidbody.mass : fallbackMass ) * 0.01 );
+		(collision.gameObject.rigidbody ? collision.gameObject.rigidbody.mass : fallbackMass) * 0.01 );
 }
 static function collisionVolume( collision : Collision ) : float {
 	return collisionVolume( collision, 1.0 );

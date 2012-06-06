@@ -51,12 +51,12 @@ class DefaultScene extends SceneManager {
 					var avatars : GameObject[] = GameManager.instance.getAvatarsOnTeam( aliveTeamEnums[0] );
 					for (var avatar : GameObject in avatars) avatar.GetComponent( Avatar ).playCutScene( CutScene.Victory );
 					
-					// fade the pitch of the background music
-					GameManager.instance.fadeAudioPitch(  );
+					// fade out the background music
+					GameManager.instance.audioFadeToVolume( 'backgroundMusic', 0.1, 6.0 );
 					
 					initial = false;
 				} else if( !GameManager.instance.cutScenePlaying() ) {
-					// progress to next round if cutscenes finished
+					// progress to next round (or scoreboard) if cutscenes finished
 					GameManager.instance.nextRoundOrScoreboard();
 				}
 			}

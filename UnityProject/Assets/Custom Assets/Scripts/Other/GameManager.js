@@ -78,6 +78,8 @@ class GameManager extends MonoBehaviour {
 	
 	function Update() {
 		audioListener.volume = audioListenerVolume;
+		
+		for (var asm : AudioSourceManaged in audioSources.Values) asm.Update();
 	}
 	
 	// PRIVATE FUNCTIONS
@@ -137,8 +139,12 @@ class GameManager extends MonoBehaviour {
 	
 	// utility function for loading rounds
 	public function nextRoundOrScoreboard() {
+		// do any necessary before level change cleanup
+		GameManager.instance.audioResetAll();
+	
+		// set last living team as winner
 		var aliveTeamEnums : ControllerTeam[] = GameManager.instance.getAliveControllerTeamEnums();
-		roundResults[round] = aliveTeamEnums[0]; // set last living team as winner
+		roundResults[round] = aliveTeamEnums[0];
 		
 		// if last round or same team won first two in a row
 		if( (round == 2) || (roundResults[0] == roundResults[1]) ) {
@@ -269,29 +275,34 @@ class GameManager extends MonoBehaviour {
 	
 	// utility function for setting the background music
 	function setBackgroundMusic( clip : AudioClip, volume : float, fade : boolean) {
-		audioBind( 'backgroundMusic', clip );
-		var a : AudioSource = audioPlay( 'backgroundMusic', fade, true, volume ); // force if fading in
+		var a : AudioSourceManaged = audioBind( 'backgroundMusic', clip );
+		audioPlay( 'backgroundMusic', fade, true, volume ); // force if fading in
 		if( fade ) {
-			a.volume = 0.0;
-			audioFadeToVolume( a, volume, 3.0 );
+			a.SetVolume( 0.0 );
+			audioFadeToVolume( 'backgroundMusic', volume, 3.0 );
 		}
 	}
 	
 	// utility function for binding audio
-	public function audioBind( uid, clip : AudioClip ) {
-		var a : AudioSource;
+	public function audioBind( uid, clip : AudioClip ) : AudioSourceManaged {		
+		if( audioSources == null ) {
+			Debug.LogWarning( 'GameManager was asked to bind ' + clip.name + ' before audioSources was newed.' );
+			return;
+		}
 		
-		if (audioSources == null) Debug.LogWarning( 'GameManager was asked to bind ' + clip.name + ' before audioSources was newed.' );
+		var a : AudioSourceManaged;
 		
 		if( !audioSources.ContainsKey( uid ) ) {
-			a = gameObject.AddComponent( AudioSource );
+			a = new AudioSourceManaged( gameObject.AddComponent( AudioSource ) );
 			audioSources.Add( uid, a );
 		} else {
 			a = audioSources[uid];
 		}
 		
-		a.playOnAwake = false;
-		a.clip = clip;
+		a.audioSource.playOnAwake = false;
+		a.audioSource.clip = clip;
+		
+		return a;
 	}
 	
 	// utility function for stopping all audio except background
@@ -314,84 +325,85 @@ class GameManager extends MonoBehaviour {
 		return false; // audio source not in the hashtable
 	}
 	
+	public function audioGetSource( uid ) : AudioSourceManaged {
+		if (audioSources.ContainsKey( uid ))
+			return audioSources[uid];
+		else
+			Debug.LogWarning( 'Unable to get audio source using id ' + uid + '.' );
+	}
+	
 	// utility function for unbinding audio
 	public function audioUnbind( uid ) {		
 		if (audioStop( uid )) audioSources.Remove( uid );
 	}
 	
 	// utility function for playing audio
-	public function audioPlay( uid, force : boolean, loop : boolean, volume : float ) : AudioSource {
-		var a : AudioSource;
-		
-		if( audioSources.ContainsKey( uid ) ) {
-			a = audioSources[uid];
-			
-			if( !a.isPlaying || force ) {
-				a.loop = loop;
-				a.volume = volume;
-				a.Play();
-			}
-		} else {
+	public function audioPlay( uid, force : boolean, loop : boolean, volume : float, pitch : float ) : AudioSourceManaged {
+		if (audioSources.ContainsKey( uid ))
+			audioSources[uid].Play( force, loop, volume, pitch );
+		else
 			Debug.LogWarning( 'GameManager was asked to play ' + uid + ' but that ID has not been bound.' );
-		}
 		
-		return a;
+		return audioSources[uid];
 	}
-	public function audioPlay( uid, force : boolean, loop : boolean ) : AudioSource {
+	public function audioPlay( uid, force : boolean, loop : boolean, volume : float ) : AudioSourceManaged {
+		return audioPlay( uid, force, loop, volume, 1.0 );
+	}
+	public function audioPlay( uid, force : boolean, loop : boolean ) : AudioSourceManaged {
 		return audioPlay( uid, force, loop, defaultAudioVolume );
 	}
-	public function audioPlay( uid, force : boolean ) : AudioSource {
+	public function audioPlay( uid, force : boolean ) : AudioSourceManaged {
 		return audioPlay( uid, force, false );
 	}
-	public function audioPlay( uid ) : AudioSource {
+	public function audioPlay( uid ) : AudioSourceManaged {
 		return audioPlay( uid, false );
 	}
 	
 	public function audioIsPlaying( uid ) : boolean {
-		if (audioSources.ContainsKey( uid ) && audioSources[uid].isPlaying ) return true;
+		if (audioSources.ContainsKey( uid ) && audioSources[uid].IsPlaying() ) return true;
 		
 		return false;
 	}
 	
-	// utility function for fading audio from current pitch to target pitch
-	public function audioFadeToPitch( a : AudioSource, targetPitch : float, duration : float ) {
-		while( a.pitch != targetPitch ) {
-			a.pitch = Mathf.MoveTowards( a.pitch, targetPitch, (Time.time / duration) );
-			yield;
-		}
+	// utility function for fading audio from current to target pitch
+	public function audioFadeToPitch( uid, target : float, duration : float ) {
+		var a : AudioSourceManaged = audioGetSource( uid );
+		a.targetPitch = target;
+		a.pitchDuration = duration;
 	}
 	
-	// utility function for fading audio to target volume
-	public function audioFadeToVolume( a : AudioSource, targetVolume : float, duration : float ) {
-		while( a.volume != targetVolume ) {
-			a.volume = Mathf.MoveTowards( a.volume, targetVolume, (Time.deltaTime / duration) );
-			yield;
-		}
+	// utility function for fading all audio from current to target pitch
+	public function audioFadeAllToPitch( targetPitch : float, duration : float ) {
+		for (var key in audioSources.Keys) audioFadeToPitch( key, targetPitch, duration );
 	}
 	
-	// utility function for fading out audio
-	/*public function audioFadeOut( a : AudioSource, duration : float, delay : float ) {
-		var endTime : float = (Time.time + (a.clip.length - a.time));
-		var startTime : float = (endTime - duration);
-		var origVolume : float = a.volume;
-		
-		// delay can only be used for looping audio
-		if( a.loop ) {
-			endTime = (delay + Time.time + duration);
-			startTime = (delay + Time.time);
-		} else if( delay > 0.0 ) {
-			Debug.LogWarning( 'Cannot delay fading out of non-looping audio. Delay will be ingored.' );
-		}
-		
-		while( Time.time < endTime ) {
-			if (Time.time > startTime)
-				a.volume = (origVolume * (1.0 - ((Time.time - startTime) / duration)));
-			yield;
-		}
+	// utility function for fading audio from current to target volume
+	public function audioFadeToVolume( uid, target : float, duration : float ) {
+		var a : AudioSourceManaged = audioGetSource( uid );
+		a.targetVolume = target;
+		a.volumeDuration = duration;
 	}
-	public function audioFadeOut( a : AudioSource, duration : float ) {
-		audioFadeOut( a, duration, 0 );
-	}*/
+	
+	// utility function to stop specific audio fading
+	public function audioResetPitch( uid ) {
+		audioSources[uid].ResetPitch();
+	}
+	public function audioResetVolume( uid ) {
+		audioSources[uid].ResetVolume();
+	}
+	public function audioReset( uid ) {
+		audioSources[uid].Reset();
+	}
+	// utility function to stop all audio fading
+	public function audioResetAllPitch() {
+		for (var key in audioSources.Keys) audioSources[key].ResetPitch();
+	}
+	public function audioResetAllVolume() {
+		for (var key in audioSources.Keys) audioSources[key].ResetVolume();
+	}
+	public function audioResetAll() {
+		for (var key in audioSources.Keys) audioSources[key].Reset();
+	}
 	
 	// utility function for returning an array of ControllerEnum(s) with the passed state
 	public function getControllerEnumsWithState( state : ControllerState ) : ControllerEnum[] {

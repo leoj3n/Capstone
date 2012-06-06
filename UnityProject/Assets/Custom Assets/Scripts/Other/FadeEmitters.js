@@ -42,6 +42,7 @@ function Update() {
 	}
 }
 
+// utility function to restart the fading of emitters with new parameters
 function restart( d : float, t : float, dstry : boolean ) {
 	startTime = Time.time;
 	delay = d;
@@ -55,4 +56,7 @@ function restart( d : float, t : float, dstry : boolean ) {
 	}
 }
 
-//function reset
+// utility function to return time remaining
+function getTimeRemaining() : float {
+	return ((delay + timeUntilFaded) - (Time.time - startTime));
+}

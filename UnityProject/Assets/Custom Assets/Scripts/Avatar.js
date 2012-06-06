@@ -58,7 +58,7 @@ protected var fps : float = 16.0;
 protected var ccHeight : float = 4.0;
 
 // HEALTH AND GUAGE
-protected var health : float = 100.0;
+protected var health : float = 15.0;
 protected var power : float = 0.0;
 
 // JUMPING
@@ -173,7 +173,7 @@ function checkHealth() {
 	} else {
 		eliminated = false;
 		
-		if (health < 10.0) GameManager.instance.audioPlay( 'Warning' );
+		if (health < 10.0) GameManager.instance.audioPlay( 'Heartbeat' );
 	}
 }
 

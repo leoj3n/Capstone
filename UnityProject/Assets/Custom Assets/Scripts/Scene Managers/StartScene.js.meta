@@ -1,10 +1,2 @@
-fileFormatVersion: 2
+fileFormatVersion: 1
 guid: b2fd28959ec675242a61a9f689d9e984
-MonoImporter:
-  serializedVersion: 2
-  defaultReferences:
-  - gameManager: {fileID: 100000, guid: 34446a2bfe961664f8dcc8dd4722c14e, type: 2}
-  - backgroundMusic: {fileID: 8300000, guid: 77dd027f7c451364caba4f94f227d06e, type: 1}
-  - backgroundImage: {fileID: 2800000, guid: e58386e7f2975344aa0acbcc28c6ef98, type: 1}
-  executionOrder: 0
-  icon: {instanceID: 0}

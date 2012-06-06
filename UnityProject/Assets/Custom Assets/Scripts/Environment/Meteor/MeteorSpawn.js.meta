@@ -1,8 +1,2 @@
-fileFormatVersion: 2
+fileFormatVersion: 1
 guid: 34c8fc8d95a9fd94b963ee06a4e57bd3
-MonoImporter:
-  serializedVersion: 2
-  defaultReferences:
-  - meteorPrefab: {fileID: 100008, guid: b4b5ed8ce007b954b92ca353bcf6aaa8, type: 2}
-  executionOrder: 0
-  icon: {instanceID: 0}

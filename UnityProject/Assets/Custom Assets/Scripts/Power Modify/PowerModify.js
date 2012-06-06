@@ -14,6 +14,8 @@ function Awake() {
 		if (modifier > (count - 1)) modifier = 0;
 	}
 	
+	modifier = 0;
+	
 	GameManager.instance.lastModifier = modifier;
 	
 	var object : GameObject = Instantiate( modifierPrefabs[modifier], transform.position, Quaternion.identity );
