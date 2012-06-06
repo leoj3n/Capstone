@@ -6,24 +6,24 @@ public var pickupSound : AudioClip;
 private var owner : Avatar;
 private var pickedUp : boolean = false;
 private var fadeEmitters : FadeEmitters;
-private var timeWarpReverse : boolean = true;
 
 function Start() {
 	GameManager.instance.audioBind( modifier, pickupSound );
 	transform.localScale = transform.parent.localScale; // scale to card
 	fadeEmitters = GetComponent( FadeEmitters );
+	totalTime = fadeEmitters.getTimeRemaining();
 }
 
 function Update() {
 	if( owner ) {
 		switch( modifier ) {
 			case ModifierEnum.TimeWarp:
-				if (!pickedUp) GameManager.instance.audioFadeAllToPitch( 0.4, 4.0 );
+				var halfDuration : float = (duration / 2.0);
 				
-				if( timeWarpReverse && (fadeEmitters.getTimeRemaining() < 4.0) ) {
-					GameManager.instance.audioFadeAllToPitch( 1.0, 4.0 );
-					//timeWarpReverse = false;
-				}
+				if( fadeEmitters.getTimeRemaining() > halfDuration )
+					GameManager.instance.audioFadeAllToPitch( 0.5, halfDuration );
+				else
+					GameManager.instance.audioFadeAllToPitch( 1.0, halfDuration );
 				break;
 			case ModifierEnum.PowerGaugeBoost:
 				owner.changePower( 25.0 );

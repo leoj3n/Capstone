@@ -58,5 +58,10 @@ function restart( d : float, t : float, dstry : boolean ) {
 
 // utility function to return time remaining
 function getTimeRemaining() : float {
-	return ((delay + timeUntilFaded) - (Time.time - startTime));
+	return (getTotalTime() - (Time.time - startTime));
+}
+
+// utility function to return total time
+function getTotalTime() : float {
+	return (delay + timeUntilFaded);
 }

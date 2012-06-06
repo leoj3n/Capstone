@@ -52,7 +52,7 @@ function Update() {
 		Debug.DrawLine( transform.position, (transform.position + (directionOfTravel * dist.magnitude)) );
 		
 		if( Physics.Raycast( transform.position, directionOfTravel, dist.magnitude, layerMask.value ) ) {
-			GameManager.instance.audioPlay( 'meteorImpact' );
+			GameManager.instance.audioPlay( 'meteorImpact', true, false, 0.1 );
 			playedOnce = true;
 		}
 	}
