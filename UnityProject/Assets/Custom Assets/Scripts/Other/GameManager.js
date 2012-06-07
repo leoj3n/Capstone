@@ -19,6 +19,7 @@ class GameManager extends MonoBehaviour {
 	public var audioListenerVolume : float = 1.0;
 	public var defaultAudioVolume : float = 1.0;
 	public var healthTexture : Texture2D;
+	public var defaultBackground : GameObject;
 	public var customSkin : GUISkin;
 	
 	// non-inspector variables still accessible via GameManager.instance.(variable)

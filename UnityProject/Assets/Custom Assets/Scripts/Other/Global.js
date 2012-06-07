@@ -162,6 +162,7 @@ class SceneManager extends MonoBehaviour {
 	public var backgroundMusic : AudioClip;
 	public var backgroundMusicVolume : float = 0.60;
 	public var fadeInBackgroundMusic : boolean;
+	public var useDefaultBackground : boolean;
 	
 	function OnEnable() {
 		if( GameManager.instance == null ) {
@@ -200,6 +201,8 @@ class SceneManager extends MonoBehaviour {
 		GameManager.instance.audioStopAll();
 		GameManager.instance.setBackgroundMusic( backgroundMusic, backgroundMusicVolume, fadeInBackgroundMusic );
 		GameManager.instance.updateReadyControllers();
+		
+		if (useDefaultBackground) Instantiate( GameManager.instance.defaultBackground );
 		
 		SceneLoaded(); // call the overloaded function
 	}

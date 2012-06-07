@@ -22,8 +22,8 @@ private var shadow : Transform;
 private var shadowProjector : Projector;
 protected var shadowUseTAC : boolean = false;
 protected var gravity : float = 50.0;
-protected var groundedAcceleration : float = 6.0;
-protected var inAirAcceleration : float = 3.0;
+protected var groundedAcceleration : float = 10.0;
+protected var inAirAcceleration : float = 10.0;
 protected var characterController : CharacterController;
 protected var taRenderer : TextureAtlasRenderer;
 protected var textureAtlasCube : Transform;
@@ -756,14 +756,13 @@ function OnControllerColliderHit( hit : ControllerColliderHit ) {
 	}
 	
 	if (hit.moveDirection.y < -0.3) return; // dont push objects down
-	var pushDir : Vector3 = Vector3( hit.moveDirection.x, 0, hit.moveDirection.z );
 	if( hit.gameObject.CompareTag( 'Prop' ) ) {
 		var body : Rigidbody = hit.collider.attachedRigidbody;
 		
 		if ((body == null) || body.isKinematic) return;
 		
 		body.velocity = (Mathf.Max( 2.5, ((hitForce.magnitude + explosionForce.magnitude) / 2.0) ) * 
-			(pushDir + (pushDir / body.mass)));
+			(hit.moveDirection + (hit.moveDirection / body.mass)));
 	}
 }
 
