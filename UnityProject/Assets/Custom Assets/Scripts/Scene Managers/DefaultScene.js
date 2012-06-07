@@ -57,6 +57,7 @@ class DefaultScene extends SceneManager {
 					initial = false;
 				} else if( !GameManager.instance.cutScenePlaying() ) {
 					// progress to next round (or scoreboard) if cutscenes finished
+
 					GameManager.instance.nextRoundOrScoreboard();
 				}
 			}
@@ -111,14 +112,14 @@ class DefaultScene extends SceneManager {
 		GUILayout.EndArea();
 		
 		// character labels
-		
+		/*
 		for( var avatar : GameObject in GameManager.instance.avatars ) {
 			component = avatar.GetComponent( Avatar );
 			var point = Camera.main.WorldToScreenPoint( component.getCenterInWorld() + Vector2( 0.0, (component.getScaledHeight() * 0.80) ) );
 			var rect : Rect = Rect( (point.x - 30.0), (Screen.height - point.y), 100.0, 60.0 );
 			GUI.Label( rect, ('Controller ' + parseInt( component.getController() )) );
 		}
-		
+		*/
 		// 3-2-1
 		
 		var width : float = (halfScreenWidth / 2.0);
@@ -150,12 +151,5 @@ class DefaultScene extends SceneManager {
 			GUILayout.Box( 'Press [Back] to return to the Main Menu.' );
 						
 		GUILayout.EndArea();
-	}
-	
-	// utility function to make character labels
-	function characterLabel( worldPoint : Vector3, yOffset : float, text : String ) {
-		var point = Camera.main.WorldToScreenPoint( worldPoint + Vector2( 0, yOffset ) );
-		var rect : Rect = Rect( (point.x - 30.0), (Screen.height - point.y), 100.0, 60.0 );
-		GUI.Label( rect, text );
 	}
 }

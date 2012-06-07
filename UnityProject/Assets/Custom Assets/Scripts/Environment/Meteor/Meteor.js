@@ -7,6 +7,7 @@ public var crackleSound : AudioClip;
 public var maxCrackleVolume : float = 1.0;
 public var detonatorPrefab : GameObject;
 public var craterPrefab : GameObject;
+public var hazardTexture : Texture2D;
 
 private var crackleAudioSource : AudioSourceManaged;
 private var startPos : Vector3;
@@ -58,6 +59,14 @@ function Update() {
 	}
 }
 
+function OnGUI() {
+	var point = Camera.main.WorldToScreenPoint( transform.position );
+	if( point.y > Screen.height ) {
+		var rect : Rect = Rect( point.x, 20.0, 60.0, 60.0 );
+		GUI.DrawTexture( rect, hazardTexture );
+	}
+}
+
 function OnCollisionEnter( collision : Collision ) {
 	Camera.main.SendMessage( 'AddShake', 0.05 );
 	health -= 10.0;
@@ -99,5 +108,6 @@ function OnCollisionEnter( collision : Collision ) {
 }
 
 function OutOfBounds() {
+	GameManager.instance.audioStop( 'meteorCrackle' );
 	Destroy( gameObject );
 }

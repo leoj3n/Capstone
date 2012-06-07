@@ -58,7 +58,7 @@ protected var fps : float = 16.0;
 protected var ccHeight : float = 4.0;
 
 // HEALTH AND GUAGE
-protected var health : float = 15.0;
+protected var health : float = 100.0;
 protected var power : float = 0.0;
 
 // JUMPING
@@ -90,6 +90,16 @@ function Start() {
 	origFps = taRenderer.fps;
 	ccOrigHeight = characterController.height;
 	startPos = transform.position;
+}
+
+function OnGUI() {
+	var point = Camera.main.WorldToScreenPoint( getCenterInWorld() + Vector2( 0.0, (getScaledHeight() * 0.80) ) );
+	
+	var rect : Rect = Rect( (point.x - 30.0), (Screen.height - point.y), 100.0, 60.0 );
+	GUI.Label( rect, ('Controller ' + parseInt( getController() )) );
+	
+	rect = Rect( (point.x - 30.0), (Screen.height - point.y + 20.0), 50.0, 10.0 );
+	GUI.DrawTexture( rect, GameManager.instance.healthTexture );
 }
 
 function Update() {
