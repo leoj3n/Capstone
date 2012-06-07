@@ -1,8 +1,8 @@
 
 class PowerGuageBoost extends Modifier {
-	function ApplyModifier() {
-		owner.changePower( 25.0 );
-	}
+	public var boostAmount : float = 30.0;
 	
-	function EndModifier() {}
+	function ApplyModifier() {
+		owner.changePower( boostAmount * (Time.deltaTime / duration) );
+	}
 }

@@ -99,7 +99,7 @@ class DefaultScene extends SceneManager {
 							var component : Avatar = avatar.GetComponent( Avatar );
 							
 							var HPPM : String = (component.isAlive() ? ('HP [' + parseInt( Mathf.Max( component.getHealth(), 1.0 ) ) + '] Power [' + 
-								component.getPower() + ']') : 'You are dead!');
+								parseInt( component.getPower() ) + ']') : 'You are dead!');
 							
 							GUILayout.Box( 'Controller ' + parseInt( component.getController() ) + '\n' + component.getName() + '\n' + 
 								(playerWonLost ? playerWonLost : HPPM ) ); // win/loss message or health/power
@@ -111,15 +111,6 @@ class DefaultScene extends SceneManager {
 		
 		GUILayout.EndArea();
 		
-		// character labels
-		/*
-		for( var avatar : GameObject in GameManager.instance.avatars ) {
-			component = avatar.GetComponent( Avatar );
-			var point = Camera.main.WorldToScreenPoint( component.getCenterInWorld() + Vector2( 0.0, (component.getScaledHeight() * 0.80) ) );
-			var rect : Rect = Rect( (point.x - 30.0), (Screen.height - point.y), 100.0, 60.0 );
-			GUI.Label( rect, ('Controller ' + parseInt( component.getController() )) );
-		}
-		*/
 		// 3-2-1
 		
 		var width : float = (halfScreenWidth / 2.0);

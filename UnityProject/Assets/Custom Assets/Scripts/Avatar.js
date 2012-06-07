@@ -95,6 +95,8 @@ function Start() {
 }
 
 function OnGUI() {
+	if (!isControllable) return; // only draw self hud if controllable
+	
 	var point = Camera.main.WorldToScreenPoint( getCenterInWorld() + Vector2( 0.0, (getScaledHeight() * 0.80) ) );
 	
 	var rect : Rect = Rect( (point.x - 30.0), (Screen.height - point.y), 100.0, 60.0 );
@@ -141,13 +143,13 @@ function Update() {
 	shadowProjector.enabled = isControllable;
 }
 
-// utility function to safely decrement health
-function decrementHealth( hp : float ) {
-	// don't decrement if on last alive team
+// utility function to safely change health
+function changeHealth( hp : float ) {
+	// do not change if on last alive team
 	var aliveTeamEnums : ControllerTeam[] = GameManager.instance.getAliveControllerTeamEnums();
 	if ((aliveTeamEnums.Length == 1) && (aliveTeamEnums[0] == getTeam())) return;
 	
-	health = Mathf.Max( (health - hp), 0.0 );
+	health = Mathf.Clamp( (health - hp), 0.0, 100.0 );
 }
 
 // utility function to check if health is greater than zero
@@ -157,12 +159,12 @@ function isAlive() : boolean {
 
 // utility function to get health
 function getHealth() : float {
-	return Mathf.Max( health, 0.0 );
+	return Mathf.Clamp( health, 0.0, 100.0 );
 }
 
 // utility function to get power
 function getPower() : float {
-	return Mathf.Max( power, 0.0 );
+	return Mathf.Clamp( power, 0.0, 100.0 );
 }
 
 // utility function to check if power is greater than passed amount
@@ -174,8 +176,8 @@ function hasPower() : boolean {
 }
 
 // utility function to add or remove from power
-function changePower( amount : int ) {
-	power = Mathf.Max( (power + amount), 0.0 );
+function changePower( amount : float ) {
+	power = Mathf.Clamp( (power + amount), 0.0, 100.0 );
 }
 
 // utility function to do things based on character health
@@ -717,7 +719,7 @@ function addExplosionForce( pos : Vector3, radius : float, force : float, dampin
 	var explForce : Vector3 = (force * dir * percentage);
 	var modifier : float = (force * percentage / damping);
 	if (characterController.isGrounded) explForce.y = Mathf.Max( explForce.y, (modifier / 2) );
-	decrementHealth( modifier );
+	changeHealth( modifier );
 	
 	// apply explosion force via co-routine
 	var initial : boolean = true;
@@ -737,7 +739,7 @@ function addHitForce( pos : Vector3, force : float, damping : float, hp : float 
 	dir.z = 0.0;
 	
 	var hForce : Vector3 = (force * dir);
-	decrementHealth( hp );
+	changeHealth( hp );
 	
 	audioPlay( Random.Range( 0, 2 ) ? CharacterSound.HitA : CharacterSound.HitB );
 	

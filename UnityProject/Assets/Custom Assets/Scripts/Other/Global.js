@@ -202,7 +202,7 @@ class SceneManager extends MonoBehaviour {
 		GameManager.instance.setBackgroundMusic( backgroundMusic, backgroundMusicVolume, fadeInBackgroundMusic );
 		GameManager.instance.updateReadyControllers();
 		
-		if (useDefaultBackground) Instantiate( GameManager.instance.defaultBackground );
+		if (useDefaultBackground) Instantiate( GameManager.instance.defaultBackgroundPrefab );
 		
 		SceneLoaded(); // call the overloaded function
 	}

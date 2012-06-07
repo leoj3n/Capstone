@@ -14,7 +14,7 @@ function Awake() {
 		if (modifier > (count - 1)) modifier = 0;
 	}
 	
-	modifier = 0;
+	//modifier = 0; // debug
 	
 	GameManager.instance.lastModifier = modifier;
 	

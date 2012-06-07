@@ -5,12 +5,11 @@ class Modifier extends MonoBehaviour {
 	public var pickupSound : AudioClip;
 	
 	protected var owner : Avatar;
-	protected var pickedUp : boolean = false;
 	protected var fadeEmitters : FadeEmitters;
 	
 	function Start() {
 		GameManager.instance.audioBind( modifier, pickupSound );
-		transform.localScale = transform.parent.localScale; // scale to card
+		transform.localScale = Vector3( 1.0, 1.0, 1.0 );// transform.parent.localScale; // scale to card
 		fadeEmitters = GetComponent( FadeEmitters );
 		totalTime = fadeEmitters.getTimeRemaining();
 	}
@@ -18,17 +17,15 @@ class Modifier extends MonoBehaviour {
 	function Update() {
 		if( owner ) {			
 			transform.position = owner.getCenterInWorld();
-			var doubleRadius : float = (owner.getScaledRadius() * 2.0);
-			transform.localScale = Vector3( doubleRadius, owner.getScaledHeight(), doubleRadius );
+			var doubleDiameter : float = (owner.getScaledRadius() * 4.0);
+			transform.localScale = Vector3( doubleDiameter, owner.getScaledHeight(), doubleDiameter );
 			
 			ApplyModifier(); // apply
-			
-			pickedUp = true;
 		}
 	}
 	
 	function OnDestroy() {
-		if (GameManager.instance) EndModifier(); // end
+		if (owner && GameManager.instance) EndModifier(); // end
 	}
 	
 	function pickup( avatar : Avatar ) {
