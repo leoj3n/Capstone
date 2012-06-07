@@ -1,15 +1,27 @@
 
-class TimeWarp extends Modifier {
+class TimeWarp extends Modifier {	
 	function ApplyModifier() {
 		var halfDuration : float = (duration / 2.0);
+		var warpFactor : float = (fadeEmitters.getTimeRemaining() / duration);
 		
-		if( fadeEmitters.getTimeRemaining() > halfDuration )
-			GameManager.instance.audioFadeAllToPitch( 0.5, halfDuration );
-		else
-			GameManager.instance.audioFadeAllToPitch( 1.0, halfDuration );
+		if( fadeEmitters.getTimeRemaining() < halfDuration )
+			warpFactor = (1.0 - warpFactor);
+		
+		GameManager.instance.audioFadeAllToPitch( warpFactor, 1.0 );
+		applyTimeWarp( (warpFactor - 0.5) );
 	}
 	
 	function EndModifier() {
 		GameManager.instance.audioResetAllPitch();
+		applyTimeWarp( 1.0 );
+	}
+	
+	private function applyTimeWarp( factor : float ) {
+		var avatars : GameObject[] = GameManager.instance.getAvatarsOnOtherTeams( owner.getTeam() );
+		
+		for( var avatar : GameObject in avatars ) {
+			var component : Avatar = avatar.GetComponent( Avatar );
+			component.setTimeWarpFactor( factor );
+		}
 	}
 }

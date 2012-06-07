@@ -12,7 +12,7 @@ public var sound : AudioClip[];
 public var expectedSounds : CharacterSound; // just for exposing expected order of sounds in inspector
 public var statsTexture : Texture2D;
 public var statsAtlas : TextAsset;
-public var impactEffect : GameObject;
+public var impactEffectPrefab : GameObject;
 public var baseOffset : Vector3 = Vector3.zero;
 public var isControllable : boolean = true;
 
@@ -56,6 +56,8 @@ protected var loop : boolean = true;
 protected var offset : Vector3 = Vector3.zero;
 protected var fps : float = 16.0;
 protected var ccHeight : float = 4.0;
+private var modifiedDeltaTime : float = 0.0;
+protected var timeWarpFactor : float = 1.0;
 
 // HEALTH AND GUAGE
 protected var health : float = 100.0;
@@ -109,6 +111,9 @@ function Update() {
 		// force correct sign of z-scale
 		if (Mathf.Sign( textureAtlasCube.transform.localScale.z ) == 1.0)
 			textureAtlasCube.transform.localScale.z *= -1.0;
+		
+		// modify delta time
+		modifiedDeltaTime = (Time.deltaTime * timeWarpFactor);
 		
 		setHorizontalMovement();
 		setVerticalMovement();
@@ -268,9 +273,9 @@ function setHorizontalMovement() {
 			var targetSpeed : float = Mathf.Min( targetDirection.magnitude, 1.0 ) * walkSpeed;
 			
 			// interpolate moveSpeed -> targetSpeed
-			moveSpeed = Mathf.Lerp( moveSpeed, targetSpeed, (groundedAcceleration * Time.deltaTime) );
+			moveSpeed = Mathf.Lerp( moveSpeed, targetSpeed, (groundedAcceleration * modifiedDeltaTime) );
 		} else if (isMoving) { // in air controls
-			inAirVelocity += (targetDirection.normalized * Time.deltaTime * inAirAcceleration);
+			inAirVelocity += (targetDirection.normalized * modifiedDeltaTime * inAirAcceleration);
 		}
 	} else {
 		isMoving = false;
@@ -282,7 +287,7 @@ function setHorizontalMovement() {
 // sets verticalSpeed, jumping, lastJumpTime, lastJumpButtonTime
 function setVerticalMovement() {
 	// apply gravity (-0.05 fixes jittering isGrounded problem)
-	verticalSpeed = (characterController.isGrounded ? -0.05 : (verticalSpeed - (gravity * Time.deltaTime)));
+	verticalSpeed = (characterController.isGrounded ? -0.05 : (verticalSpeed - (gravity * modifiedDeltaTime)));
 	
 	// prevent jumping too fast after each other
 	if (lastJumpTime + jumpRepeatTime > Time.time) return;
@@ -291,6 +296,7 @@ function setVerticalMovement() {
 		// jump only when pressing the button down with a timeout so you can press the button slightly before landing		
 		if( canJump && (Time.time < (lastJumpButtonTime + jumpTimeout)) ) {
 			audioPlay( CharacterSound.Jump );
+			Instantiate( GameManager.instance.jumpEffectPrefab ).transform.position = (getFootPosInWorld() + Vector3( 0.0, 1.0, 0.0 ));
 			verticalSpeed = Mathf.Sqrt( 2 * jumpHeight * gravity );
 			jumping = true;
 			lastJumpTime = Time.time;
@@ -302,11 +308,11 @@ function setVerticalMovement() {
 // move the character controller
 function doMovement() {
 	if( GameManager.instance.cutScenePlaying() ) {
-		characterController.Move( Time.deltaTime * (Vector3( 0, verticalSpeed, 0 ) + inAirVelocity) );
+		characterController.Move( modifiedDeltaTime * (Vector3( 0, verticalSpeed, 0 ) + inAirVelocity) );
 		return; // only do gravity during cutscenes
 	}
 	
-	characterController.Move( Time.deltaTime * 
+	characterController.Move( modifiedDeltaTime * 
 		((moveDirection * moveSpeed) + Vector3( 0, verticalSpeed, 0 ) + inAirVelocity + hitForce + explosionForce) );
 	
 	if( characterController.isGrounded ) {
@@ -335,7 +341,7 @@ function updateShadow() {
 	var newPos : Vector3 = getCenterInWorld();
 	if (shadowUseTAC) newPos.x = textureAtlasCube.position.x;
 	
-	shadow.position = Vector3.Lerp( shadow.position, newPos, (Time.deltaTime * 20) );
+	shadow.position = Vector3.Lerp( shadow.position, newPos, (modifiedDeltaTime * 20) );
 	
 	shadowProjector.aspectRatio = (shadowUseTAC ? Mathf.Abs( textureAtlasCube.localScale.x ) : origShadowAspectRatio);
 }
@@ -509,7 +515,7 @@ function determineAtlas() {
 	var finalOffset : Vector3 = Vector3( baseOffset.x, (baseOffset.y - (characterController.height / 2.0)), baseOffset.z );
 	taRenderer.setTextureAtlas( parseInt( atlas ), scaleAnchorFix( offset + finalOffset), loop );
 	taRenderer.reverse = reverse;
-	taRenderer.fps = fps;
+	taRenderer.fps = (fps * timeWarpFactor);
 	if( staticFrame > -1) {
 		taRenderer.isStatic = true;
 		taRenderer.staticFrame = staticFrame;
@@ -667,7 +673,7 @@ function hitOtherAvatar( hit : RaycastHit, force : float, damping : float ) {
 		 hitPoint = Vector3( hit.point.x, (myCenter.y + Random.Range( -0.5, 1.0 )), hit.point.z );
 	
 	// impact effect	 
-	var effect : GameObject = Instantiate( impactEffect, hitPoint, Quaternion.identity );
+	var effect : GameObject = Instantiate( impactEffectPrefab, hitPoint, Quaternion.identity );
 	var effectEmitter : ParticleEmitter = effect.GetComponent( ParticleEmitter );
 	effectEmitter.localVelocity = Vector3.Scale( effectEmitter.localVelocity, -hit.normal );
 	
@@ -679,6 +685,10 @@ function hitOtherAvatar( hit : RaycastHit, force : float, damping : float ) {
 // utility function to get the avatar center in world coordinates
 function getCenterInWorld() : Vector3 {
 	return (transform.position + getScaledCenter());
+}
+
+function getFootPosInWorld() : Vector3 {
+	return Vector3( getCenterInWorld().x, (getCenterInWorld().y - (getScaledHeight() / 2.0)), getCenterInWorld().z );
 }
 
 // utility function to get the scaled center of the character controller
@@ -715,7 +725,7 @@ function addExplosionForce( pos : Vector3, radius : float, force : float, dampin
 		if (!initial) explosionForce -= explForce;
 		initial = false;
 		
-		explForce = Vector3.Slerp( explForce, Vector3.zero, (Time.deltaTime * damping) );
+		explForce = Vector3.Slerp( explForce, Vector3.zero, (modifiedDeltaTime * damping) );
 		explosionForce += explForce;
 		yield;
 	}
@@ -737,7 +747,7 @@ function addHitForce( pos : Vector3, force : float, damping : float, hp : float 
 		if (!initial) hitForce -= hForce;
 		initial = false;
 		
-		hForce = Vector3.Slerp( hForce, Vector3.zero, (Time.deltaTime * damping) );
+		hForce = Vector3.Slerp( hForce, Vector3.zero, (modifiedDeltaTime * damping) );
 		hitForce += hForce;
 		yield;
 	}
@@ -764,6 +774,11 @@ function OnControllerColliderHit( hit : ControllerColliderHit ) {
 		body.velocity = (Mathf.Max( 2.5, ((hitForce.magnitude + explosionForce.magnitude) / 2.0) ) * 
 			(hit.moveDirection + (hit.moveDirection / body.mass)));
 	}
+}
+
+// utility function for setting the time warp factor
+function setTimeWarpFactor( factor : float ) {
+	timeWarpFactor = Mathf.Clamp01( factor );
 }
 
 // retun whether or not this avatar is playing a cutscene

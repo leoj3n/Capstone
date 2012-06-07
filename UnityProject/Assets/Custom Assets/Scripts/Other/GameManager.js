@@ -11,16 +11,17 @@ class GameManager extends MonoBehaviour {
 	// variables available in the inspector (accessible via GameManager.instance.(variable))
 	public var characterPrefabs : GameObject[];
 	public var expectedOrder : CharacterEnum; // just to expose the expected order in the Inspector
-	public var soundsBoundByName : AudioClip[]; // no order necessary
+	public var jumpEffectPrefab : GameObject;
+	public var healthTexture : Texture2D;
 	public var nearlyGroundedLayerMask : LayerMask = -1;
 	public var avatarOnlyLayerMask : LayerMask = -1;
+	public var soundsBoundByName : AudioClip[]; // no order necessary
 	public var countdownTextures : Texture[];
 	public var powerModifyPrefab : GameObject;
+	public var defaultBackgroundPrefab : GameObject;
+	public var customSkin : GUISkin;
 	public var audioListenerVolume : float = 1.0;
 	public var defaultAudioVolume : float = 1.0;
-	public var healthTexture : Texture2D;
-	public var defaultBackground : GameObject;
-	public var customSkin : GUISkin;
 	
 	// non-inspector variables still accessible via GameManager.instance.(variable)
 	private var _paused : boolean = false;
@@ -222,6 +223,18 @@ class GameManager extends MonoBehaviour {
 		
 		for( var avatar : GameObject in avatars ) {
 			if (avatar.GetComponent( Avatar ).getTeam() == team)
+				avatarArray.Push( avatar );
+		}
+		
+		return avatarArray.ToBuiltin( GameObject );
+	}
+	
+	// utility function to get avatars not on a specific team
+	public function getAvatarsOnOtherTeams( team : ControllerTeam ) : GameObject[] {
+		var avatarArray : Array = new Array();
+		
+		for( var avatar : GameObject in avatars ) {
+			if (avatar.GetComponent( Avatar ).getTeam() != team)
 				avatarArray.Push( avatar );
 		}
 		
