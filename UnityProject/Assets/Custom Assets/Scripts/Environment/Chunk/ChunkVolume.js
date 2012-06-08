@@ -28,7 +28,7 @@ function Start() {
 		
 		chunks = new ArrayList();
 		
-		// fill volume of this scene object with "chunks"
+		// fill the "volume" of this "scene object" with "chunks"
 		for( var i = 0; i < xNum; i++ ) {
 			for( var j = 0; j < yNum; j++ ) {
 				for( var k = 0; k < zNum; k++ ) {
@@ -57,9 +57,10 @@ function Update() {
 	}
 }
 
+// this gets called by trigger when an avatar enters
 function ignoreAvatarCollision( other : Collider, ignore : boolean ) {
 	for( var chunk : GameObject in chunks ) {
 		Physics.IgnoreCollision( other.collider, chunk.collider, ignore );
-		chunk.GetComponent( Chunk ).setTrigger( ignore );
+		chunk.GetComponent( Chunk ).setTrigger( ignore ); // simply for transparency
 	}
 }

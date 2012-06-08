@@ -78,9 +78,12 @@ function Update() {
 		
 	Debug.DrawLine( Vector3( (averagePosition.x - (largestX * 0.5)), averagePosition.y, 0.0 ),
 		Vector3( (averagePosition.x + (largestX * 0.5)), averagePosition.y, 0.0 ), Color.magenta );
+	
+	var bottomLeft : Vector3 = Vector3( (averagePosition.x - (largestX * 0.5)), (averagePosition.y - (largestY * 0.5)), 0.0 );
+	var topRight : Vector3 = Vector3( (averagePosition.x + (largestX * 0.5)), (averagePosition.y + (largestY * 0.5)), 0.0 );
+	var diag : Vector3 = (bottomLeft - topRight);
 		
-	Debug.DrawLine( Vector3( (averagePosition.x - (largestX * 0.5)), averagePosition.y, 0.0 ),
-		Vector3( (averagePosition.x + (largestX * 0.5)), averagePosition.y, 0.0 ), Color.magenta );
+	Debug.DrawRay( topRight, diag, Color.cyan );
 	
 	//if (averagePosition.y < minimumY) averagePosition.y = minimumY;
 	
@@ -107,26 +110,26 @@ function Update() {
 		camera.orthographicSize = Mathf.Lerp( camera.orthographicSize, orthoSize, t );
 	} else {
 		var dblFovTangent : float = (Mathf.Tan( camera.fieldOfView * 0.5 * Mathf.Deg2Rad ) * 2.0);
-		var height : float = (dblFovTangent * (Global.sharedZ - camera.transform.position.z));
-		var width : float = (height * camera.aspect);
+		var cameraHeight : float = (dblFovTangent * (Global.sharedZ - camera.transform.position.z));
+		var cameraWidth : float = (cameraHeight * camera.aspect);
 		
-		/*if (height < largestY)
+		if (cameraHeight < largestY)
 			z = -(largestY / dblFovTangent);
 		else
-			z = -((largestX / camera.aspect) / dblFovTangent);*/
+			z = -((largestX / camera.aspect) / dblFovTangent);
 			
 		//z = -(((largestX / camera.aspect) + largestY) / dblFovTangent);
 		//z = -(largestY / dblFovTangent);
+		//z = (-((diag.magnitude / camera.aspect) / dblFovTangent) + -(diag.magnitude / dblFovTangent)) * 0.5;
 		
-		Debug.Log( -(largestY / dblFovTangent) + ' ... ' + -((largestX / camera.aspect) / dblFovTangent) );
+		//Debug.Log( -(largestY / dblFovTangent) + ' ... ' + -((largestX / camera.aspect) / dblFovTangent) );
 		
-		//var minSizeCorrect : float = (minimumSize * -2.5);
-		//if (z > minSizeCorrect) z = Mathf.Lerp( z, minSizeCorrect, t );
+		var minSizeCorrect : float = (minimumSize * -2.5);
+		if (z > minSizeCorrect) z = minSizeCorrect;
 	}
 	
-	// TODO: this needs some work.
-	if( swayAmount > 0.0 ) {
-		var temp : float = (Mathf.PingPong( (Time.time * 0.25), swayAmount ) - (swayAmount / 2.0)); // eg: -0.5 to 0.5 for swayAmount of 1.0
+	if( swayAmount > 900.0 ) {
+		var temp : float = (Mathf.PingPong( (Time.time * 0.25), swayAmount ) - (swayAmount / 2.0)); // eg: -0.5 to 0.5 if swayAmount is 1.0
 		sway = Vector3.Slerp( sway, Vector3( 0.0, (temp / 2.0), temp ), t );
 	}
 	
