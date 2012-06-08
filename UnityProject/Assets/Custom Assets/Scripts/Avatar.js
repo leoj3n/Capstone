@@ -48,6 +48,7 @@ private var lastAttackTime : float = 0.0;
 protected var cutScenePlaying = false;
 protected var activeCutScene : CutScene;
 protected var eliminated = false;
+protected var invincible : boolean = false;
 
 // OTHER
 protected var hitForce : Vector3; // force from a hit from another avatar
@@ -95,7 +96,8 @@ function Start() {
 }
 
 function OnGUI() {
-	if (!isControllable) return; // only draw self hud if controllable
+	// do not draw self-HUD in these cases
+	if (!isControllable || cutScenePlaying) return;
 	
 	var point = Camera.main.WorldToScreenPoint( getCenterInWorld() + Vector2( 0.0, (getScaledHeight() * 0.80) ) );
 	
@@ -710,6 +712,8 @@ function getScaledHeight() : float {
 
 // utility function to add an explosion force to this avatar
 function addExplosionForce( pos : Vector3, radius : float, force : float, damping : float ) {
+	if (invincible) return; // cannot be hit
+	
 	var percentage : float = (1.0 - Mathf.Clamp01( 
 		Vector3.Distance( pos, characterController.collider.ClosestPointOnBounds( pos ) ) / radius ));
 	
@@ -734,7 +738,9 @@ function addExplosionForce( pos : Vector3, radius : float, force : float, dampin
 }
 
 // utility function to add hit force to this avatar
-function addHitForce( pos : Vector3, force : float, damping : float, hp : float ) {	
+function addHitForce( pos : Vector3, force : float, damping : float, hp : float ) {
+	if (invincible) return; // cannot be hit
+	
 	var dir : Vector3 = (transform.position - pos).normalized;
 	dir.z = 0.0;
 	
@@ -781,6 +787,11 @@ function OnControllerColliderHit( hit : ControllerColliderHit ) {
 // utility function for setting the time warp factor
 function setTimeWarpFactor( factor : float ) {
 	timeWarpFactor = Mathf.Clamp01( factor );
+}
+
+// utility function for setting invincibility
+function setInvincibility( bool : boolean ) {
+	invincible = bool;
 }
 
 // retun whether or not this avatar is playing a cutscene

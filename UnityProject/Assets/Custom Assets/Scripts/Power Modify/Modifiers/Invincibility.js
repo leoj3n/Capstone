@@ -1,6 +1,10 @@
 
 class Invincibility extends Modifier {
-	function ApplyModifier() {}
+	function ApplyModifier() {
+		owner.setInvincibility( true );
+	}
 	
-	function EndModifier() {}
+	function EndModifier() {
+		owner.setInvincibility( false );
+	}
 }
