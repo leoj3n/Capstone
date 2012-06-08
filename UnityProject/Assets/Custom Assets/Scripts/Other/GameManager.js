@@ -49,9 +49,9 @@ class GameManager extends MonoBehaviour {
 	public function get avatars() : GameObject[] { return _avatars; }
 	private function set avatars( value : GameObject[] ) { _avatars = value; }
 	
-	private var _lastModifier : ModifierEnum;
-	public function get lastModifier() : ModifierEnum { return _lastModifier; }
-	public function set lastModifier( value : ModifierEnum ) { _lastModifier = value; }
+	private var _lastModifier : int;
+	public function get lastModifier() : int { return _lastModifier; }
+	public function set lastModifier( value : int ) { _lastModifier = value; }
 	
 	// private variables not accessible outside of this class
 	private var audioSources : Hashtable;

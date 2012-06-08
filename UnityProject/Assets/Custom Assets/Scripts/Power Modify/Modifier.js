@@ -1,6 +1,5 @@
 
 class Modifier extends MonoBehaviour {
-	public var modifier : ModifierEnum;
 	public var duration : float;
 	public var pickupSound : AudioClip;
 	
@@ -8,7 +7,7 @@ class Modifier extends MonoBehaviour {
 	protected var fadeEmitters : FadeEmitters;
 	
 	function Start() {
-		GameManager.instance.audioBind( modifier, pickupSound );
+		GameManager.instance.audioBind( pickupSound.name, pickupSound );
 		transform.localScale = Vector3( 1.0, 1.0, 1.0 );// transform.parent.localScale; // scale to card
 		fadeEmitters = GetComponent( FadeEmitters );
 		totalTime = fadeEmitters.getTimeRemaining();
@@ -31,7 +30,7 @@ class Modifier extends MonoBehaviour {
 	function pickup( avatar : Avatar ) {
 		owner = avatar;
 		transform.parent = owner.transform;
-		GameManager.instance.audioPlay( modifier, true );
+		GameManager.instance.audioPlay( pickupSound.name, true );
 		fadeEmitters.restart( 0.0, duration, true );
 		return;
 	}

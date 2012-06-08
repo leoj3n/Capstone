@@ -61,12 +61,6 @@ enum CutScene {
 	Intro,
 	Victory
 }
-enum ModifierEnum {
-	TimeWarp, // Blue
-	PowerGaugeBoost, // Green
-	Invincibility, // Orange
-	Count
-}
 enum ControllerEnum { A, B, C, D, Count } // Unity supports a maximum of 4 controllers
 enum ControllerTeam { Green, Red, Blue, Orange, Count } // need at least 4 teams to support free-for-all
 enum ControllerState { SittingOut, TeamSelect, Ready }
@@ -102,7 +96,7 @@ class AudioSourceManaged {
 	
 	private var origPitch : float;
 	private var origVolume : float;
-	private var stopped = true;
+	private var paused = true;
 	
 	function AudioSourceManaged( a : AudioSource ) {
 		audioSource = a;
@@ -127,20 +121,22 @@ class AudioSourceManaged {
 			SetVolume( volume );
 			audioSource.loop = loop;
 			audioSource.Play();
-			stopped = false;
+			paused = false;
 		}
 	}
 	
 	function Pause( bool : boolean ) {
 		if (bool)
 			audioSource.Pause();
-		else if( !stopped )
+		else if( !paused )
 			audioSource.Play();
+			
+		paused = bool;
 	}
 	
 	function Stop() {
 		Reset();
-		stopped = true;
+		paused = true;
 		audioSource.Stop();
 	}
 	

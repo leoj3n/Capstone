@@ -75,6 +75,28 @@ class DefaultScene extends SceneManager {
 		var halfScreenWidth : float = (Screen.width / 2.0);
 		var halfScreenHeight : float = (Screen.height / 2.0);
 		
+		// game paused
+		 
+		if( GameManager.instance.paused ) {
+			var width : float = 300.0;
+			var height : float = 200.0;
+			var halfWidth : float = (width / 2);
+			var halfHeight : float = (height / 2);
+			
+			GUILayout.BeginArea( Rect( (halfScreenWidth - halfWidth), (halfScreenHeight - halfHeight), width, height ) );
+			
+				GUILayout.Box( 'Game Paused', GUILayout.Width( 150 ) );
+				GUILayout.Box( 'Press [Start] to unpause the game.' );
+				GUILayout.Box( 'Press [B] to return to Level Select.' );
+				GUILayout.Box( 'Press [Back] to return to the Main Menu.' );
+							
+			GUILayout.EndArea();
+			
+			return;
+		}
+		
+		// controller HUD
+		
 		GUI.Box( Rect( (halfScreenWidth - 50.0), 20.0, 100.0, 22.0 ), 
 			((GameManager.instance.round == 2) ? 'Final Round' : ('Round ' + (GameManager.instance.round + 1))) );
 		
@@ -118,10 +140,10 @@ class DefaultScene extends SceneManager {
 		
 		// 3-2-1
 		
-		var width : float = (halfScreenWidth / 2.0);
-		var height : float = width;
-		var halfWidth : float = (width / 2);
-		var halfHeight : float = (height / 2);
+		width = (halfScreenWidth / 2.0);
+		height = width;
+		halfWidth = (width / 2);
+		halfHeight = (height / 2);
 		
 		if( GameManager.instance.cutScenePlaying() ) {
 			if( !playedOnce ) {
@@ -144,23 +166,5 @@ class DefaultScene extends SceneManager {
 						GameManager.instance.countdownTextures[seconds] );
 			}
 		}
-		
-		// game paused
-		 
-		if (!GameManager.instance.paused) return;
-		
-		width = 300.0;
-		height = 200.0;
-		halfWidth = (width / 2);
-		halfHeight = (height / 2);
-		
-		GUILayout.BeginArea( Rect( (halfScreenWidth - halfWidth), (halfScreenHeight - halfHeight), width, height ) );
-		
-			GUILayout.Box( 'Game Paused', GUILayout.Width( 150 ) );
-			GUILayout.Box( 'Press [Start] to unpause the game.' );
-			GUILayout.Box( 'Press [B] to return to Level Select.' );
-			GUILayout.Box( 'Press [Back] to return to the Main Menu.' );
-						
-		GUILayout.EndArea();
 	}
 }

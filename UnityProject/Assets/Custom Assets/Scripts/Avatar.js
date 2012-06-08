@@ -109,7 +109,7 @@ function OnGUI() {
 }
 
 function Update() {
-	if( isControllable ) {
+	if( isControllable && !GameManager.instance.paused) {
 		if (Global.getAxis( 'Vertical', boundController ) >= 0.2) lastJumpButtonTime = Time.time; // jump
 		
 		// force correct sign of z-scale
