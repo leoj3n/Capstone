@@ -1,5 +1,8 @@
 
 class DefaultScene extends SceneManager {
+	public var ambientNoise : AudioClip;
+	public var ambientNoiseVolume : float;
+
 	private var countDownSeconds : int = 3;
 	private var countdownStartTime : float;
 	private var timeBetweenPM : float = 10.0;
@@ -14,6 +17,8 @@ class DefaultScene extends SceneManager {
 		
 		countdownStartTime = Time.time;
 		GameManager.instance.audioPlay( 'Countdown' );
+		
+		GameManager.instance.audioFadeInAndLoop( 'ambientNoise', ambientNoise, ambientNoiseVolume, fadeInBackgroundMusic );
 	}
 	
 	function Update() {

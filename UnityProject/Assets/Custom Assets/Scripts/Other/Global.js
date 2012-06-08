@@ -101,6 +101,7 @@ class AudioSourceManaged {
 	
 	private var origPitch : float;
 	private var origVolume : float;
+	private var stopped = true;
 	
 	function AudioSourceManaged( a : AudioSource ) {
 		audioSource = a;
@@ -109,25 +110,36 @@ class AudioSourceManaged {
 	}
 	
 	function Update() {
-		if (audioSource.pitch != targetPitch)
-			audioSource.pitch = Mathf.MoveTowards( audioSource.pitch, targetPitch, (Time.deltaTime / pitchDuration) );
-			
-		if (audioSource.volume != targetVolume)
-			audioSource.volume = Mathf.MoveTowards( audioSource.volume, targetVolume, (Time.deltaTime / volumeDuration) );
+		if( IsPlaying() ) {
+			if (audioSource.pitch != targetPitch)
+				audioSource.pitch = Mathf.MoveTowards( audioSource.pitch, targetPitch, (Time.deltaTime / pitchDuration) );
+				
+			if (audioSource.volume != targetVolume)
+				audioSource.volume = Mathf.MoveTowards( audioSource.volume, targetVolume, (Time.deltaTime / volumeDuration) );
+		}
 	}
 	
 	function Play( force : boolean, loop : boolean, volume : float, pitch : float ) {
-		if( !audioSource.isPlaying || force ) {
+		if( !IsPlaying() || force ) {
 			Stop();
 			SetPitch( pitch );
 			SetVolume( volume );
 			audioSource.loop = loop;
 			audioSource.Play();
+			stopped = false;
 		}
+	}
+	
+	function Pause( bool : boolean ) {
+		if (bool)
+			audioSource.Pause();
+		else if( !stopped )
+			audioSource.Play();
 	}
 	
 	function Stop() {
 		Reset();
+		stopped = true;
 		audioSource.Stop();
 	}
 	
@@ -199,7 +211,7 @@ class SceneManager extends MonoBehaviour {
 	// put anything you want to have happen at the beginning of every scene in this function
 	function Start() {
 		GameManager.instance.audioStopAll();
-		GameManager.instance.setBackgroundMusic( backgroundMusic, backgroundMusicVolume, fadeInBackgroundMusic );
+		GameManager.instance.audioFadeInAndLoop( 'backgroundMusic', backgroundMusic, backgroundMusicVolume, fadeInBackgroundMusic );
 		GameManager.instance.updateReadyControllers();
 		
 		if (useDefaultBackground) Instantiate( GameManager.instance.defaultBackgroundPrefab );

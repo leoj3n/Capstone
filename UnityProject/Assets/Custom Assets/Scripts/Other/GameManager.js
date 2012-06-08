@@ -117,8 +117,8 @@ class GameManager extends MonoBehaviour {
 		audioListener = Camera.main.GetComponent( AudioListener );
 	}
 	
-	function nullifyRoundResults() {
-		// set to nothing value
+	private function nullifyRoundResults() {
+		// set to a "nothing" value
 		roundResults[0] = roundResults[1] = roundResults[2] = ControllerTeam.Count;
 	}
 	
@@ -138,6 +138,8 @@ class GameManager extends MonoBehaviour {
 			Time.timeScale = 0.0;
 			paused = true;
 		}
+		
+		audioPauseAll( paused );
 	}
 	
 	// utility function for loading rounds
@@ -289,12 +291,12 @@ class GameManager extends MonoBehaviour {
 	}
 	
 	// utility function for setting the background music
-	function setBackgroundMusic( clip : AudioClip, volume : float, fade : boolean) {
-		var a : AudioSourceManaged = audioBind( 'backgroundMusic', clip );
-		audioPlay( 'backgroundMusic', fade, true, volume ); // force if fading in
+	function audioFadeInAndLoop( uid, clip : AudioClip, volume : float, fade : boolean) {
+		var a : AudioSourceManaged = audioBind( uid, clip );
+		audioPlay( uid, fade, true, volume ); // force if fading in
 		if( fade ) {
 			a.SetVolume( 0.0 );
-			audioFadeToVolume( 'backgroundMusic', volume, 3.0 );
+			audioFadeToVolume( uid, volume, 3.0 );
 		}
 	}
 	
@@ -397,6 +399,16 @@ class GameManager extends MonoBehaviour {
 		var a : AudioSourceManaged = audioGetSource( uid );
 		a.targetVolume = target;
 		a.volumeDuration = duration;
+	}
+	
+	// utility function for pausing or unpausing audio
+	public function audioPause( uid, bool : boolean ) {
+		audioSources[uid].Pause( bool );
+	}
+	
+	// utility function for pausing or unpausing all audio
+	public function audioPauseAll( bool : boolean ) {
+		for (var key in audioSources.Keys) audioPause( key, bool );
 	}
 	
 	// utility function to stop specific audio fading

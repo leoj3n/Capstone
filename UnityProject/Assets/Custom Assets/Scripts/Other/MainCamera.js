@@ -89,7 +89,9 @@ function Update() {
 	
 	//transform.position = Vector3.Lerp( transform.position, Vector3( averagePosition.x, averagePosition.y, z ), t );	
 	transform.position = Vector3.SmoothDamp( transform.position, (sway + Vector3( averagePosition.x, averagePosition.y, z )), cameraVelocity, 0.3 );
-	transform.LookAt( averagePosition );
+	//transform.LookAt( averagePosition );
+	var rotation : Quaternion = Quaternion.LookRotation( averagePosition - transform.position );
+	transform.rotation = Quaternion.Slerp( transform.rotation, rotation, (Time.deltaTime * damping) );
 }
 
 function AddShake( amount : float ) {
