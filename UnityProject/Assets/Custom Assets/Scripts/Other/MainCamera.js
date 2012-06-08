@@ -24,6 +24,9 @@ function Update() {
 	
 	for( var i = 0; i < GameManager.instance.avatars.Length; i++ ) {
 		var avatari : Avatar = GameManager.instance.avatars[i].GetComponent( Avatar );
+		
+		if (!avatari.isAlive()) continue;
+		
 		var iFoot : Vector3 = avatari.getFootPosInWorld();
 		var iHead : Vector3 = avatari.getHeadPosInWorld();
 		var iRadius : float = avatari.getScaledRadius();
@@ -31,7 +34,7 @@ function Update() {
 		for( var j = 0; j < GameManager.instance.avatars.Length; j++ ) {
 			var avatarj : Avatar = GameManager.instance.avatars[j].GetComponent( Avatar );
 			
-			if (avatari == avatarj) continue; // skip self
+			if (!avatarj.isAlive()) continue;
 			
 			var jFoot : Vector3 = avatarj.getFootPosInWorld();
 			var jHead : Vector3 = avatarj.getHeadPosInWorld();
@@ -88,18 +91,17 @@ function Update() {
 	if (averagePosition.y < minimumY) averagePosition.y = minimumY;
 	
 	// stop the camera from moving for tiny movements on y-axis
-	/*if( Mathf.Abs( averagePositionY_Save - averagePosition.y ) > 0.1 ) {
+	if( Mathf.Abs( averagePositionY_Save - averagePosition.y ) > 0.1 ) {
 		averagePositionY_Save = averagePosition.y;
 		largestY_Save = largestY;
 	} else {
 		averagePosition.y = averagePositionY_Save;
 		largestY = largestY_Save;
-	}*/
+	}
 	
 	if( shake > 0.0 ) {
 		averagePosition += Vector3( Random.Range( -shake, shake ), Random.Range( -shake, shake ), 0.0 );
 		shake -= Time.deltaTime;
-		Debug.Log( shake );
 	}
 	
 	var z : float = transform.position.z;
@@ -114,7 +116,7 @@ function Update() {
 		var cameraHeight : float = (dblFovTangent * (Global.sharedZ - camera.transform.position.z));
 		var cameraWidth : float = (cameraHeight * camera.aspect);
 		
-		if (cameraHeight <= (largestY + 1.0))
+		if (cameraHeight <= (largestY + 1.5))
 			z = -(largestY / dblFovTangent);
 		else
 			z = -((largestX / camera.aspect) / dblFovTangent);

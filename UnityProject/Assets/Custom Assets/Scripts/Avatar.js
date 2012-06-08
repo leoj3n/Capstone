@@ -49,6 +49,10 @@ protected var cutScenePlaying = false;
 protected var activeCutScene : CutScene;
 protected var eliminated = false;
 protected var invincible : boolean = false;
+protected var blocking = false;
+protected var special1Playing : boolean = false;
+protected var special2Playing : boolean = false;
+protected var ultimatePlaying : boolean = false;
 
 // OTHER
 protected var hitForce : Vector3; // force from a hit from another avatar
@@ -125,6 +129,9 @@ function Update() {
 		// modify delta time
 		modifiedDeltaTime = (Time.deltaTime * (timeWarpFactor + superSpeedFactor));
 		
+		// resize character controller height
+		resizeCharacterControllerHeight( Global.getSize( taRenderer ).y );
+		
 		setHorizontalMovement();
 		setVerticalMovement();
 		doMovement();
@@ -145,6 +152,9 @@ function Update() {
 		determineState();
 		determineAtlas();
 		
+		// resize character controller height
+		resizeCharacterControllerHeight( Global.getSize( taRenderer ).y );
+		
 		checkHealth();
 	}
 	
@@ -157,7 +167,16 @@ function changeHealth( hp : float ) {
 	var aliveTeamEnums : ControllerTeam[] = GameManager.instance.getAliveControllerTeamEnums();
 	if ((aliveTeamEnums.Length == 1) && (aliveTeamEnums[0] == getTeam())) return;
 	
-	health = Mathf.Clamp( (health - hp), 0.0, 100.0 );
+	// if blocking, convert 50% of health loss into power
+	if( (hp < 0.0) && blocking ) {
+		var convertedHealthLoss : float = Mathf.Abs( hp * 0.5 );
+		hp -= convertedHealthLoss;
+		changePower( convertedHealthLoss );
+	}
+	
+	Debug.Log( hp + ' . ' + blocking );
+	
+	health = Mathf.Clamp( (health + hp), 0.0, 100.0 );
 }
 
 // utility function to check if health is greater than zero
@@ -358,8 +377,9 @@ function updateShadow() {
 }
 
 // determine the state of this avatar and apply it to the texture atlas renderer
-function determineState() {	
-	var blocking : boolean = (!isMoving && (Global.getAxis( 'Vertical', boundController ) <= -0.2)) ? true : false; // block
+function determineState() {
+	var vAxis : float = Global.getAxis( 'Vertical', boundController );
+	var hAxis : float = Global.getAxis( 'Horizontal', boundController );
 	
 	// set dynamic variables to default state
 	previousState = state;
@@ -372,13 +392,14 @@ function determineState() {
 	canMove = true;
 	shadowUseTAC = false;
 	ccHeight = ccOrigHeight;
+	blocking = false;
 	
 	// joystick-activated states
 	switch( true ) {
 		case jumping:
 			state = CharacterState.Jump;
 			break;
-		case blocking:
+		case (!isMoving && (vAxis <= -0.2)):
 			state = CharacterState.Block;
 			break;
 		case !isNearlyGrounded: // not joystick-activated but needs to be here
@@ -401,10 +422,10 @@ function determineState() {
 			case Global.isButton( 'B', boundController ):
 				state = CharacterState.Attack2;
 				break;
-			case Global.isButton( 'X', boundController ):
+			case (Global.isButtonDown( 'X', boundController ) || special1Playing):
 				state = CharacterState.Special1;
 				break;
-			case Global.isButton( 'Y', boundController ):
+			case (Global.isButtonDown( 'Y', boundController ) || special2Playing):
 				state = CharacterState.Special2;
 				break;
 		}
@@ -462,7 +483,7 @@ function determineAtlas() {
 				atlas = CharacterAtlas.JumpForward;
 			break;
 		case CharacterState.Drop:
-			if (previousState == CharacterState.Drop) staticFrame = (taRenderer.getFrameCount() / 2);
+			if (previousState == state) staticFrame = (taRenderer.getFrameCount() / 2);
 			
 			if (movingBack)
 				atlas = CharacterAtlas.JumpBackward;
@@ -490,6 +511,8 @@ function determineAtlas() {
 			break;
 		case CharacterState.Block:
 			atlas = CharacterAtlas.Block;
+			blocking = true;
+			canMove = false;
 			break;
 		case CharacterState.Attack1:
 			atlas = CharacterAtlas.Attack1;
@@ -503,19 +526,37 @@ function determineAtlas() {
 			break;
 		case CharacterState.Special1:
 			atlas = CharacterAtlas.Special1;
+			loop = false;
+			canMove = canJump = false;
+			
+			if ((previousState == state) && (taRenderer.getLoopCount() == 1))
+				special1Playing = false;
+			else
+				special1Playing = true;
 			break;
 		case CharacterState.Special2:
 			atlas = CharacterAtlas.Special2;
+			loop = false;
+			canMove = canJump = false;
+			
+			if ((previousState == state) && (taRenderer.getLoopCount() == 1))
+				special2Playing = false;
+			else
+				special2Playing = true;
 			break;
 		case CharacterState.Ultimate:
 			atlas = CharacterAtlas.Ultimate;
+			loop = false;
+			canMove = canJump = false;
+			
+			if ((previousState == state) && (taRenderer.getLoopCount() == 1))
+				ultimatePlaying = false;
+			else
+				ultimatePlaying = true;
 			break;
 	}
 	
 	CharacterStateSwitch();
-	
-	// resize character controller height
-	resizeCharacterControllerHeight( ccHeight );
 	
 	// have we attacked this loop?
 	if ((taRenderer.getLoopCount() != previousLoopCount) || (previousAtlas != atlas)) attackedThisLoop = false;
@@ -579,6 +620,9 @@ function capsuleCast( dir : Vector3, dist : float, layerMask : LayerMask, offset
 	
 	return Physics.CapsuleCastAll( p1, p2, radius, dir, dist, layerMask );
 }
+function capsuleCast( dir : Vector3, dist : float, layerMask : LayerMask ) : RaycastHit[] {
+	return capsuleCast( dir, dist, layerMask, Vector3.zero );
+}
 
 // helper function
 function debugDrawCapsule( p1 : Vector3, p2 : Vector3, radius : float, color : Color, duration : float ) {
@@ -589,13 +633,10 @@ function debugDrawCapsule( p1 : Vector3, p2 : Vector3, radius : float, color : C
 	Debug.DrawLine( p2, (p2 + radiusVector), color, duration );
 	Debug.DrawLine( p2, (p2 - radiusVector), color, duration );
 }
-function capsuleCast( dir : Vector3, dist : float, layerMask : LayerMask ) : RaycastHit[] {
-	return capsuleCast( dir, dist, layerMask, Vector3.zero );
-}
 
 // utility function to try an attack (utilizes timeToAttack())
 function tryAttack( attackType : AttackType, passedVar, castType : CastType ) : RaycastHit {	
-	if (!timeToAttack( attackType, passedVar )) return;
+	if (!timeToAttack( attackType, passedVar )) return; // tried, and failed because it is not time yet
 	
 	var sizeOfGeometry : Vector3 = Global.getSize( textureAtlasCube.gameObject );
 	var dist : float = (Mathf.Abs( getScaledCenter().x ) + sizeOfGeometry.x + baseOffset.x + offset.x);
@@ -607,7 +648,11 @@ function tryAttack( attackType : AttackType, passedVar, castType : CastType ) : 
 			hits = Physics.RaycastAll( getCenterInWorld(), dir, dist, GameManager.instance.avatarOnlyLayerMask );
 			break;
 		case CastType.Capsule:
-			hits = capsuleCast( dir, dist, GameManager.instance.avatarOnlyLayerMask );
+			var offset : float = 0.5;
+			hits = capsuleCast( dir, (dist + offset), GameManager.instance.avatarOnlyLayerMask, Vector3( (-offset * facing), 0.0, 0.0 ) );
+			
+			if (hits.Length == 0) // no hit? try casting upwards a bit...
+				hits = capsuleCast( (dir + Vector3.up), 1.0, GameManager.instance.avatarOnlyLayerMask, Vector3( (-offset * facing), -0.5, 0.0 ) );
 			break;
 	}
 	
@@ -615,13 +660,13 @@ function tryAttack( attackType : AttackType, passedVar, castType : CastType ) : 
 		for( var hit : RaycastHit in hits ) {
 			if (onSameTeam( hit.transform.gameObject )) continue; // skip if on same team (includes self)
 			
-			Debug.DrawRay( getCenterInWorld(), (dir * dist), Color.red, 0.05 );
+			//Debug.DrawRay( getCenterInWorld(), (dir * dist), Color.red, 0.05 );
 			return hit; // return first non-self hit
 		}
 		
 		audioPlay( Random.Range( 0, 2 ) ? CharacterSound.AttackMissA : CharacterSound.AttackMissB );
 		
-		Debug.DrawRay( getCenterInWorld(), (dir * dist), Color.blue, 0.05 );
+		//Debug.DrawRay( getCenterInWorld(), (dir * dist), Color.blue, 0.05 );
 	}
 }
 
@@ -737,7 +782,7 @@ function addExplosionForce( pos : Vector3, radius : float, force : float, dampin
 	var explForce : Vector3 = (force * dir * percentage);
 	var modifier : float = (force * percentage / damping);
 	if (characterController.isGrounded) explForce.y = Mathf.Max( explForce.y, (modifier / 2) );
-	changeHealth( modifier );
+	changeHealth( -modifier );
 	
 	// apply explosion force via co-routine
 	var initial : boolean = true;
@@ -759,7 +804,7 @@ function addHitForce( pos : Vector3, force : float, damping : float, hp : float 
 	dir.z = 0.0;
 	
 	var hForce : Vector3 = (force * dir);
-	changeHealth( hp );
+	changeHealth( -hp );
 	
 	audioPlay( Random.Range( 0, 2 ) ? CharacterSound.HitA : CharacterSound.HitB );
 	
