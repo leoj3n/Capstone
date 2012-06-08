@@ -73,13 +73,13 @@ class LevelSelectScene extends SceneManager {
 		// continue to current level or go back to Character Select
 		switch( true ) {
 			case Global.isButtonDown( 'A', GameManager.instance.readyControllers ):
-				GameManager.instance.loadLevel( GameManager.instance.level );
+				GameManager.instance.loadLevel( GameManager.instance.level, true );
 				break;
 			case Global.isButtonDown( 'B', GameManager.instance.readyControllers ):
-				Application.LoadLevel( SceneEnum.CharacterSelect );
+				GameManager.instance.loadScene( SceneEnum.CharacterSelect );
 				break;
 			case Global.isButtonDown( 'Back', GameManager.instance.readyControllers ):
-				Application.LoadLevel( SceneEnum.Start );
+				GameManager.instance.loadScene( SceneEnum.Start );
 				break;
 		}
 	}

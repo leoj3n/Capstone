@@ -5,13 +5,13 @@ class ScoreboardScene extends SceneManager {
 	function Update() {
 		switch( true ) {
 			case Global.isButtonDown( 'A', GameManager.instance.readyControllers ):
-				GameManager.instance.loadLevel( GameManager.instance.level ); // replay
+				GameManager.instance.loadLevel( GameManager.instance.level, true ); // replay
 				break;
 			case Global.isButtonDown( 'B', GameManager.instance.readyControllers ):
-				Application.LoadLevel( SceneEnum.LevelSelect ); // choose a new level
+				GameManager.instance.loadScene( SceneEnum.LevelSelect ); // choose a new level
 				break;
 			case Global.isButtonDown( 'Back', GameManager.instance.readyControllers ):
-				Application.LoadLevel( SceneEnum.Start ); // go back to start
+				GameManager.instance.loadScene( SceneEnum.Start ); // go back to start
 				break;
 		}
 	}

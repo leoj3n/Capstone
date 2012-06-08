@@ -98,6 +98,7 @@ class AudioSourceManaged {
 	public var pitchDuration : float;
 	public var targetVolume : float;
 	public var volumeDuration : float;
+	public var doNotDestroy : boolean;
 	
 	private var origPitch : float;
 	private var origVolume : float;

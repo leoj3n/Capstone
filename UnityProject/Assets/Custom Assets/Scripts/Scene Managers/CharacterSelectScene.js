@@ -87,7 +87,7 @@ class CharacterSelectScene extends SceneManager {
 					break;
 				case Global.isButtonDown( 'B', GameManager.instance.readyControllers ):
 					if( selectingController == 0 ) {
-						Application.LoadLevel( SceneEnum.Start );
+						GameManager.instance.loadScene( SceneEnum.Start );
 					} else {
 						selectingController--;
 						newSelect();
@@ -103,7 +103,7 @@ class CharacterSelectScene extends SceneManager {
 			
 			// continue to level select if no more controllers need to select a character
 			if ( selectingController == GameManager.instance.readyControllers.Length ) {
-				Application.LoadLevel( SceneEnum.LevelSelect );
+				GameManager.instance.loadScene( SceneEnum.LevelSelect );
 			} else { // otherwise let the next controller select a character
 				newSelect();
 			}

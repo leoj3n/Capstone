@@ -122,7 +122,7 @@ class StartScene extends SceneManager {
 						
 						GUILayout.Box( 'Character select in ' + second );
 						
-						if (seconds == 0) Application.LoadLevel( SceneEnum.CharacterSelect );
+						if (seconds == 0) GameManager.instance.loadScene( SceneEnum.CharacterSelect );
 					}
 				} else {
 					countdownStartTime = 0.0;

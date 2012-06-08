@@ -56,7 +56,6 @@ class GameManager extends MonoBehaviour {
 	// private variables not accessible outside of this class
 	private var audioSources : Hashtable;
 	private var roundResults : ControllerTeam[];
-	private var resetRound : boolean = false;
 	private var audioListener : AudioListener;
 	
 	// MAIN FUNCTIONS
@@ -71,12 +70,11 @@ class GameManager extends MonoBehaviour {
 		instance = null; // unset singleton
 	}
 	
-	function OnLevelWasLoaded( level : int ) {
-		if( resetRound ) {
-			round = 0; // set the round back to zero
-			nullifyRoundResults();
-			resetRound = false;
-		}
+	// this gets called when a new level is being loaded
+	function OnDisable() {
+		// do any necessary cleanup here
+		audioUnbindAll();
+		audioResetAll();
 	}
 	
 	function Update() {
@@ -108,16 +106,16 @@ class GameManager extends MonoBehaviour {
 		// setup by-name audio
 		audioSources = new Hashtable();
 		for (var clip : AudioClip in soundsBoundByName)
-			GameManager.instance.audioBind( clip.name, clip );
+			GameManager.instance.audioBind( clip.name, clip, true );
 			
 		// setup round results
 		roundResults = new ControllerTeam[3]; // there are at most 3 rounds
-		nullifyRoundResults();
+		clearRoundResults();
 		
 		audioListener = Camera.main.GetComponent( AudioListener );
 	}
 	
-	private function nullifyRoundResults() {
+	private function clearRoundResults() {
 		// set to a "nothing" value
 		roundResults[0] = roundResults[1] = roundResults[2] = ControllerTeam.Count;
 	}
@@ -143,20 +141,17 @@ class GameManager extends MonoBehaviour {
 	}
 	
 	// utility function for loading rounds
-	public function nextRoundOrScoreboard() {
-		// do any necessary before level change cleanup
-		GameManager.instance.audioResetAll();
-	
+	public function nextRoundOrScoreboard() {	
 		// set last living team as winner
 		var aliveTeamEnums : ControllerTeam[] = GameManager.instance.getAliveControllerTeamEnums();
 		roundResults[round] = aliveTeamEnums[0];
 		
 		// if last round or same team won first two in a row
 		if( (round == 2) || (roundResults[0] == roundResults[1]) ) {
-			Application.LoadLevel( SceneEnum.Scoreboard ); // end
+			loadScene( SceneEnum.Scoreboard ); // end
 		} else {
 			round++; // continue to the next round
-			Application.LoadLevel( Application.loadedLevel ); // reload the level
+			loadLevel( level ); // reload the level
 		}
 	}
 	
@@ -194,12 +189,23 @@ class GameManager extends MonoBehaviour {
 		return teamArray.ToBuiltin( ControllerTeam );
 	}
 	
-	// utility function for loading levels that need to have rounds
-	public function loadLevel( id : LevelEnum) {
-		// SceneEnum.Count is used to offset LevelEnum
-		Application.LoadLevel( parseInt( SceneEnum.Count ) + id );
+	// utility function for loading levels
+	public function loadLevel( id : LevelEnum, resetRounds : boolean ) {
+		if( resetRounds ) {
+			round = 0; // set the round back to zero
+			clearRoundResults();
+		}
 		
-		resetRound = true;
+		// SceneEnum.Count is used to offset LevelEnum
+		loadScene( parseInt( SceneEnum.Count ) + parseInt( id ) );
+	}
+	public function loadLevel( id : LevelEnum ) {
+		loadLevel( id, false );
+	}
+	
+	// utility function for loading scenes
+	public function loadScene( id : SceneEnum ) {		
+		Application.LoadLevel( parseInt( id ) );
 	}
 	
 	// utility function for instantiating avatars
@@ -268,7 +274,7 @@ class GameManager extends MonoBehaviour {
 			if (avatar.GetComponent( Avatar ).isPlayingCutScene()) return true;
 		}
 		
-		return false;
+		return audioIsPlaying( 'Countdown' );
 	}
 	
 	// utility function to ignore collisions between characters on the same team
@@ -301,7 +307,7 @@ class GameManager extends MonoBehaviour {
 	}
 	
 	// utility function for binding audio
-	public function audioBind( uid, clip : AudioClip ) : AudioSourceManaged {		
+	public function audioBind( uid, clip : AudioClip, doNotDestroy : boolean ) : AudioSourceManaged {
 		if( audioSources == null ) {
 			Debug.LogWarning( 'GameManager was asked to bind ' + clip.name + ' before audioSources was newed.' );
 			return;
@@ -318,8 +324,12 @@ class GameManager extends MonoBehaviour {
 		
 		a.audioSource.playOnAwake = false;
 		a.audioSource.clip = clip;
+		a.doNotDestroy = doNotDestroy;
 		
 		return a;
+	}
+	public function audioBind( uid, clip : AudioClip ) : AudioSourceManaged {
+		return audioBind( uid, clip, false );
 	}
 	
 	// utility function for stopping all audio except background
@@ -350,8 +360,17 @@ class GameManager extends MonoBehaviour {
 	}
 	
 	// utility function for unbinding audio
-	public function audioUnbind( uid ) {		
-		if (audioStop( uid )) audioSources.Remove( uid );
+	public function audioUnbind( uid ) {
+		if( audioStop( uid ) && !audioSources[uid].doNotDestroy ) {
+			Destroy( audioSources[uid].audioSource );
+			audioSources.Remove( uid );
+		}
+	}
+	
+	// utility function for unbinding all temporary audio
+	public function audioUnbindAll() {
+		var audioSourcesClone : Hashtable = audioSources.Clone();
+		for (var key in audioSourcesClone.Keys) audioUnbind( key );
 	}
 	
 	// utility function for playing audio

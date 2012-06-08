@@ -61,7 +61,7 @@ private var modifiedDeltaTime : float = 0.0;
 protected var timeWarpFactor : float = 1.0;
 
 // HEALTH AND GUAGE
-protected var health : float = 100.0;
+protected var health : float = 5.0;
 protected var power : float = 0.0;
 
 // JUMPING
@@ -312,12 +312,12 @@ function setVerticalMovement() {
 // move the character controller
 function doMovement() {
 	if( GameManager.instance.cutScenePlaying() ) {
-		characterController.Move( modifiedDeltaTime * (Vector3( 0, verticalSpeed, 0 ) + inAirVelocity) );
-		return; // only do gravity during cutscenes
+		// only do gravity during cutscenes
+		characterController.Move( modifiedDeltaTime * Vector3( 0, verticalSpeed, 0 ) );
+	} else {
+		characterController.Move( modifiedDeltaTime * 
+			((moveDirection * moveSpeed) + Vector3( 0, verticalSpeed, 0 ) + inAirVelocity + hitForce + explosionForce) );
 	}
-	
-	characterController.Move( modifiedDeltaTime * 
-		((moveDirection * moveSpeed) + Vector3( 0, verticalSpeed, 0 ) + inAirVelocity + hitForce + explosionForce) );
 	
 	if( characterController.isGrounded ) {
 		inAirVelocity = Vector3.zero;

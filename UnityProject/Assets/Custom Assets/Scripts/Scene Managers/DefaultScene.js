@@ -4,19 +4,17 @@ class DefaultScene extends SceneManager {
 	public var ambientNoiseVolume : float;
 
 	private var countDownSeconds : int = 3;
-	private var countdownStartTime : float;
+	private var countdownStartTime : float = 0.0;
 	private var timeBetweenPM : float = 10.0;
 	private var yOffsetPM : float = 10.0;
 	private var lastSpawnTimePM : float;
 	private var initial : boolean = true;
 	private var aliveTeamEnums : ControllerTeam[];
+	private var playedOnce : boolean = false;
 	
 	function SceneLoaded() {
 		GameManager.instance.instantiateAvatars();
 		GameManager.instance.setupTeamPhysics();
-		
-		countdownStartTime = Time.time;
-		GameManager.instance.audioPlay( 'Countdown' );
 		
 		GameManager.instance.audioFadeInAndLoop( 'ambientNoise', ambientNoise, ambientNoiseVolume, fadeInBackgroundMusic );
 	}
@@ -31,11 +29,11 @@ class DefaultScene extends SceneManager {
 			switch( true ) {
 				case Global.isButtonDown( 'B', GameManager.instance.readyControllers ):
 					GameManager.instance.togglePause();
-					Application.LoadLevel( SceneEnum.LevelSelect );
+					GameManager.instance.loadScene( SceneEnum.LevelSelect );
 					break;
 				case Global.isButtonDown( 'Back', GameManager.instance.readyControllers ):
 					GameManager.instance.togglePause();
-					Application.LoadLevel( SceneEnum.Start );
+					GameManager.instance.loadScene( SceneEnum.Start );
 					break;
 			}
 		} else {
@@ -70,6 +68,8 @@ class DefaultScene extends SceneManager {
 	}
 	
 	function OnGUI() {
+		if (!GameManager.instance) return;
+		
 		GUI.skin = GameManager.instance.customSkin;
 		
 		var halfScreenWidth : float = (Screen.width / 2.0);
@@ -124,10 +124,25 @@ class DefaultScene extends SceneManager {
 		var halfHeight : float = (height / 2);
 		
 		if( GameManager.instance.cutScenePlaying() ) {
-			var seconds : int = ((Mathf.CeilToInt( countDownSeconds - (Time.time - countdownStartTime) ) % 60) - 1);
-			if (seconds >= 0)
-				GUI.DrawTexture( Rect( (halfScreenWidth - halfWidth), (halfScreenHeight - halfHeight), width, height ), 
-					GameManager.instance.countdownTextures[seconds] );
+			if( !playedOnce ) {
+				GameManager.instance.audioPlay( 'Round' + (GameManager.instance.round + 1) );
+				playedOnce = true;
+			}
+			
+			if( !GameManager.instance.audioIsPlaying( 'Round1' ) && 
+				!GameManager.instance.audioIsPlaying( 'Round2' ) &&
+				!GameManager.instance.audioIsPlaying( 'Round3' ) ) {
+				
+				if( !countdownStartTime ) {
+					countdownStartTime = Time.time;
+					GameManager.instance.audioPlay( 'Countdown' );
+				}
+				
+				var seconds : int = ((Mathf.CeilToInt( countDownSeconds - (Time.time - countdownStartTime) ) % 60) - 1);
+				if (seconds >= 0)
+					GUI.DrawTexture( Rect( (halfScreenWidth - halfWidth), (halfScreenHeight - halfHeight), width, height ), 
+						GameManager.instance.countdownTextures[seconds] );
+			}
 		}
 		
 		// game paused
