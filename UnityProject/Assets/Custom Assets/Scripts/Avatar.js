@@ -151,7 +151,7 @@ function Update() {
 		// resize character controller height
 		resizeCharacterControllerHeight( Global.getSize( taRenderer ).y );
 		
-		checkHealth();
+		checkHealthAndPower();
 	}
 	
 	shadowProjector.enabled = isControllable;
@@ -202,7 +202,7 @@ function changePower( amount : float ) {
 }
 
 // utility function to do things based on character health
-function checkHealth() {	
+function checkHealthAndPower() {	
 	if( !isAlive() ) {
 		if( !eliminated && !audioIsPlaying( CharacterSound.AnnouncerName ) ) {
 			GameManager.instance.audioPlay( 'Eliminated' );
@@ -213,6 +213,10 @@ function checkHealth() {
 		
 		if ((health < 10.0) && !GameManager.instance.cutScenePlaying())
 			GameManager.instance.audioPlay( 'Heartbeat' );
+			
+		// health and power regeneration over time
+		changePower( modifiedDeltaTime );
+		//changeHealth( modifiedDeltaTime );
 	}
 }
 

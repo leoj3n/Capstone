@@ -20,7 +20,7 @@ class ZipperFace extends Avatar {
 				}
 				break;
 			case CharacterState.Special1:
-				//canMove = canJump = false;
+				canMove = canJump = false;
 				//updatePressedOnce( state ); // simply call this to make this state a "press once" state
 				// currently throws stars until animation ends or power runs out
 				
