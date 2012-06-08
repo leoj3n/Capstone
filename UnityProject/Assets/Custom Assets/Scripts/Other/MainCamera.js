@@ -85,7 +85,7 @@ function Update() {
 		
 	Debug.DrawRay( topRight, diag, Color.cyan );
 	
-	//if (averagePosition.y < minimumY) averagePosition.y = minimumY;
+	if (averagePosition.y < minimumY) averagePosition.y = minimumY;
 	
 	// stop the camera from moving for tiny movements on y-axis
 	/*if( Mathf.Abs( averagePositionY_Save - averagePosition.y ) > 0.1 ) {
@@ -113,10 +113,12 @@ function Update() {
 		var cameraHeight : float = (dblFovTangent * (Global.sharedZ - camera.transform.position.z));
 		var cameraWidth : float = (cameraHeight * camera.aspect);
 		
-		if (cameraHeight < largestY)
+		if (cameraHeight <= (largestY + 1.0))
 			z = -(largestY / dblFovTangent);
 		else
 			z = -((largestX / camera.aspect) / dblFovTangent);
+		
+		z -= padding;
 			
 		//z = -(((largestX / camera.aspect) + largestY) / dblFovTangent);
 		//z = -(largestY / dblFovTangent);
@@ -128,10 +130,10 @@ function Update() {
 		if (z > minSizeCorrect) z = minSizeCorrect;
 	}
 	
-	if( swayAmount > 0.0 ) {
-		var temp : float = (Mathf.PingPong( (Time.time * 0.25), swayAmount ) - (swayAmount / 2.0)); // eg: -0.5 to 0.5 if swayAmount is 1.0
-		sway = Vector3.Slerp( sway, Vector3( 0.0, (temp / 2.0), temp ), t );
-	}
+	//if( swayAmount > 0.0 ) {
+	//	var temp : float = (Mathf.PingPong( (Time.time * 0.25), swayAmount ) - (swayAmount / 2.0)); // eg: -0.5 to 0.5 if swayAmount is 1.0
+	//	sway = Vector3.Slerp( sway, Vector3( 0.0, (temp / 2.0), temp ), t );
+	//}
 	
 	transform.position = Vector3.SmoothDamp( transform.position, (sway + Vector3( averagePosition.x, averagePosition.y, z )), cameraVelocity, t );
 	transform.rotation = Quaternion.Slerp( transform.rotation, Quaternion.LookRotation( averagePosition - transform.position ), t );
