@@ -1,5 +1,5 @@
 
-class ScoreboardScene extends SceneManager {	
+class ScoreboardScene extends SceneManager {
 	function SceneLoaded() {}
 	
 	function Update() {

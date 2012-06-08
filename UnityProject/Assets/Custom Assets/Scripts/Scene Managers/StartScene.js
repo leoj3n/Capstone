@@ -1,5 +1,5 @@
 
-class StartScene extends SceneManager {	
+class StartScene extends SceneManager {
 	public var backgroundImage : Texture2D;
 	public var countDownSeconds : int = 3;
 	public var buttonTimeout : float = 0.3;

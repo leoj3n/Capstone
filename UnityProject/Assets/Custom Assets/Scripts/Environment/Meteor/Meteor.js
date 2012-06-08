@@ -77,7 +77,7 @@ function OnCollisionEnter( collision : Collision ) {
 	
 	// do the following if out of health OR if other object has a tag (any tag at all)
 	if( !dead && ((health < 0) || !collision.collider.CompareTag( 'Untagged' )) ) {
-		Camera.main.SendMessage( 'AddShake', 0.5 );
+		Camera.main.SendMessage( 'AddShake', 1.2 );
 		GameManager.instance.audioPlay( 'meteorExplode' );
 		
 		var a : AudioSource = GameManager.instance.audioPlay( 'meteorDebris', true, true, maxCrackleVolume ).audioSource;

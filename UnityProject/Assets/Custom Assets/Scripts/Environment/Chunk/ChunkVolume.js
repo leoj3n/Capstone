@@ -36,7 +36,7 @@ function Start() {
 						Vector3( (xBegin + i * chunkSize.x), (yBegin + j * chunkSize.y), (zBegin + k * chunkSize.z) ), 
 						Quaternion.identity );
 					
-					 // do additional scaling
+					// do additional scaling
 					chunk.transform.localScale = Vector3.Scale( chunk.transform.localScale, chunkScaleVector );
 					
 					// set this volume as parent
