@@ -26,8 +26,6 @@ function OnGUI() {
 	if( (point.y > Screen.height) ||
 		((point.x < 0.0) || (point.x > Screen.width)) ) {
 		
-		Debug.Log( point.y );
-		
 		var rect : Rect = Rect( Mathf.Clamp( point.x, -21.0, (Screen.width - 21.0) ), 
 			Mathf.Max( 20.0, (Screen.height - point.y) ), 42.0, 60.0 );
 		GUI.DrawTexture( rect, alertTexture );

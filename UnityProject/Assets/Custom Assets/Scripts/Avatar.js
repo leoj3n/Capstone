@@ -694,8 +694,14 @@ function getCenterInWorld() : Vector3 {
 	return (transform.position + getScaledCenter());
 }
 
+// utility function to get foot position in world
 function getFootPosInWorld() : Vector3 {
 	return Vector3( getCenterInWorld().x, (getCenterInWorld().y - (getScaledHeight() / 2.0)), getCenterInWorld().z );
+}
+
+// utility function to get head position in world
+function getHeadPosInWorld() : Vector3 {
+	return Vector3( getCenterInWorld().x, (getCenterInWorld().y + (getScaledHeight() / 2.0)), getCenterInWorld().z );
 }
 
 // utility function to get the scaled center of the character controller

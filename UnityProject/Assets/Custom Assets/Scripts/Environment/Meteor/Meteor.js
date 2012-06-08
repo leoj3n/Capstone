@@ -116,5 +116,5 @@ function destroySelf() {
 }
 
 function OutOfBounds() {
-	Destroy( gameObject );
+	destroySelf();
 }

@@ -23,36 +23,75 @@ function Update() {
 	t = (damping * Time.deltaTime);
 	
 	for( var i = 0; i < GameManager.instance.avatars.Length; i++ ) {
-		var iPos : Vector3 = GameManager.instance.avatars[i].GetComponent( Avatar ).getCenterInWorld();
-		
-		averagePosition += iPos;
+		var avatari : Avatar = GameManager.instance.avatars[i].GetComponent( Avatar );
+		var iFoot : Vector3 = avatari.getFootPosInWorld();
+		var iHead : Vector3 = avatari.getHeadPosInWorld();
+		var iRadius : float = avatari.getScaledRadius();
 		
 		for( var j = 0; j < GameManager.instance.avatars.Length; j++ ) {
-			var jPos : Vector3 = GameManager.instance.avatars[j].GetComponent( Avatar ).getCenterInWorld();
+			var avatarj : Avatar = GameManager.instance.avatars[j].GetComponent( Avatar );
+			
+			if (avatari == avatarj) continue; // skip self
+			
+			var jFoot : Vector3 = avatarj.getFootPosInWorld();
+			var jHead : Vector3 = avatarj.getHeadPosInWorld();
+			var jRadius : float = avatarj.getScaledRadius();
+			
+			var iPos : Vector3;
+			var jPos : Vector3;
+			
+			if( iHead.y > jHead.y ) {
+				iPos = iHead;
+				jPos = jFoot;
+			} else {
+				iPos = iFoot;
+				jPos = jHead;
+			}
+			
+			if( iPos.x > jPos.x ) {
+				iPos.x += iRadius;
+				jPos.x -= jRadius;
+			} else {
+				iPos.x -= iRadius;
+				jPos.x += jRadius;
+			}
 			
 			var distance : float = Vector3.Distance( iPos, jPos );
 			if (distance > largestDistance) largestDistance = distance;
 			
 			distance = Vector2.Distance( Vector2( iPos.x, 0 ), Vector2( jPos.x, 0 ) );
-			if (distance > largestX) largestX = distance;
+			if( distance > largestX ) {
+				largestX = distance;
+				averagePosition.x = ((iPos.x + jPos.x) / 2.0);
+			}
 			
 			distance = Vector2.Distance( Vector2( 0, iPos.y ), Vector2( 0, jPos.y ) );
-			if (distance > largestY) largestY = distance;
+			if( distance > largestY ) {
+				largestY = distance;
+				averagePosition.y = ((iPos.y + jPos.y) / 2.0);
+			}
 		}
 	}
 	
-	averagePosition /= GameManager.instance.avatars.Length;
+	Debug.DrawLine( Vector3( averagePosition.x, (averagePosition.y - (largestY * 0.5)), 0.0 ),
+		Vector3( averagePosition.x, (averagePosition.y + (largestY * 0.5)), 0.0 ), Color.magenta );
+		
+	Debug.DrawLine( Vector3( (averagePosition.x - (largestX * 0.5)), averagePosition.y, 0.0 ),
+		Vector3( (averagePosition.x + (largestX * 0.5)), averagePosition.y, 0.0 ), Color.magenta );
+		
+	Debug.DrawLine( Vector3( (averagePosition.x - (largestX * 0.5)), averagePosition.y, 0.0 ),
+		Vector3( (averagePosition.x + (largestX * 0.5)), averagePosition.y, 0.0 ), Color.magenta );
 	
-	if (averagePosition.y < minimumY) averagePosition.y = minimumY;
+	//if (averagePosition.y < minimumY) averagePosition.y = minimumY;
 	
 	// stop the camera from moving for tiny movements on y-axis
-	if( Mathf.Abs( averagePositionY_Save - averagePosition.y ) > 0.1 ) {
+	/*if( Mathf.Abs( averagePositionY_Save - averagePosition.y ) > 0.1 ) {
 		averagePositionY_Save = averagePosition.y;
 		largestY_Save = largestY;
 	} else {
 		averagePosition.y = averagePositionY_Save;
 		largestY = largestY_Save;
-	}
+	}*/
 	
 	if( shake > 0 ) {
 		averagePosition += Vector3( Random.Range( -shake, shake ), Random.Range( -shake, shake ), 0.0 );
@@ -66,32 +105,33 @@ function Update() {
 		if (orthoSize < largestY) orthoSize = largestY;
 		if (orthoSize < minimumSize) orthoSize = minimumSize;
 		camera.orthographicSize = Mathf.Lerp( camera.orthographicSize, orthoSize, t );
-	} else {		
-		var height : float = (Mathf.Tan( camera.fieldOfView * 0.5 * Mathf.Deg2Rad ) * (Global.sharedZ - camera.transform.position.z) * 2);
-		var width : float = height * camera.aspect;
+	} else {
+		var dblFovTangent : float = (Mathf.Tan( camera.fieldOfView * 0.5 * Mathf.Deg2Rad ) * 2.0);
+		var height : float = (dblFovTangent * (Global.sharedZ - camera.transform.position.z));
+		var width : float = (height * camera.aspect);
 		
-		largestX += (padding * 2);
-		largestY += (padding * 2);
-		
-		if (height < largestY)
-			z = -(largestY / (Mathf.Tan( camera.fieldOfView * 0.5 * Mathf.Deg2Rad ) * 2));
+		/*if (height < largestY)
+			z = -(largestY / dblFovTangent);
 		else
-			z = -((largestX / camera.aspect) / (Mathf.Tan( camera.fieldOfView * 0.5 * Mathf.Deg2Rad ) * 2));
-				
-		if (z > (minimumSize * -2.5)) z = (minimumSize * -2.5);
+			z = -((largestX / camera.aspect) / dblFovTangent);*/
+			
+		//z = -(((largestX / camera.aspect) + largestY) / dblFovTangent);
+		//z = -(largestY / dblFovTangent);
+		
+		Debug.Log( -(largestY / dblFovTangent) + ' ... ' + -((largestX / camera.aspect) / dblFovTangent) );
+		
+		//var minSizeCorrect : float = (minimumSize * -2.5);
+		//if (z > minSizeCorrect) z = Mathf.Lerp( z, minSizeCorrect, t );
 	}
 	
 	// TODO: this needs some work.
 	if( swayAmount > 0.0 ) {
 		var temp : float = (Mathf.PingPong( (Time.time * 0.25), swayAmount ) - (swayAmount / 2.0)); // eg: -0.5 to 0.5 for swayAmount of 1.0
-		sway = Vector3.Lerp( sway, Vector3( 0.0, (temp / 2.0), temp ), Time.deltaTime );
+		sway = Vector3.Slerp( sway, Vector3( 0.0, (temp / 2.0), temp ), t );
 	}
 	
-	//transform.position = Vector3.Lerp( transform.position, Vector3( averagePosition.x, averagePosition.y, z ), t );	
-	transform.position = Vector3.SmoothDamp( transform.position, (sway + Vector3( averagePosition.x, averagePosition.y, z )), cameraVelocity, 0.3 );
-	//transform.LookAt( averagePosition );
-	var rotation : Quaternion = Quaternion.LookRotation( averagePosition - transform.position );
-	transform.rotation = Quaternion.Slerp( transform.rotation, rotation, (Time.deltaTime * damping) );
+	transform.position = Vector3.SmoothDamp( transform.position, (sway + Vector3( averagePosition.x, averagePosition.y, z )), cameraVelocity, t );
+	transform.rotation = Quaternion.Slerp( transform.rotation, Quaternion.LookRotation( averagePosition - transform.position ), t );
 }
 
 function AddShake( amount : float ) {

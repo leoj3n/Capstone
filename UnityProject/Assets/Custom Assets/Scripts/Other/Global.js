@@ -187,6 +187,9 @@ class SceneManager extends MonoBehaviour {
 				GameManager.instance.controllers[1].team = ControllerTeam.Red;
 				
 				//GameManager.instance.controllers[2].state = ControllerState.Ready;
+				//GameManager.instance.controllers[2].team = ControllerTeam.Red;
+				//GameManager.instance.controllers[3].state = ControllerState.Ready;
+				//GameManager.instance.controllers[3].team = ControllerTeam.Orange;
 			}
 			
 			// simulate character select
@@ -195,6 +198,7 @@ class SceneManager extends MonoBehaviour {
 				GameManager.instance.controllers[1].character = CharacterEnum.BlackMagic;
 				
 				//GameManager.instance.controllers[2].character = CharacterEnum.BlackMagic;
+				//GameManager.instance.controllers[3].character = CharacterEnum.Dan;
 			}
 			
 			// simulate level select

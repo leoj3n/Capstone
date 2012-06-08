@@ -7,7 +7,7 @@ class TimeWarp extends Modifier {
 		if( fadeEmitters.getTimeRemaining() < halfDuration )
 			warpFactor = (1.0 - warpFactor); // reverse direction of halfway through
 		
-		GameManager.instance.audioFadeAllToPitch( warpFactor, 1.0 );
+		GameManager.instance.audioFadeAllToPitch( Mathf.Clamp01( warpFactor + 0.3 ), 1.0 );
 		applyTimeWarp( warpFactor * warpFactor * warpFactor );
 	}
 	
