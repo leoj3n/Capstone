@@ -63,8 +63,11 @@ function Update() {
 
 function OnGUI() {
 	var point = Camera.main.WorldToScreenPoint( transform.position );
-	if( point.y > Screen.height ) {
-		var rect : Rect = Rect( point.x, 20.0, 60.0, 60.0 );
+	if( ((point.y > Screen.height) && (point.y < (Screen.height * 2.0))) ||
+		((point.x < 0.0) || (point.x > Screen.width)) ) {
+		
+		var rect : Rect = Rect( Mathf.Clamp( point.x, Mathf.Max( 20.0, (Screen.height - point.y)), 
+			(Screen.width - 20.0) ), 20.0, 60.0, 60.0 );
 		GUI.DrawTexture( rect, hazardTexture );
 	}
 }

@@ -61,8 +61,8 @@ private var modifiedDeltaTime : float = 0.0;
 protected var timeWarpFactor : float = 1.0;
 protected var superSpeedFactor : float = 0.0;
 
-// HEALTH AND GUAGE
-protected var health : float = 5.0;
+// HEALTH AND POWER
+protected var health : float = 100.0;
 protected var power : float = 0.0;
 
 // JUMPING
