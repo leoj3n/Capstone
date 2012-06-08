@@ -190,8 +190,8 @@ class SceneManager extends MonoBehaviour {
 				GameManager.instance.controllers[1].state = ControllerState.Ready;
 				GameManager.instance.controllers[1].team = ControllerTeam.Red;
 				
-				GameManager.instance.controllers[2].state = ControllerState.Ready;
-				GameManager.instance.controllers[2].team = ControllerTeam.Red;
+				//GameManager.instance.controllers[2].state = ControllerState.Ready;
+				//GameManager.instance.controllers[2].team = ControllerTeam.Red;
 				//GameManager.instance.controllers[3].state = ControllerState.Ready;
 				//GameManager.instance.controllers[3].team = ControllerTeam.Orange;
 			}
@@ -201,7 +201,7 @@ class SceneManager extends MonoBehaviour {
 				GameManager.instance.controllers[0].character = CharacterEnum.ZipperFace;
 				GameManager.instance.controllers[1].character = CharacterEnum.ZipperFace;
 				
-				GameManager.instance.controllers[2].character = CharacterEnum.ZipperFace;
+				//GameManager.instance.controllers[2].character = CharacterEnum.ZipperFace;
 				//GameManager.instance.controllers[3].character = CharacterEnum.Dan;
 			}
 			
