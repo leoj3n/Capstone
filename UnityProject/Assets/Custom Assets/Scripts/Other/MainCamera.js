@@ -128,7 +128,7 @@ function Update() {
 		if (z > minSizeCorrect) z = minSizeCorrect;
 	}
 	
-	if( swayAmount > 900.0 ) {
+	if( swayAmount > 0.0 ) {
 		var temp : float = (Mathf.PingPong( (Time.time * 0.25), swayAmount ) - (swayAmount / 2.0)); // eg: -0.5 to 0.5 if swayAmount is 1.0
 		sway = Vector3.Slerp( sway, Vector3( 0.0, (temp / 2.0), temp ), t );
 	}

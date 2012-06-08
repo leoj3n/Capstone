@@ -312,7 +312,7 @@ class GameManager extends MonoBehaviour {
 		audioPlay( uid, fade, true, volume ); // force if fading in
 		if( fade ) {
 			a.SetVolume( 0.0 );
-			audioFadeToVolume( uid, volume, 3.0 );
+			audioFadeToVolume( uid, volume, 30.0 );
 		}
 	}
 	

@@ -556,7 +556,7 @@ function capsuleCast( dir : Vector3, dist : float, layerMask : LayerMask, offset
 	var p1 : Vector3;
 	var p2 : Vector3;
 	var center : Vector3;
-	var radius : float = getScaledRadius();
+	var radius : float = (getScaledRadius() * 1.3); // expanding the radius a bit works best
 	var halfHeight : float = (getScaledHeight() * 0.5);
 	p1 = p2 = (getCenterInWorld() + offset);
 	p1.y += halfHeight;
@@ -788,8 +788,10 @@ function OnControllerColliderHit( hit : ControllerColliderHit ) {
 		
 		if ((body == null) || body.isKinematic) return;
 		
+		var upwardsBias : Vector3 = Vector3( 0.0, Mathf.Abs( hit.moveDirection.y ), 0.0 );
+		
 		body.velocity = (Mathf.Max( 2.5, ((hitForce.magnitude + explosionForce.magnitude) / 2.0) ) * 
-			(hit.moveDirection + (hit.moveDirection / body.mass)));
+			(hit.moveDirection + (hit.moveDirection / body.mass) + upwardsBias));
 	}
 }
 
