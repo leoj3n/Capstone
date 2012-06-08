@@ -20,6 +20,8 @@ class Modifier extends MonoBehaviour {
 			transform.localScale = Vector3( doubleDiameter, owner.getScaledHeight(), doubleDiameter );
 			
 			ApplyModifier(); // apply
+			
+			if (GameManager.instance.cutScenePlaying()) Destroy( gameObject );
 		}
 	}
 	

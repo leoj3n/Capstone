@@ -12,7 +12,7 @@ function Awake() {
 		if (modifier > (modifierPrefabs.Length - 1)) modifier = 0;
 	}
 	
-	//modifier = 0; // debug
+	//modifier = 2; // debug
 	
 	GameManager.instance.lastModifier = modifier;
 	
@@ -22,4 +22,6 @@ function Awake() {
 
 function Update() {
 	Global.enforceBounds( transform );
+	
+	if (GameManager.instance.cutScenePlaying()) Destroy( gameObject );
 }

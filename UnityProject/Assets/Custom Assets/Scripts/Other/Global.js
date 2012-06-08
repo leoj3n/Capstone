@@ -96,7 +96,8 @@ class AudioSourceManaged {
 	
 	private var origPitch : float;
 	private var origVolume : float;
-	private var paused = true;
+	private var stopped = true;
+	private var paused = false;
 	
 	function AudioSourceManaged( a : AudioSource ) {
 		audioSource = a;
@@ -111,24 +112,26 @@ class AudioSourceManaged {
 				
 			if (audioSource.volume != targetVolume)
 				audioSource.volume = Mathf.MoveTowards( audioSource.volume, targetVolume, (Time.deltaTime / volumeDuration) );
+		} else if( !paused ) {
+			stopped = true;
 		}
 	}
 	
 	function Play( force : boolean, loop : boolean, volume : float, pitch : float ) {
-		if( !IsPlaying() || force ) {
+		if( (!paused && !IsPlaying()) || force ) {
 			Stop();
 			SetPitch( pitch );
 			SetVolume( volume );
 			audioSource.loop = loop;
 			audioSource.Play();
-			paused = false;
+			stopped = false;
 		}
 	}
 	
 	function Pause( bool : boolean ) {
 		if (bool)
 			audioSource.Pause();
-		else if( !paused )
+		else if( !stopped )
 			audioSource.Play();
 			
 		paused = bool;
@@ -136,7 +139,7 @@ class AudioSourceManaged {
 	
 	function Stop() {
 		Reset();
-		paused = true;
+		stopped = true;
 		audioSource.Stop();
 	}
 	

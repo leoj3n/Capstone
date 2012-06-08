@@ -23,7 +23,7 @@ private var shadowProjector : Projector;
 protected var shadowUseTAC : boolean = false;
 protected var gravity : float = 50.0;
 protected var groundedAcceleration : float = 10.0;
-protected var inAirAcceleration : float = 10.0;
+protected var inAirAcceleration : float = 6.0;
 protected var characterController : CharacterController;
 protected var taRenderer : TextureAtlasRenderer;
 protected var textureAtlasCube : Transform;
@@ -59,6 +59,7 @@ protected var fps : float = 16.0;
 protected var ccHeight : float = 4.0;
 private var modifiedDeltaTime : float = 0.0;
 protected var timeWarpFactor : float = 1.0;
+protected var superSpeedFactor : float = 0.0;
 
 // HEALTH AND GUAGE
 protected var health : float = 5.0;
@@ -117,7 +118,7 @@ function Update() {
 			textureAtlasCube.transform.localScale.z *= -1.0;
 		
 		// modify delta time
-		modifiedDeltaTime = (Time.deltaTime * timeWarpFactor);
+		modifiedDeltaTime = (Time.deltaTime * (timeWarpFactor + superSpeedFactor));
 		
 		setHorizontalMovement();
 		setVerticalMovement();
@@ -192,7 +193,8 @@ function checkHealth() {
 	} else {
 		eliminated = false;
 		
-		if (health < 10.0) GameManager.instance.audioPlay( 'Heartbeat' );
+		if ((health < 10.0) && !GameManager.instance.cutScenePlaying())
+			GameManager.instance.audioPlay( 'Heartbeat' );
 	}
 }
 
@@ -519,7 +521,8 @@ function determineAtlas() {
 	var finalOffset : Vector3 = Vector3( baseOffset.x, (baseOffset.y - (characterController.height / 2.0)), baseOffset.z );
 	taRenderer.setTextureAtlas( parseInt( atlas ), scaleAnchorFix( offset + finalOffset), loop );
 	taRenderer.reverse = reverse;
-	taRenderer.fps = (fps * timeWarpFactor);
+	taRenderer.fps = fps;
+	taRenderer.setTimeFactor( timeWarpFactor + superSpeedFactor );
 	if( staticFrame > -1) {
 		taRenderer.isStatic = true;
 		taRenderer.staticFrame = staticFrame;
@@ -787,6 +790,11 @@ function OnControllerColliderHit( hit : ControllerColliderHit ) {
 // utility function for setting the time warp factor
 function setTimeWarpFactor( factor : float ) {
 	timeWarpFactor = Mathf.Clamp01( factor );
+}
+
+// utility function for setting the super speed factor
+function setSuperSpeedFactor( factor : float ) {
+	superSpeedFactor = Mathf.Clamp01( factor );
 }
 
 // utility function for setting invincibility

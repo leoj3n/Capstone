@@ -5,10 +5,10 @@ class TimeWarp extends Modifier {
 		var warpFactor : float = (fadeEmitters.getTimeRemaining() / duration);
 		
 		if( fadeEmitters.getTimeRemaining() < halfDuration )
-			warpFactor = (1.0 - warpFactor);
+			warpFactor = (1.0 - warpFactor); // reverse direction of halfway through
 		
 		GameManager.instance.audioFadeAllToPitch( warpFactor, 1.0 );
-		applyTimeWarp( (warpFactor - 0.5) );
+		applyTimeWarp( warpFactor * warpFactor * warpFactor );
 	}
 	
 	function EndModifier() {

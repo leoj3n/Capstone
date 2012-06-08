@@ -56,6 +56,7 @@ class GameManager extends MonoBehaviour {
 	// private variables not accessible outside of this class
 	private var audioSources : Hashtable;
 	private var roundResults : ControllerTeam[];
+	private var resetRounds : boolean = false;
 	private var audioListener : AudioListener;
 	
 	// MAIN FUNCTIONS
@@ -75,6 +76,13 @@ class GameManager extends MonoBehaviour {
 		// do any necessary cleanup here
 		audioUnbindAll();
 		audioResetAll();
+		
+		if( resetRounds ) {
+			Debug.Log( round + Time.time );
+			round = 0; // set the round back to zero
+			clearRoundResults();
+			resetRounds = false;
+		}
 	}
 	
 	function Update() {
@@ -122,8 +130,13 @@ class GameManager extends MonoBehaviour {
 	
 	// PUBLIC FUNCTIONS
 	
+	public function destroyAllOfType( type ) {
+		var objects : GameObject[] = GameObject.FindObjectsOfType( typeof( type ) );
+		for (var object : GameObject in objects) Destroy( object );
+	}
+	
 	// this function gets called at the start of every scene by SceneManager
-	function updateReadyControllers() {
+	public function updateReadyControllers() {
 		readyControllers = getControllerEnumsWithState( ControllerState.Ready );
 	}
 	
@@ -190,11 +203,8 @@ class GameManager extends MonoBehaviour {
 	}
 	
 	// utility function for loading levels
-	public function loadLevel( id : LevelEnum, resetRounds : boolean ) {
-		if( resetRounds ) {
-			round = 0; // set the round back to zero
-			clearRoundResults();
-		}
+	public function loadLevel( id : LevelEnum, reset : boolean ) {
+		resetRounds = reset; // this is done later to avoid scoreboard freakout
 		
 		// SceneEnum.Count is used to offset LevelEnum
 		loadScene( parseInt( SceneEnum.Count ) + parseInt( id ) );

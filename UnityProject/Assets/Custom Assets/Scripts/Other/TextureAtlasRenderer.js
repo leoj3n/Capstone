@@ -26,6 +26,7 @@ private var frameIndex : int = 0;
 private var loopCount : int = 0;
 private var offsetPosition : Vector3 = Vector3.zero;
 private var scaleFixPos : Vector3 = Vector3.zero;
+private var timeFactor : float = 1.0;
 
 function Awake() {
 	origScale = Global.absoluteVector( transform.localScale );
@@ -51,7 +52,7 @@ function Update() {
 }
 
 function applyTextureAtlas( ta : TextureAtlas ) {
-	fpsTimer += Time.deltaTime;
+	fpsTimer += (Time.deltaTime * timeFactor);
 	
 	frameIndex = parseInt( (fpsTimer * fps) % ta.frames.Length );
 	if (reverse) frameIndex = ((ta.frames.Length - 1) - frameIndex);
@@ -149,6 +150,11 @@ function getWidestFrameIndex() : int {
 
 function getFrame( frame : int ) : Rect {
 	return textureAtlasArray[textureAtlasIndex].frames[frame];
+}
+
+// a quick hack
+function setTimeFactor( factor : float ) {
+	timeFactor = factor;
 }
 
 class TextureAtlas {

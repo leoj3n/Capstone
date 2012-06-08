@@ -37,16 +37,6 @@ class DefaultScene extends SceneManager {
 					break;
 			}
 		} else {
-			// instantiate power modifies
-			if( (Time.timeSinceLevelLoad - lastSpawnTimePM) > timeBetweenPM ) {				
-				var xPos : float = Random.Range( Global.sharedMinX, Global.sharedMaxX );
-				var yPos : float = (Camera.main.transform.position.y + Camera.main.orthographicSize + yOffsetPM);
-					
-				Instantiate( GameManager.instance.powerModifyPrefab, Vector3( xPos, yPos, Global.sharedZ ), Quaternion.identity );
-				
-				lastSpawnTimePM = Time.timeSinceLevelLoad;
-			}
-			
 			// do the rounds
 			if( aliveTeamEnums.Length == 1 ) { // only 1 team still alive
 				if( initial ) {
@@ -60,9 +50,20 @@ class DefaultScene extends SceneManager {
 					initial = false;
 				} else if( !GameManager.instance.cutScenePlaying() ) {
 					// progress to next round (or scoreboard) if cutscenes finished
-
 					GameManager.instance.nextRoundOrScoreboard();
 				}
+				
+				return;
+			}
+			
+			// instantiate power modifies
+			if( (Time.timeSinceLevelLoad - lastSpawnTimePM) > timeBetweenPM ) {				
+				var xPos : float = Random.Range( Global.sharedMinX, Global.sharedMaxX );
+				var yPos : float = (Camera.main.transform.position.y + Camera.main.orthographicSize + yOffsetPM);
+					
+				Instantiate( GameManager.instance.powerModifyPrefab, Vector3( xPos, yPos, Global.sharedZ ), Quaternion.identity );
+				
+				lastSpawnTimePM = Time.timeSinceLevelLoad;
 			}
 		}
 	}

@@ -57,6 +57,8 @@ function Update() {
 			playedOnce = true;
 		}
 	}
+	
+	if (GameManager.instance.cutScenePlaying()) destroySelf();
 }
 
 function OnGUI() {
@@ -100,14 +102,17 @@ function OnCollisionEnter( collision : Collision ) {
 			emitter.emit = false;
 		}
 		
-		GameManager.instance.audioStop( 'meteorCrackle' );
-		Destroy( gameObject ); // destroy this meteor
+		destroySelf(); // destroy this meteor
 		
 		dead = true;
 	}
 }
 
-function OutOfBounds() {
+function destroySelf() {
 	GameManager.instance.audioStop( 'meteorCrackle' );
+	Destroy( gameObject ); // destroy this meteor
+}
+
+function OutOfBounds() {
 	Destroy( gameObject );
 }
