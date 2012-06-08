@@ -307,8 +307,19 @@ class GameManager extends MonoBehaviour {
 		}
 	}
 	
+	// utility function for ignoring collision with passed team
+	public function ignoreCollisionsWithTeam( colPassed : Collider, team : ControllerTeam ) {
+		var avatars : GameObject[] = getAvatarsOnTeam( team );
+		
+		for( var avatar : GameObject in avatars ) {
+			var colAvatar : Collider = avatar.GetComponent( CharacterController ).GetComponent( Collider );
+			
+			Physics.IgnoreCollision( colPassed, colAvatar );
+		}
+	}
+	
 	// utility function for setting the background music
-	function audioFadeInAndLoop( uid, clip : AudioClip, volume : float, fade : boolean) {
+	public function audioFadeInAndLoop( uid, clip : AudioClip, volume : float, fade : boolean) {
 		var a : AudioSourceManaged = audioBind( uid, clip );
 		audioPlay( uid, fade, true, volume ); // force if fading in
 		if( fade ) {

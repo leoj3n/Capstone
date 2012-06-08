@@ -8,7 +8,7 @@ class TimeWarp extends Modifier {
 			warpFactor = (1.0 - warpFactor); // reverse direction of halfway through
 		
 		GameManager.instance.audioFadeAllToPitch( Mathf.Clamp01( warpFactor * warpFactor * warpFactor + 0.4 ), 1.0 );
-		applyTimeWarp( warpFactor * warpFactor * warpFactor );
+		applyTimeWarp( warpFactor * warpFactor * warpFactor + 0.4 );
 	}
 	
 	function EndModifier() {

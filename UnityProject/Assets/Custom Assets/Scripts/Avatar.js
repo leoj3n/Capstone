@@ -174,8 +174,6 @@ function changeHealth( hp : float ) {
 		changePower( convertedHealthLoss );
 	}
 	
-	Debug.Log( hp + ' . ' + blocking );
-	
 	health = Mathf.Clamp( (health + hp), 0.0, 100.0 );
 }
 
@@ -825,6 +823,10 @@ function addHitForce( pos : Vector3, force : float, damping : float ) {
 
 // push props away
 function OnControllerColliderHit( hit : ControllerColliderHit ) {
+	if( hit.gameObject.CompareTag( 'Projectile' ) && (isAlive()) ) {
+		Debug.Log( hit.transform.name );
+	}
+	
 	if( hit.gameObject.CompareTag( 'PowerModify' ) && (isAlive()) ) {
 		var modifier : Modifier = hit.transform.GetComponentInChildren( Modifier );
 		if (modifier) modifier.pickup( this );
