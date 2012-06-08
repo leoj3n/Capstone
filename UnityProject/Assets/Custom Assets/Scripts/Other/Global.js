@@ -53,6 +53,10 @@ enum AttackType {
 	Timed,
 	Constant
 }
+enum ButtonType {
+	PressAndHold,
+	PressOnce
+}
 enum CastType {
 	Raycast,
 	Capsule
@@ -195,9 +199,9 @@ class SceneManager extends MonoBehaviour {
 			// simulate character select
 			if( Application.loadedLevel > SceneEnum.CharacterSelect ) {
 				GameManager.instance.controllers[0].character = CharacterEnum.ZipperFace;
-				GameManager.instance.controllers[1].character = CharacterEnum.BlackMagic;
+				GameManager.instance.controllers[1].character = CharacterEnum.ZipperFace;
 				
-				GameManager.instance.controllers[2].character = CharacterEnum.BlackMagic;
+				GameManager.instance.controllers[2].character = CharacterEnum.ZipperFace;
 				//GameManager.instance.controllers[3].character = CharacterEnum.Dan;
 			}
 			

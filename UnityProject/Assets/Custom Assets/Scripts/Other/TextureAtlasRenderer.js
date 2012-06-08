@@ -23,6 +23,7 @@ private var scalePos : Vector3 = Vector3.zero;
 private var scaleFactor : Vector2 = Vector2( 1.0, 1.0 );
 private var fpsTimer : float = 0.0;
 private var frameIndex : int = 0;
+private var previousFrameIndex : int = 0;
 private var loopCount : int = 0;
 private var offsetPosition : Vector3 = Vector3.zero;
 private var scaleFixPos : Vector3 = Vector3.zero;
@@ -102,7 +103,8 @@ function applyTextureAtlas( ta : TextureAtlas ) {
 	
 	transform.localPosition = (origLocalPos + scalePos + scaleFixPos + offsetPosition);
 	
-	if (!isStatic && (frameIndex == (ta.frames.Length - 1))) loopCount++;
+	if (!isStatic && (frameIndex != previousFrameIndex) && (frameIndex == (ta.frames.Length - 1))) loopCount++;
+	previousFrameIndex = frameIndex;
 }
 
 function setTextureAtlas( index : int, offset : Vector3, loop : boolean, force : boolean ) {

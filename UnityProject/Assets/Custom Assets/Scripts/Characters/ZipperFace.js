@@ -6,6 +6,10 @@ class ZipperFace extends Avatar {
 	
 	function CharacterStateSwitch() {
 		switch( state ) {
+			case CharacterState.Block:
+				atlas = CharacterAtlas.Attack1;
+				staticFrame = 4;
+				break;
 			case CharacterState.Attack1:
 			case CharacterState.Attack2:
 				fps = 20.0;
@@ -16,13 +20,26 @@ class ZipperFace extends Avatar {
 				}
 				break;
 			case CharacterState.Special1:
-				if( (Time.time - lastSpecialTime) > 0.1 ) {
-					var shuriken : GameObject = Instantiate( shurikenPrefab );
-					shuriken.transform.position = (getCenterInWorld() + Vector3( facing, 1.5, 0.0 ));
-					shuriken.GetComponent( Shuriken ).direction = Vector3( facing, 0.0, 0.0 );
-					shuriken.GetComponent( Shuriken ).belongsToTeam = getTeam();
-					lastSpecialTime = Time.time;
+				//canMove = canJump = false;
+				//updatePressedOnce( state ); // simply call this to make this state a "press once" state
+				// currently throws stars until animation ends or power runs out
+				
+				atlas = CharacterAtlas.Attack1;
+				staticFrame = 3;
+				
+				if( hasPower( 5.0 ) ) {
+					if( (Time.time - lastSpecialTime) > 0.1 ) {
+						var shuriken : GameObject = Instantiate( shurikenPrefab );
+						shuriken.transform.position = (getCenterInWorld() + Vector3( facing, 1.5, 0.0 ));
+						shuriken.GetComponent( Shuriken ).direction = Vector3( facing, 0.0, 0.0 );
+						shuriken.GetComponent( Shuriken ).belongsToTeam = getTeam();
+						lastSpecialTime = Time.time;
+						changePower( -5.0 );
+					}
 				}
+				//} else {
+				//	pressedOnce = CharacterState.Dead; // end animation prematurely and stop throwing shurikens
+				//}
 				break;
 			case CharacterState.Special2:
 				canMove = false;

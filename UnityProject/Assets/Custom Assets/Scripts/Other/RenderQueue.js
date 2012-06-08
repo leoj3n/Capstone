@@ -1,6 +1,6 @@
 
 public var position : int = 2000;
 
-function Awake() {
+function Update() {
 	renderer.material.renderQueue = position;
 }

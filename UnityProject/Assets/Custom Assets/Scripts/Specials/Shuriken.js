@@ -16,6 +16,5 @@ function OnCollisionEnter( collision : Collision ) {
 	if (Global.isAvatar( collision.gameObject ))
 		collision.transform.GetComponent( Avatar ).addHitForce( transform.position, collision.impactForceSum.magnitude, 2.0 );
 	
-	Debug.Log( collision.gameObject.name );
 	Destroy( gameObject );
 }

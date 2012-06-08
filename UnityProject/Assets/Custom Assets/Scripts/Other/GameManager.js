@@ -230,7 +230,8 @@ class GameManager extends MonoBehaviour {
 				characterPrefabs[controllers[ce].character], Vector3( (-5.0 + (10.0 * i)), 4.0, 0.0 ), Quaternion.identity );
 			
 			Global.bindAvatarToController( avatar, ce ); // set a reference to the Controller in Avatar
-			avatar.GetComponent( Avatar ).playCutScene( CutScene.Intro ); // assume intro should be played for now
+			avatar.GetComponent( Avatar ).playCutScene( CutScene.Intro ); // assume intro should be played upon instantiation
+			avatar.GetComponentInChildren( RenderQueue ).position = (3004 + i); // to avoid z-buffer problems for two of the same character
 			
 			avatars[i] = avatar;
 		}

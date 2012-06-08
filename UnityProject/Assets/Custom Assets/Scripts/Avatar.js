@@ -29,7 +29,6 @@ protected var taRenderer : TextureAtlasRenderer;
 protected var textureAtlasCube : Transform;
 protected var origShadowAspectRatio : float;
 protected var origFps : float;
-protected var ccOrigHeight : float;
 protected var startPos : Vector3;
 
 // STATE
@@ -47,12 +46,10 @@ protected var reverse : boolean = false;
 private var lastAttackTime : float = 0.0;
 protected var cutScenePlaying = false;
 protected var activeCutScene : CutScene;
-protected var eliminated = false;
+protected var eliminated : boolean = false;
 protected var invincible : boolean = false;
-protected var blocking = false;
-protected var special1Playing : boolean = false;
-protected var special2Playing : boolean = false;
-protected var ultimatePlaying : boolean = false;
+protected var blocking : boolean = false;
+protected var pressedOnce : CharacterState = CharacterState.Dead; // set to an arbitrary non-attack state is the closest we can get to null
 
 // OTHER
 protected var hitForce : Vector3; // force from a hit from another avatar
@@ -60,14 +57,14 @@ protected var explosionForce : Vector3; // force from a meteor explosion or simi
 protected var loop : boolean = true;
 protected var offset : Vector3 = Vector3.zero;
 protected var fps : float = 16.0;
-protected var ccHeight : float = 4.0;
+protected var force : boolean = false;
 private var modifiedDeltaTime : float = 0.0;
 protected var timeWarpFactor : float = 1.0;
 protected var superSpeedFactor : float = 0.0;
 
 // HEALTH AND POWER
 protected var health : float = 100.0;
-protected var power : float = 20.0;
+protected var power : float = 50.0;
 
 // JUMPING
 protected var jumping : boolean = false;
@@ -96,13 +93,12 @@ function Awake() {
 function Start() {
 	origShadowAspectRatio = shadowProjector.aspectRatio;
 	origFps = taRenderer.fps;
-	ccOrigHeight = characterController.height;
 	startPos = transform.position;
 }
 
 function OnGUI() {
 	// do not draw self-HUD in these cases
-	if (!isControllable || cutScenePlaying) return;
+	if (!isControllable || cutScenePlaying || !isAlive()) return;
 	
 	GUI.skin = GameManager.instance.customSkin;
 	
@@ -386,10 +382,10 @@ function determineState() {
 	offset = Vector3.zero;
 	reverse = false;
 	fps = 16.0;
+	force = false;
 	canJump = true;
 	canMove = true;
 	shadowUseTAC = false;
-	ccHeight = ccOrigHeight;
 	blocking = false;
 	
 	// joystick-activated states
@@ -414,16 +410,16 @@ function determineState() {
 	// grounded button-activated states (overrides joystick)
 	if( isNearlyGrounded ) {
 		switch( true ) {
-			case Global.isButton( 'A', boundController ):
+			case isCurrentAttack( CharacterState.Attack1, 'A' ):
 				state = CharacterState.Attack1;
 				break;
-			case Global.isButton( 'B', boundController ):
+			case isCurrentAttack( CharacterState.Attack2, 'B' ):
 				state = CharacterState.Attack2;
 				break;
-			case (Global.isButtonDown( 'X', boundController ) || special1Playing):
+			case isCurrentAttack( CharacterState.Special1, 'X' ):
 				state = CharacterState.Special1;
 				break;
-			case (Global.isButtonDown( 'Y', boundController ) || special2Playing):
+			case isCurrentAttack( CharacterState.Special2, 'Y' ):
 				state = CharacterState.Special2;
 				break;
 		}
@@ -444,6 +440,9 @@ function determineState() {
 			state = CharacterState.Hit;
 			break;
 	}
+	
+	// did something interrupted our "press once" attack?
+	if (state != pressedOnce) pressedOnce = CharacterState.Dead;
 }
 
 // set atlas (and do anything else necessary) based on state
@@ -454,7 +453,6 @@ function determineAtlas() {
 			if (previousState == state) staticFrame = (taRenderer.getFrameCount() - 1);
 			offset = Vector3( -1.0, -0.2, 0.0 );
 			shadowUseTAC = true;
-			ccHeight = 1.5;
 			canMove = canJump = false;
 			break;
 		case CharacterState.CutScene:
@@ -471,8 +469,7 @@ function determineAtlas() {
 			shadowUseTAC = true;
 			canMove = canJump = false;
 			
-			if ((previousState == state) && (taRenderer.getLoopCount() == 1))
-				cutScenePlaying = false;
+			if (checkNumLoops( state, 1 )) cutScenePlaying = false;
 			break;
 		case CharacterState.Jump:
 			if (movingBack)
@@ -500,7 +497,6 @@ function determineAtlas() {
 			offset = Vector3( -1.0, -0.2, 0.0 );
 			loop = false;
 			shadowUseTAC = true;
-			ccHeight = 1.5;
 			canJump = canMove = false; // Input.ResetInputAxes(); ???
 			break;
 		case CharacterState.Hit:
@@ -513,44 +509,24 @@ function determineAtlas() {
 			canMove = false;
 			break;
 		case CharacterState.Attack1:
-			atlas = CharacterAtlas.Attack1;
-			offset = Vector3( -0.5, 0.0, 0.0 );
-			canMove = false;
-			break;
 		case CharacterState.Attack2:
 			atlas = CharacterAtlas.Attack2;
 			offset = Vector3( -0.5, 0.0, 0.0 );
-			canMove = false;
+			//canMove = false;
+			updatePressedOnce( state );
 			break;
 		case CharacterState.Special1:
 			atlas = CharacterAtlas.Special1;
-			loop = false;
-			canMove = canJump = false;
-			
-			if ((previousState == state) && (taRenderer.getLoopCount() == 1))
-				special1Playing = false;
-			else
-				special1Playing = true;
 			break;
 		case CharacterState.Special2:
 			atlas = CharacterAtlas.Special2;
-			loop = false;
 			canMove = canJump = false;
-			
-			if ((previousState == state) && (taRenderer.getLoopCount() == 1))
-				special2Playing = false;
-			else
-				special2Playing = true;
+			updatePressedOnce( state );
 			break;
 		case CharacterState.Ultimate:
 			atlas = CharacterAtlas.Ultimate;
-			loop = false;
 			canMove = canJump = false;
-			
-			if ((previousState == state) && (taRenderer.getLoopCount() == 1))
-				ultimatePlaying = false;
-			else
-				ultimatePlaying = true;
+			updatePressedOnce( state );
 			break;
 	}
 	
@@ -563,7 +539,7 @@ function determineAtlas() {
 	
 	// apply all changes to the texture atlas renderer
 	var finalOffset : Vector3 = Vector3( baseOffset.x, (baseOffset.y - (characterController.height / 2.0)), baseOffset.z );
-	taRenderer.setTextureAtlas( parseInt( atlas ), scaleAnchorFix( offset + finalOffset), loop );
+	taRenderer.setTextureAtlas( parseInt( atlas ), scaleAnchorFix( offset + finalOffset), loop, force );
 	taRenderer.reverse = reverse;
 	taRenderer.fps = fps;
 	taRenderer.setTimeFactor( timeWarpFactor + superSpeedFactor );
@@ -578,6 +554,34 @@ function determineAtlas() {
 // override this function in any character script to do any custom work such as
 // switch over state in order to implement Special1, Special2 or Ultimate
 function CharacterStateSwitch() { /* override this function */ }
+
+// helper function to allow "press once" attacks override others
+function isCurrentAttack( passedState : CharacterState, button : String ) : boolean {		
+	if (pressedOnce == CharacterState.Dead)
+		return Global.isButton( button, boundController );
+	else
+		return (pressedOnce == passedState);
+}
+
+// helper function for setting/ending a "press once" state
+function updatePressedOnce( passedState : CharacterState, loops : int ) {
+	if( checkNumLoops( passedState, loops ) ) {
+		pressedOnce = CharacterState.Dead; // this or an interruption are the only ways to end a "press once"
+		force = true; // incase they are holding the "press once" button down when it ends...
+	} else {
+		pressedOnce = passedState;
+	}
+}
+function updatePressedOnce( passedState : CharacterState ) {
+	loop = false;
+	updatePressedOnce( passedState, 1 );
+}
+
+// utility function for checking if the renderer has reached a certain number of loops
+// for a specific state
+function checkNumLoops( passedState : CharacterState, loops : int ) : boolean {
+	return ((previousState == passedState) && (taRenderer.getLoopCount() == loops));
+}
 
 // a hack to make footage facing the wrong way (to the right) work
 function scaleAnchorFix( v : Vector3 ) : Vector3 {
@@ -658,6 +662,11 @@ function tryAttack( attackType : AttackType, passedVar, castType : CastType ) : 
 		for( var hit : RaycastHit in hits ) {
 			if (onSameTeam( hit.transform.gameObject )) continue; // skip if on same team (includes self)
 			
+			if( !hit.transform.GetComponent( Avatar ).isAlive() ) {
+				hitOtherAvatar( hit, 20, 3 );
+				continue; // push dead enemy bodies away
+			}
+			
 			//Debug.DrawRay( getCenterInWorld(), (dir * dist), Color.red, 0.05 );
 			return hit; // return first non-self hit
 		}
@@ -733,6 +742,8 @@ function hitOtherAvatar( hit : RaycastHit, force : float, damping : float ) {
 	effectEmitter.localVelocity = Vector3.Scale( effectEmitter.localVelocity, -hit.normal );
 	
 	other.addHitForce( hitPoint, force, damping );
+	
+	if (other.isAlive()) changePower( force / damping / 2.0 ); // do not give credit for hitting dead avatars
 	
 	audioPlay( Random.Range( 0, 2 ) ? CharacterSound.AttackImpactA : CharacterSound.AttackImpactB );
 }
@@ -823,11 +834,16 @@ function addHitForce( pos : Vector3, force : float, damping : float ) {
 
 // push props away
 function OnControllerColliderHit( hit : ControllerColliderHit ) {
-	if( hit.gameObject.CompareTag( 'Projectile' ) && (isAlive()) ) {
-		Debug.Log( hit.transform.name );
+	if( Global.isAvatar( hit.gameObject ) ) {
+		var component : Avatar = hit.transform.GetComponent( Avatar );
+		if( !component.isAlive() ) {
+			component.addHitForce( hit.point, 15, 3 );
+			Debug.Log( component.getTeam() );
+		}
+		return;
 	}
 	
-	if( hit.gameObject.CompareTag( 'PowerModify' ) && (isAlive()) ) {
+	if( hit.gameObject.CompareTag( 'PowerModify' ) && isAlive() ) {
 		var modifier : Modifier = hit.transform.GetComponentInChildren( Modifier );
 		if (modifier) modifier.pickup( this );
 		Destroy( hit.transform.gameObject );
