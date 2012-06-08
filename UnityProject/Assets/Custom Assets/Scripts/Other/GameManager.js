@@ -12,7 +12,8 @@ class GameManager extends MonoBehaviour {
 	public var characterPrefabs : GameObject[];
 	public var expectedOrder : CharacterEnum; // just to expose the expected order in the Inspector
 	public var jumpEffectPrefab : GameObject;
-	public var healthTexture : Texture2D;
+	public var healthBarTexture : Texture2D;
+	public var powerGuageTexture : Texture2D;
 	public var nearlyGroundedLayerMask : LayerMask = -1;
 	public var avatarOnlyLayerMask : LayerMask = -1;
 	public var soundsBoundByName : AudioClip[]; // no order necessary

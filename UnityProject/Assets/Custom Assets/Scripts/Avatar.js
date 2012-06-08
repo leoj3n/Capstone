@@ -63,7 +63,7 @@ protected var superSpeedFactor : float = 0.0;
 
 // HEALTH AND POWER
 protected var health : float = 100.0;
-protected var power : float = 0.0;
+protected var power : float = 20.0;
 
 // JUMPING
 protected var jumping : boolean = false;
@@ -100,13 +100,18 @@ function OnGUI() {
 	// do not draw self-HUD in these cases
 	if (!isControllable || cutScenePlaying) return;
 	
+	GUI.skin = GameManager.instance.customSkin;
+	
 	var point = Camera.main.WorldToScreenPoint( getCenterInWorld() + Vector2( 0.0, (getScaledHeight() * 0.80) ) );
 	
 	var rect : Rect = Rect( (point.x - 30.0), (Screen.height - point.y), 100.0, 60.0 );
 	GUI.Label( rect, ('Controller ' + parseInt( getController() )) );
 	
-	rect = Rect( (point.x - 30.0), (Screen.height - point.y + 20.0), 50.0, 10.0 );
-	GUI.DrawTexture( rect, GameManager.instance.healthTexture );
+	rect = Rect( (point.x - 30.0), (Screen.height - point.y + 20.0), (100.0 * (getHealth() / 100.0)), 10.0 );
+	GUI.DrawTexture( rect, GameManager.instance.healthBarTexture );
+	
+	rect = Rect( (point.x - 30.0), (Screen.height - point.y + 30.0), (100.0 * (getPower() / 100.0)), 10.0 );
+	GUI.DrawTexture( rect, GameManager.instance.powerGuageTexture );
 }
 
 function Update() {
