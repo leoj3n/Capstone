@@ -123,10 +123,11 @@ function Update() {
 		
 		z -= padding;
 		
+		// NOTE: I was hoping something like this (below) would be possible instead of having to use the if statement above...
 		//z = (-((diag.magnitude / camera.aspect) / dblFovTangent) + -(diag.magnitude / dblFovTangent)) * 0.5;
 		
-		var minSizeCorrect : float = (minimumSize * -2.5);
-		if (z > minSizeCorrect) z = minSizeCorrect;
+		var minZ : float = (minimumSize * -2.5);
+		if (z > minZ) z = minZ;
 	}
 	
 	if( swayAmount > 0.0 ) {
@@ -135,7 +136,12 @@ function Update() {
 	}
 	
 	transform.position = Vector3.SmoothDamp( transform.position, (sway + Vector3( averagePosition.x, averagePosition.y, z )), cameraVelocity, t );
-	transform.rotation = Quaternion.Slerp( transform.rotation, Quaternion.LookRotation( averagePosition - transform.position ), t );
+	if( camera.isOrthoGraphic ) {
+		transform.position.y = averagePosition.y;
+		transform.LookAt( averagePosition );
+	} else {
+		transform.rotation = Quaternion.Slerp( transform.rotation, Quaternion.LookRotation( averagePosition - transform.position ), t );
+	}
 }
 
 function AddShake( amount : float ) {

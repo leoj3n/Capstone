@@ -58,7 +58,7 @@ function Update() {
 		}
 	}
 	
-	if (GameManager.instance.cutScenePlaying()) destroySelf();
+	if (GameManager.instance.cutScenePlaying) destroySelf();
 }
 
 function OnGUI() {

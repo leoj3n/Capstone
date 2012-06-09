@@ -56,6 +56,10 @@ class GameManager extends MonoBehaviour {
 	public function get lastModifier() : int { return _lastModifier; }
 	public function set lastModifier( value : int ) { _lastModifier = value; }
 	
+	private var _cutScenePlaying : boolean;
+	public function get cutScenePlaying() : boolean { return _cutScenePlaying; }
+	private function set cutScenePlaying( value : boolean ) { _cutScenePlaying = value; }
+	
 	// private variables not accessible outside of this class
 	private var audioSources : Hashtable;
 	private var roundResults : ControllerTeam[];
@@ -93,6 +97,8 @@ class GameManager extends MonoBehaviour {
 		audioListener.volume = audioListenerVolume;
 		
 		for (var asm : AudioSourceManaged in audioSources.Values) asm.Update();
+		
+		cutScenePlaying = isCutScenePlaying();
 	}
 	
 	// PRIVATE FUNCTIONS
@@ -129,9 +135,22 @@ class GameManager extends MonoBehaviour {
 		floatingAlert = GetComponent( FloatingAlert );
 	}
 	
+	// utility function to clear round results
 	private function clearRoundResults() {
 		// set to a "nothing" value
 		roundResults[0] = roundResults[1] = roundResults[2] = ControllerTeam.Count;
+	}
+	
+	// utility function to check if a cutscene is playing
+	private function isCutScenePlaying() : boolean {
+		// loop through avatars and see if any are playing a cutscene
+		for( var avatar : GameObject in avatars ) {
+			if (avatar == null) continue;
+			
+			if (avatar.GetComponent( Avatar ).isPlayingCutScene()) return true;
+		}
+		
+		return audioIsPlaying( 'Countdown' );
 	}
 	
 	// PUBLIC FUNCTIONS
@@ -223,7 +242,7 @@ class GameManager extends MonoBehaviour {
 	
 	// utility function for loading levels
 	public function loadLevel( id : LevelEnum, reset : boolean ) {
-		resetRounds = reset; // this is done later to avoid scoreboard freakout
+		resetRounds = reset; // resetting rounds is put off until later to avoid scoreboard freakout
 		
 		// SceneEnum.Count is used to offset LevelEnum
 		loadScene( parseInt( SceneEnum.Count ) + parseInt( id ) );
@@ -295,16 +314,6 @@ class GameManager extends MonoBehaviour {
 		}
 		
 		return teamArray.ToBuiltin( ControllerTeam );
-	}
-	
-	// utility function to check if a cutscene is playing
-	public function cutScenePlaying() : boolean {
-		// loop through avatars and see if any are playing a cutscene
-		for( var avatar : GameObject in avatars ) {
-			if (avatar.GetComponent( Avatar ).isPlayingCutScene()) return true;
-		}
-		
-		return audioIsPlaying( 'Countdown' );
 	}
 	
 	// utility function to ignore collisions between characters on the same team

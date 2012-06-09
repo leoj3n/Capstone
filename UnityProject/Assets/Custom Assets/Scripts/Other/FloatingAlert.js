@@ -36,12 +36,14 @@ function Update() {
 	var expiredAlerts : Array = new Array();
 	
 	for( var alert : GameObject in alerts ) {
+		if( (alert == null) || (alert.transform.localPosition.y > (initialHeight + riseHeight)) ) {
+			expiredAlerts.Add( alert );
+			continue;
+		}
+		
 		// update position and lookat
 		alert.transform.localPosition += Vector3( 0.0, (Time.deltaTime * riseRate), 0.0 );
 		alert.transform.LookAt( alert.transform.position + Camera.main.transform.forward );
-		
-		// set to expire if the goal height has been reached
-		if (alert.transform.localPosition.y > (initialHeight + riseHeight)) expiredAlerts.Add( alert );
 	}
 	
 	for( var expiredAlert : GameObject in expiredAlerts ) {

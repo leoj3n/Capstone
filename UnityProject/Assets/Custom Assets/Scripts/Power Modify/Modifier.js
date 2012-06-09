@@ -21,7 +21,7 @@ class Modifier extends MonoBehaviour {
 			
 			ApplyModifier(); // apply
 			
-			if (GameManager.instance.cutScenePlaying()) Destroy( gameObject );
+			if (GameManager.instance.cutScenePlaying) Destroy( gameObject );
 		}
 	}
 	

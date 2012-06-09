@@ -28,7 +28,7 @@ class ZipperFace extends Avatar {
 				staticFrame = 3;
 				
 				if( hasPower( 5.0 ) ) {
-					if( (modifiedTime - lastSpecialTime) > 0.1 ) {
+					if( (modifiedTime - lastSpecialTime) > 0.2 ) {
 						var shuriken : GameObject = Instantiate( shurikenPrefab );
 						shuriken.transform.position = (getCenterInWorld() + Vector3( facing, 1.5, 0.0 ));
 						shuriken.GetComponent( Shuriken ).direction = Vector3( facing, 0.0, 0.0 );

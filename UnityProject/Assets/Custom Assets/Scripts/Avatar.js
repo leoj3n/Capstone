@@ -50,6 +50,7 @@ protected var eliminated : boolean = false;
 protected var invincible : boolean = false;
 protected var blocking : boolean = false;
 protected var pressedOnce : CharacterState = CharacterState.Dead; // set to an arbitrary non-attack state is the closest we can get to null
+private var doubleJump : boolean = true;
 
 // OTHER
 protected var hitForce : Vector3; // force from a hit from another avatar
@@ -134,8 +135,14 @@ function Update() {
 		// resize character controller height
 		resizeCharacterControllerHeight( Global.getSize( taRenderer ).y );
 		
-		setHorizontalMovement();
-		setVerticalMovement();
+		if( GameManager.instance.cutScenePlaying ) {
+			// do only gravity during cutscenes
+			verticalSpeed = -gravity;
+			moveSpeed = 0.0;
+		} else {
+			setHorizontalMovement();
+			setVerticalMovement();
+		}
 		doMovement();
 		Global.enforceBounds( transform );
 		
@@ -164,21 +171,21 @@ function Update() {
 }
 
 // utility function to safely change health
-function changeHealth( hp : float ) {
+function changeHealth( amount : float ) {
 	// do not change if on last alive team
 	var aliveTeamEnums : ControllerTeam[] = GameManager.instance.getAliveControllerTeamEnums();
 	if ((aliveTeamEnums.Length == 1) && (aliveTeamEnums[0] == getTeam())) return;
 	
-	// if blocking, convert 50% of health loss into power
-	if( (hp < 0.0) && blocking ) {
-		var convertedHealthLoss : float = Mathf.Abs( hp * 0.5 );
-		hp -= convertedHealthLoss;
-		changePower( convertedHealthLoss );
+	// if blocking, convert 60% of health loss into power
+	if( (amount < -1.0) && blocking ) { // -1.0 to avoid decimal values
+		var reduction : float = Mathf.Abs( amount * 0.6 );
+		amount += reduction;
+		changePower( reduction );
 	}
 	
-	health = Mathf.Clamp( (health + hp), 0.0, 100.0 );
+	health = Mathf.Clamp( (health + amount), 0.0, 100.0 );
 	
-	GameManager.instance.alert( parseInt( hp ).ToString(), getCenterInWorld() );
+	GameManager.instance.alert( parseInt( amount ).ToString(), getCenterInWorld() );
 }
 
 // utility function to check if health is greater than zero
@@ -219,7 +226,7 @@ function checkHealthAndPower() {
 	} else {
 		eliminated = false;
 		
-		if ((health < 10.0) && !GameManager.instance.cutScenePlaying())
+		if ((health < 10.0) && !GameManager.instance.cutScenePlaying)
 			GameManager.instance.audioPlay( 'Heartbeat' );
 			
 		// health and power regeneration over time
@@ -328,28 +335,21 @@ function setVerticalMovement() {
 	// prevent jumping too fast after each other
 	if ((lastJumpTime + jumpRepeatTime) > modifiedTime) return;
 
-	if( characterController.isGrounded ) {
-		// jump only when pressing the button down with a timeout so you can press the button slightly before landing		
-		if( canJump && (modifiedTime < (lastJumpButtonTime + jumpTimeout)) ) {
-			audioPlay( CharacterSound.Jump );
-			Instantiate( GameManager.instance.jumpEffectPrefab ).transform.position = (getFootPosInWorld() + Vector3( 0.0, 1.0, 0.0 ));
-			verticalSpeed = Mathf.Sqrt( 2 * jumpHeight * gravity );
-			jumping = true;
-			lastJumpTime = modifiedTime;
-			lastJumpButtonTime = -10;
-		}
+	// jump uses a timeout so you can jump slightly before landing		
+	if( canJump && characterController.isGrounded && (modifiedTime < (lastJumpButtonTime + jumpTimeout)) ) {
+		audioPlay( CharacterSound.Jump );
+		Instantiate( GameManager.instance.jumpEffectPrefab ).transform.position = (getFootPosInWorld() + Vector3( 0.0, 1.0, 0.0 ));
+		verticalSpeed = Mathf.Sqrt( 2.0 * jumpHeight * gravity );
+		jumping = true;
+		lastJumpTime = modifiedTime;
+		lastJumpButtonTime = -10.0;
 	}
 }
 
 // move the character controller
 function doMovement() {
-	if( GameManager.instance.cutScenePlaying() ) {
-		// only do gravity during cutscenes
-		characterController.Move( modifiedDeltaTime * Vector3( 0, verticalSpeed, 0 ) );
-	} else {
-		characterController.Move( modifiedDeltaTime * 
-			((moveDirection * moveSpeed) + Vector3( 0, verticalSpeed, 0 ) + inAirVelocity + hitForce + explosionForce) );
-	}
+	characterController.Move( modifiedDeltaTime * 
+		((moveDirection * moveSpeed) + Vector3( 0, verticalSpeed, 0 ) + inAirVelocity + hitForce + explosionForce) );
 	
 	if( characterController.isGrounded ) {
 		inAirVelocity = Vector3.zero;
@@ -420,7 +420,7 @@ function determineState() {
 	}
 	
 	// grounded button-activated states (overrides joystick)
-	if( isNearlyGrounded ) {
+	//if( isNearlyGrounded ) {
 		switch( true ) {
 			case isCurrentAttack( CharacterState.Attack1, 'A' ):
 				state = CharacterState.Attack1;
@@ -435,14 +435,14 @@ function determineState() {
 				state = CharacterState.Special2;
 				break;
 		}
-	}
+	//}
 	
 	// game-activated states (overrides all)
 	switch( true ) {
 		case (cutScenePlaying || (activeCutScene == CutScene.Victory)):
 			state = CharacterState.CutScene;
 			break;
-		case (!isAlive()):
+		case !isAlive():
 			state = CharacterState.Dead;
 			break;
 		case (explosionForce.magnitude > 0.1):			
@@ -450,6 +450,9 @@ function determineState() {
 			break;
 		case (hitForce.magnitude > 3.0):			
 			state = CharacterState.Hit;
+			break;
+		case GameManager.instance.cutScenePlaying:
+			state = CharacterState.Idle;
 			break;
 	}
 	

@@ -8,7 +8,7 @@ public var disable : boolean = false;
 private var lastSpawnTime : float;
 
 function Update() {
-	if( !disable && !GameManager.instance.cutScenePlaying() && ((Time.timeSinceLevelLoad - lastSpawnTime) > timeBetween) ) {
+	if( !disable && !GameManager.instance.cutScenePlaying && ((Time.timeSinceLevelLoad - lastSpawnTime) > timeBetween) ) {
 		var range : float = Mathf.Clamp( (GetComponent( 'MainCamera' ).largestX / 2), Global.sharedMinX, Global.sharedMaxX );
 		
 		var xPos : float = Random.Range( (transform.position.x - range), (transform.position.x + range) );

@@ -56,7 +56,7 @@ class DefaultScene extends SceneManager {
 					GameManager.instance.audioFadeToVolume( 'backgroundMusic', 0.1, 6.0 );
 					
 					initial = false;
-				} else if( !GameManager.instance.cutScenePlaying() ) {
+				} else if( !GameManager.instance.cutScenePlaying ) {
 					// progress to next round (or scoreboard) if cutscenes finished
 					GameManager.instance.nextRoundOrScoreboard();
 				}
@@ -168,7 +168,7 @@ class DefaultScene extends SceneManager {
 		halfWidth = (width / 2);
 		halfHeight = (height / 2);
 		
-		if( GameManager.instance.cutScenePlaying() ) {
+		if( GameManager.instance.cutScenePlaying ) {
 			if( !playedOnce ) {
 				GameManager.instance.audioPlay( 'Round' + (GameManager.instance.round + 1) );
 				playedOnce = true;
