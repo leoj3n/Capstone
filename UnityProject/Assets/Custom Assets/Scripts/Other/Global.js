@@ -53,10 +53,6 @@ enum AttackType {
 	Timed,
 	Constant
 }
-enum ButtonType {
-	PressAndHold,
-	PressOnce
-}
 enum CastType {
 	Raycast,
 	Capsule
@@ -70,6 +66,10 @@ enum ControllerTeam { Green, Red, Blue, Orange, Count } // need at least 4 teams
 enum ControllerState { SittingOut, TeamSelect, Ready }
 enum SceneEnum { Start, CharacterSelect, LevelSelect, Scoreboard, Count }
 enum LevelEnum { Rooftop, Bridge, Fountain, Count } // use SceneEnum.Count to offset LevelEnum
+enum AlertTextType {
+	Plain,
+	Gaudy
+}
 
 // use these bounds to restrict avatar movement
 static var sharedZ : float = 0.0;

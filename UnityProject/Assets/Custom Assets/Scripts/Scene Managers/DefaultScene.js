@@ -22,6 +22,8 @@ class DefaultScene extends SceneManager {
 			if (avatars.Length > largestTeamCount) largestTeamCount = avatars.Length;
 		}
 		
+		aliveTeamEnums = GameManager.instance.getAliveControllerTeamEnums();
+		
 		GameManager.instance.audioFadeInAndLoop( 'ambientNoise', ambientNoise, ambientNoiseVolume, fadeInBackgroundMusic );
 	}
 	

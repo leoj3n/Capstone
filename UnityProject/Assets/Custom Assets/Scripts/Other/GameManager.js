@@ -9,6 +9,8 @@ class GameManager extends MonoBehaviour {
 	public static var instance : GameManager;
 	
 	// variables available in the inspector (accessible via GameManager.instance.(variable))
+	public var alertTextPrefabs : GameObject[];
+	public var expectedAlertTextPrefabs : AlertTextType; // just to expose the expected order in the inspector
 	public var characterPrefabs : GameObject[];
 	public var expectedOrder : CharacterEnum; // just to expose the expected order in the Inspector
 	public var jumpEffectPrefab : GameObject;
@@ -59,6 +61,7 @@ class GameManager extends MonoBehaviour {
 	private var roundResults : ControllerTeam[];
 	private var resetRounds : boolean = false;
 	private var audioListener : AudioListener;
+	private var floatingAlert : FloatingAlert;
 	
 	// MAIN FUNCTIONS
 	
@@ -122,6 +125,8 @@ class GameManager extends MonoBehaviour {
 		clearRoundResults();
 		
 		audioListener = Camera.main.GetComponent( AudioListener );
+		
+		floatingAlert = GetComponent( FloatingAlert );
 	}
 	
 	private function clearRoundResults() {
@@ -131,6 +136,19 @@ class GameManager extends MonoBehaviour {
 	
 	// PUBLIC FUNCTIONS
 	
+	// utility function to display an alert message
+	public function alert( message : String, position : Vector3, parent : Transform, type : AlertTextType ) {
+		floatingAlert.textPrefab = alertTextPrefabs[type];
+		floatingAlert.alert( message, position, parent );
+	}
+	public function alert( message : String, position : Vector3, type : AlertTextType ) {
+		alert( message, position, null, type );
+	}
+	public function alert( message : String, position : Vector3 ) {
+		alert( message, position, null, AlertTextType.Plain );
+	}
+	
+	// utility function to destroy all objects of passed type
 	public function destroyAllOfType( type ) {
 		var objects : GameObject[] = GameObject.FindObjectsOfType( typeof( type ) );
 		for (var object : GameObject in objects) Destroy( object );
@@ -231,7 +249,7 @@ class GameManager extends MonoBehaviour {
 			
 			Global.bindAvatarToController( avatar, ce ); // set a reference to the Controller in Avatar
 			avatar.GetComponent( Avatar ).playCutScene( CutScene.Intro ); // assume intro should be played upon instantiation
-			avatar.GetComponentInChildren( RenderQueue ).position = (3004 + i); // to avoid z-buffer problems for two of the same character
+			avatar.GetComponentInChildren( RenderQueue ).position = (3004 + i); // to avoid z-buffer problems
 			
 			avatars[i] = avatar;
 		}

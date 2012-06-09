@@ -13,7 +13,7 @@ function Awake() {
 		if (modifier > (modifierPrefabs.Length - 1)) modifier = 0;
 	}
 	
-	//modifier = 3; // debug
+	modifier = 3; // debug
 	
 	GameManager.instance.lastModifier = modifier;
 	

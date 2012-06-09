@@ -58,7 +58,8 @@ protected var loop : boolean = true;
 protected var offset : Vector3 = Vector3.zero;
 protected var fps : float = 16.0;
 protected var force : boolean = false;
-private var modifiedDeltaTime : float = 0.0;
+protected var modifiedTime : float = 0.0;
+protected var modifiedDeltaTime : float = 0.0;
 protected var timeWarpFactor : float = 1.0;
 protected var superSpeedFactor : float = 0.0;
 
@@ -104,8 +105,12 @@ function OnGUI() {
 	
 	var point = Camera.main.WorldToScreenPoint( getCenterInWorld() + Vector2( 0.0, (getScaledHeight() * 0.80) ) );
 	
+	// controller label
+	
 	var rect : Rect = Rect( (point.x - 30.0), (Screen.height - point.y), 100.0, 60.0 );
 	GUI.Label( rect, ('Controller ' + parseInt( getController() )) );
+	
+	// health and power
 	
 	rect = Rect( (point.x - 30.0), (Screen.height - point.y + 20.0), (100.0 * (getHealth() / 100.0)), 10.0 );
 	GUI.DrawTexture( rect, GameManager.instance.healthBarTexture );
@@ -116,14 +121,15 @@ function OnGUI() {
 
 function Update() {
 	if( isControllable && !GameManager.instance.paused) {
-		if (Global.getAxis( 'Vertical', boundController ) >= 0.2) lastJumpButtonTime = Time.time; // jump
+		if (Global.getAxis( 'Vertical', boundController ) >= 0.2) lastJumpButtonTime = modifiedTime; // jump
 		
 		// force correct sign of z-scale
 		if (Mathf.Sign( textureAtlasCube.transform.localScale.z ) == 1.0)
 			textureAtlasCube.transform.localScale.z *= -1.0;
 		
-		// modify delta time
+		// modify delta time and time
 		modifiedDeltaTime = (Time.deltaTime * (timeWarpFactor + superSpeedFactor));
+		modifiedTime += modifiedDeltaTime;
 		
 		// resize character controller height
 		resizeCharacterControllerHeight( Global.getSize( taRenderer ).y );
@@ -171,6 +177,8 @@ function changeHealth( hp : float ) {
 	}
 	
 	health = Mathf.Clamp( (health + hp), 0.0, 100.0 );
+	
+	GameManager.instance.alert( parseInt( hp ).ToString(), getCenterInWorld() );
 }
 
 // utility function to check if health is greater than zero
@@ -318,16 +326,16 @@ function setVerticalMovement() {
 	verticalSpeed = (characterController.isGrounded ? -0.05 : (verticalSpeed - (gravity * modifiedDeltaTime)));
 	
 	// prevent jumping too fast after each other
-	if (lastJumpTime + jumpRepeatTime > Time.time) return;
+	if ((lastJumpTime + jumpRepeatTime) > modifiedTime) return;
 
 	if( characterController.isGrounded ) {
 		// jump only when pressing the button down with a timeout so you can press the button slightly before landing		
-		if( canJump && (Time.time < (lastJumpButtonTime + jumpTimeout)) ) {
+		if( canJump && (modifiedTime < (lastJumpButtonTime + jumpTimeout)) ) {
 			audioPlay( CharacterSound.Jump );
 			Instantiate( GameManager.instance.jumpEffectPrefab ).transform.position = (getFootPosInWorld() + Vector3( 0.0, 1.0, 0.0 ));
 			verticalSpeed = Mathf.Sqrt( 2 * jumpHeight * gravity );
 			jumping = true;
-			lastJumpTime = Time.time;
+			lastJumpTime = modifiedTime;
 			lastJumpButtonTime = -10;
 		}
 	}
@@ -709,7 +717,7 @@ function timeToAttack( type : AttackType, passedVar ) : boolean {
 			if (!attackedThisLoop) isTime = (taRenderer.getFrameIndex() == taRenderer.getWidestFrameIndex());
 			break;
 		case AttackType.Timed:
-			isTime = ((Time.time - lastAttackTime) > passedVar);
+			isTime = ((modifiedTime - lastAttackTime) > passedVar);
 			break;
 		case AttackType.Constant:
 			isTime = true;
@@ -717,7 +725,7 @@ function timeToAttack( type : AttackType, passedVar ) : boolean {
 	}
 	
 	if( isTime ) {
-		lastAttackTime = Time.time;
+		lastAttackTime = modifiedTime;
 		attackedThisLoop = true;
 	}
 	
