@@ -143,6 +143,8 @@ class GameManager extends MonoBehaviour {
 	
 	// utility function to check if a cutscene is playing
 	private function isCutScenePlaying() : boolean {
+		if (avatars == null) return false;
+		
 		// loop through avatars and see if any are playing a cutscene
 		for( var avatar : GameObject in avatars ) {
 			if (avatar == null) continue;

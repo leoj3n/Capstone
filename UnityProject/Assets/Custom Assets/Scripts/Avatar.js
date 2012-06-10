@@ -230,7 +230,7 @@ function checkHealthAndPower() {
 			GameManager.instance.audioPlay( 'Heartbeat' );
 			
 		// health and power regeneration over time
-		changePower( modifiedDeltaTime );
+		changePower( modifiedDeltaTime * 0.5 );
 		//changeHealth( modifiedDeltaTime );
 	}
 }
@@ -349,7 +349,7 @@ function setVerticalMovement() {
 // move the character controller
 function doMovement() {
 	characterController.Move( modifiedDeltaTime * 
-		((moveDirection * moveSpeed) + Vector3( 0, verticalSpeed, 0 ) + inAirVelocity + hitForce + explosionForce) );
+		((moveDirection * moveSpeed) + Vector3( 0, verticalSpeed, 0 ) + inAirVelocity + (blocking ? (hitForce * 0.4) : hitForce) + explosionForce) );
 	
 	if( characterController.isGrounded ) {
 		inAirVelocity = Vector3.zero;
@@ -406,9 +406,6 @@ function determineState() {
 		case jumping:
 			state = CharacterState.Jump;
 			break;
-		case (!isMoving && (vAxis <= -0.2)):
-			state = CharacterState.Block;
-			break;
 		case !isNearlyGrounded: // not joystick-activated but needs to be here
 			state = CharacterState.Drop;
 			break;
@@ -448,6 +445,9 @@ function determineState() {
 			break;
 		case (explosionForce.magnitude > 0.1):			
 			state = CharacterState.Fall;
+			break;
+		case (!isMoving && (vAxis <= -0.2)):
+			state = CharacterState.Block;
 			break;
 		case (hitForce.magnitude > 3.0):			
 			state = CharacterState.Hit;
@@ -523,7 +523,7 @@ function determineAtlas() {
 		case CharacterState.Block:
 			atlas = CharacterAtlas.Block;
 			blocking = true;
-			canMove = false;
+			canMove = canJump = false;
 			break;
 		case CharacterState.Attack1:
 		case CharacterState.Attack2:
@@ -937,7 +937,7 @@ function getName() : String {
 function OutOfBounds() {
 	//transform.position = Vector3( 0.0, 4.0, Global.sharedZ );
 	//Debug.Log( 'Avatar has been returned from out of bounds.' );
-	changeHealth( -100.0 );
+	health = 0.0;
 }
 
 // utility function to make playing character audio easier
