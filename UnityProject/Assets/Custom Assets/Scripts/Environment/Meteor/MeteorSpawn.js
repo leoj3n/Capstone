@@ -41,6 +41,8 @@ function Update() {
 				if ((shakeable == collider.transform) || (collider.transform.position.y > 6.0)) skip = true;
 			}
 			
+			if (collider.transform.name == 'Crater (clone)') Debug.Log( 'crater!' );
+			
 			if (!skip) shakeables.Add( collider.transform );
 		}
 		
@@ -48,8 +50,11 @@ function Update() {
 		var dist : float = (0.4 * Mathf.Clamp01( shake )); // distance of shake relative to shake value
 		var shakeRange : float = Global.pingPongRange( t, dist );
 		
-		for (var shakeable : Transform in shakeables)
+		for( var shakeable : Transform in shakeables ) {
+			if (shakeable == null) continue;
+			
 			shakeable.position = Vector3.Slerp( shakeable.position, (shakeable.position + Vector3( shakeRange, 0.0, shakeRange )), t );
+		}
 			
 		shake -= Time.deltaTime;
 	} else {

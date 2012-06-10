@@ -518,6 +518,7 @@ function determineAtlas() {
 		case CharacterState.Hit:
 			atlas = CharacterAtlas.Hit;
 			loop = false;
+			walkSpeed = (origWalkSpeed * 0.6);
 			break;
 		case CharacterState.Block:
 			atlas = CharacterAtlas.Block;
@@ -934,8 +935,9 @@ function getName() : String {
 
 // use SendMessage to call this
 function OutOfBounds() {
-	transform.position = Vector3( 0.0, 4.0, Global.sharedZ );
-	Debug.Log( 'Avatar has been returned from out of bounds.' );
+	//transform.position = Vector3( 0.0, 4.0, Global.sharedZ );
+	//Debug.Log( 'Avatar has been returned from out of bounds.' );
+	changeHealth( -100.0 );
 }
 
 // utility function to make playing character audio easier

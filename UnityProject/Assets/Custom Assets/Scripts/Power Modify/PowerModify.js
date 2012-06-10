@@ -37,3 +37,7 @@ function Update() {
 	
 	if (GameManager.instance.cutScenePlaying) Destroy( gameObject );
 }
+
+function OutOfBounds() {
+	Destroy( gameObject );
+}
