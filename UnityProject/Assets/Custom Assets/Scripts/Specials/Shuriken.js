@@ -14,9 +14,9 @@ function Update() {
 	transform.Rotate( Vector3.down * speed );
 }
 
-function OnCollisionEnter( collision : Collision ) {
-	if (Global.isAvatar( collision.gameObject ))
-		collision.transform.GetComponent( Avatar ).addHitForce( transform.position, (14.0 + collision.impactForceSum.magnitude), 4.0 );
+function OnTriggerEnter( other : Collider ) {
+	if (Global.isAvatar( other.gameObject ))
+		other.transform.GetComponent( Avatar ).addHitForce( transform.position, 30.0, 4.0 );
 	
 	Destroy( gameObject );
 }

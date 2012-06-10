@@ -72,12 +72,14 @@ function OnGUI() {
 }
 
 function OnCollisionEnter( collision : Collision ) {
-	Camera.main.SendMessage( 'AddShake', 0.05 );
+	//Camera.main.SendMessage( 'AddShake', 0.05 );
+	GameObject.Find( 'Scene Manager' ).SendMessage( 'AddShake', 0.05 ); // tell the scene manager to shake the shakeable objects
 	health -= 10.0;
 	
 	// do the following if out of health OR if other object has a tag (any tag at all)
 	if( !dead && ((health < 0) || !collision.collider.CompareTag( 'Untagged' )) ) {
-		Camera.main.SendMessage( 'AddShake', 1.2 );
+		//Camera.main.SendMessage( 'AddShake', 1.2 );
+		GameObject.Find( 'Scene Manager' ).SendMessage( 'AddShake', 1.2 );
 		GameManager.instance.audioPlay( 'meteorExplode' );
 		
 		var a : AudioSource = GameManager.instance.audioPlay( 'meteorDebris', true, true, maxCrackleVolume ).audioSource;

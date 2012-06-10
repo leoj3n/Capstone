@@ -262,6 +262,10 @@ static function multiplyVectorBySigns( v : Vector3, signs : Vector3 ) {
 	return Vector3( (v.x * Mathf.Sign( signs.x )), (v.y * Mathf.Sign( signs.y )), (v.z * Mathf.Sign( signs.z )) );
 }
 
+static function pingPongRange( t : float, range : float ) {
+	return (Mathf.PingPong( t, range ) - (range / 2.0));
+}
+
 // GLOBAL AVATAR FUNCTIONS
 
 // utility function add explosion force to one or multiple avatars

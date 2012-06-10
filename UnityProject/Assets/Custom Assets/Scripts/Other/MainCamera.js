@@ -137,7 +137,7 @@ function Update() {
 	
 	transform.position = Vector3.SmoothDamp( transform.position, (sway + Vector3( averagePosition.x, averagePosition.y, z )), cameraVelocity, t );
 	if( camera.isOrthoGraphic ) {
-		transform.position.y = averagePosition.y;
+		transform.position.y = Mathf.Lerp( transform.position.y, averagePosition.y, (t * 2.0) );
 		transform.LookAt( averagePosition );
 	} else {
 		transform.rotation = Quaternion.Slerp( transform.rotation, Quaternion.LookRotation( averagePosition - transform.position ), t );
