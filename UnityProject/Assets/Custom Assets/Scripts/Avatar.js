@@ -29,7 +29,7 @@ protected var taRenderer : TextureAtlasRenderer;
 protected var textureAtlasCube : Transform;
 protected var origShadowAspectRatio : float;
 protected var origFps : float;
-protected var startPos : Vector3;
+protected var origWalkSpeed : float;
 
 // STATE
 protected var facing : int = 1; // 1 = right, -1 = left
@@ -95,7 +95,7 @@ function Awake() {
 function Start() {
 	origShadowAspectRatio = shadowProjector.aspectRatio;
 	origFps = taRenderer.fps;
-	startPos = transform.position;
+	origWalkSpeed = walkSpeed;
 }
 
 function OnGUI() {
@@ -399,6 +399,7 @@ function determineState() {
 	canMove = true;
 	shadowUseTAC = false;
 	blocking = false;
+	walkSpeed = origWalkSpeed;
 	
 	// joystick-activated states
 	switch( true ) {
@@ -527,7 +528,7 @@ function determineAtlas() {
 		case CharacterState.Attack2:
 			atlas = CharacterAtlas.Attack2;
 			offset = Vector3( -0.5, 0.0, 0.0 );
-			//canMove = false;
+			walkSpeed = (origWalkSpeed * 0.3);
 			updatePressedOnce( state );
 			break;
 		case CharacterState.Special1:
