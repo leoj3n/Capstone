@@ -10,6 +10,7 @@ public var maximumShake : float = 2.0;
 private var lastSpawnTime : float;
 private var shake : float = 0.0;
 private var shakeables : Array;
+private var cumulativeShakeVector : Vector3;
 
 function Start() {
 	shakeables = new Array();
@@ -32,33 +33,42 @@ function Update() {
 	// do any necessary shaking of objects
 	var i : int;
 	if( shake > 0.0 ) {
-		var colliders : Collider[] = Physics.OverlapSphere( Vector3.zero, 3000, layersToShake );
+		var objectsToShake : GameObject[] = Global.findGameObjectsUsingLayerMask( layersToShake );
 		
-		for( var collider : Collider in colliders ) {
+		for( var object : GameObject in objectsToShake ) {
 			var skip : boolean = false;
 			
 			for( var shakeable : Transform in shakeables ) {
-				if ((shakeable == collider.transform) || (collider.transform.position.y > 6.0)) skip = true;
+				if ((shakeable == object.transform) || (object.transform.position.y > 6.0)) skip = true;
 			}
 			
-			if (collider.transform.name == 'Crater (clone)') Debug.Log( 'crater!' );
-			
-			if (!skip) shakeables.Add( collider.transform );
+			if (!skip) shakeables.Add( object.transform );
 		}
 		
 		var t : float = (60 * (1 + shake) * Time.deltaTime); // speed of slerp relative to shake value
 		var dist : float = (0.4 * Mathf.Clamp01( shake )); // distance of shake relative to shake value
-		var shakeRange : float = Global.pingPongRange( t, dist );
+		var shakeRange : float = (Mathf.Round( Global.pingPongRange( t, dist ) * 100.0) / 100.0); // round to two decimal places
+		var shakeVector : Vector3 = Vector3( shakeRange, 0.0, shakeRange );
+		cumulativeShakeVector += shakeVector;
 		
 		for( var shakeable : Transform in shakeables ) {
 			if (shakeable == null) continue;
 			
-			shakeable.position = Vector3.Slerp( shakeable.position, (shakeable.position + Vector3( shakeRange, 0.0, shakeRange )), t );
+			shakeable.position += shakeVector;
 		}
 			
 		shake -= Time.deltaTime;
 	} else {
-		shakeables.Clear();
+		var beforeChange : Vector3 = cumulativeShakeVector;
+		cumulativeShakeVector = Vector3.Lerp( cumulativeShakeVector, Vector3.zero, (Time.deltaTime * 2.0) );
+		var lerpDelta : Vector3 = (beforeChange - cumulativeShakeVector);
+		
+		if( lerpDelta == Vector3.zero ) {
+			shakeables.Clear(); // shake has been undone, safe to clear the array
+		} else {
+			// undo shake over time
+			for (var shakeable : Transform in shakeables) shakeable.position -= lerpDelta;
+		}
 	}
 }
 

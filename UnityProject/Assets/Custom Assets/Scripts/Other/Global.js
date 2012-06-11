@@ -347,7 +347,7 @@ static function getAxis( axis : String, controllers : ControllerEnum[] ) : float
 	return largest;
 }
 
-// returns volume based on impact force and mass (if available)
+// returns audio volume based on impact force and mass (if available)
 // expects mass of objects to be between 0.1 and 10.0 (hence the multiplication by 0.01)
 static function collisionVolume( collision : Collision, fallbackMass : float ) : float {
 	return Mathf.Clamp01( collision.impactForceSum.magnitude * 
@@ -355,4 +355,32 @@ static function collisionVolume( collision : Collision, fallbackMass : float ) :
 }
 static function collisionVolume( collision : Collision ) : float {
 	return collisionVolume( collision, 1.0 );
+}
+
+// returns all game objects on the specified layer
+static function findGameObjectsWithLayer( layer : int ) : GameObject[] {
+	var objects : GameObject[] = FindObjectsOfType( GameObject );
+	var goArray : Array = new Array();
+	
+	for( var object : GameObject in objects ) {
+		if (object.layer == layer) goArray.Add( object );
+	}
+	
+	if (goArray.Count == 0) return null;
+	
+	return goArray.ToBuiltin( GameObject );
+}
+
+// returns all game objects on the specified layers
+static function findGameObjectsUsingLayerMask( layerMask : int ) : GameObject[] {
+	var objects : GameObject[] = FindObjectsOfType( GameObject );
+	var goArray : Array = new Array();
+	
+	for( var object : GameObject in objects ) {
+		if ((layerMask & (1 << object.layer)) != 0) goArray.Add( object );
+	}
+	
+	if (goArray.Count == 0) return null;
+	
+	return goArray.ToBuiltin( GameObject );
 }
