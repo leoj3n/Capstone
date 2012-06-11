@@ -86,7 +86,6 @@ class GameManager extends MonoBehaviour {
 		audioResetAll();
 		
 		if( resetRounds ) {
-			Debug.Log( round + Time.time );
 			round = 0; // set the round back to zero
 			clearRoundResults();
 			resetRounds = false;

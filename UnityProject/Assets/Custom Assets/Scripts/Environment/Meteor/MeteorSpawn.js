@@ -68,7 +68,11 @@ function Update() {
 			shakeables.Clear(); // shake has been undone, safe to clear the array
 		} else if( shakeables.Count > 0 ) {
 			// undo shake over time
-			for (var shakeable : Transform in shakeables) shakeable.position -= lerpDelta;
+			for( var shakeable : Transform in shakeables ) {
+				if (shakeable == null) continue;
+				
+				shakeable.position -= lerpDelta;
+			}
 		}
 	}
 }
