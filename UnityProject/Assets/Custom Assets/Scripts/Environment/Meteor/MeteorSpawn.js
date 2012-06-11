@@ -6,6 +6,7 @@ public var debug : boolean = false;
 public var disable : boolean = false;
 public var layersToShake : LayerMask;
 public var maximumShake : float = 2.0;
+public var maximumHeightToShakeFrom : float = 12.0;
 
 private var lastSpawnTime : float;
 private var shake : float = 0.0;
@@ -20,8 +21,8 @@ function Update() {
 	if( !disable && !GameManager.instance.cutScenePlaying && ((Time.timeSinceLevelLoad - lastSpawnTime) > timeBetween) ) {
 		var range : float = Mathf.Clamp( (Camera.main.GetComponent( 'MainCamera' ).largestX / 2.0), Global.sharedMinX, Global.sharedMaxX );
 		
-		var xPos : float = Random.Range( (transform.position.x - range), (transform.position.x + range) );
-		var yPos : float = (transform.position.y + Camera.main.orthographicSize + yOffset);
+		var xPos : float = Random.Range( (Camera.main.transform.position.x - range), (Camera.main.transform.position.x + range) );
+		var yPos : float = (Camera.main.transform.position.y + Camera.main.orthographicSize + yOffset);
 		
 		if (debug) xPos = 0.0;
 			
@@ -39,7 +40,7 @@ function Update() {
 			var skip : boolean = false;
 			
 			for( var shakeable : Transform in shakeables ) {
-				if ((shakeable == object.transform) || (object.transform.position.y > 6.0)) skip = true;
+				if ((shakeable == object.transform) || (object.transform.position.y > (maximumHeightToShakeFrom / 2.0))) skip = true;
 			}
 			
 			if (!skip) shakeables.Add( object.transform );
@@ -48,7 +49,7 @@ function Update() {
 		var t : float = (60 * (1 + shake) * Time.deltaTime); // speed of slerp relative to shake value
 		var dist : float = (0.4 * Mathf.Clamp01( shake )); // distance of shake relative to shake value
 		var shakeRange : float = (Mathf.Round( Global.pingPongRange( t, dist ) * 100.0) / 100.0); // round to two decimal places
-		var shakeVector : Vector3 = Vector3( shakeRange, 0.0, shakeRange );
+		var shakeVector : Vector3 = Vector3( shakeRange, (shakeRange / 2.0), 0.0 );
 		cumulativeShakeVector += shakeVector;
 		
 		for( var shakeable : Transform in shakeables ) {
@@ -65,14 +66,14 @@ function Update() {
 		
 		if( lerpDelta == Vector3.zero ) {
 			shakeables.Clear(); // shake has been undone, safe to clear the array
-		} else {
+		} else if( shakeables.Count > 0 ) {
 			// undo shake over time
 			for (var shakeable : Transform in shakeables) shakeable.position -= lerpDelta;
 		}
 	}
 }
 
-function AddShake( amount : float ) {
-	shake += amount;
+function AddShake( fromPoint : Vector3 ) {
+	shake += (Mathf.Max( (maximumHeightToShakeFrom - fromPoint.y), 0.0 ) * (1.2 / maximumHeightToShakeFrom));
 	if (shake > maximumShake) shake = maximumShake;
 }

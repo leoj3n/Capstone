@@ -170,11 +170,14 @@ function Update() {
 	shadowProjector.enabled = isControllable;
 }
 
+function onLastAliveTeam() : boolean {
+	var aliveTeamEnums : ControllerTeam[] = GameManager.instance.getAliveControllerTeamEnums();
+	return ((aliveTeamEnums.Length == 1) && (aliveTeamEnums[0] == getTeam()));
+}
+
 // utility function to safely change health
 function changeHealth( amount : float ) {
-	// do not change if on last alive team
-	var aliveTeamEnums : ControllerTeam[] = GameManager.instance.getAliveControllerTeamEnums();
-	if ((aliveTeamEnums.Length == 1) && (aliveTeamEnums[0] == getTeam())) return;
+	if (onLastAliveTeam()) return; // do not change health if controller is on last alive team
 	
 	// if blocking, convert 60% of health loss into power
 	if( (amount < -1.0) && blocking ) { // -1.0 to avoid decimal values
@@ -935,9 +938,10 @@ function getName() : String {
 
 // use SendMessage to call this
 function OutOfBounds() {
-	//transform.position = Vector3( 0.0, 4.0, Global.sharedZ );
-	//Debug.Log( 'Avatar has been returned from out of bounds.' );
-	health = 0.0;
+	if (onLastAliveTeam()) // if on last alive team
+		transform.position = Vector3( 0.0, 4.0, Global.sharedZ ); // return from out of bounds
+	else
+		health = 0.0; // else feel free to kill this avatar
 }
 
 // utility function to make playing character audio easier
