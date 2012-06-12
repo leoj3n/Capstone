@@ -139,6 +139,7 @@ function Update() {
 	if( camera.isOrthoGraphic ) {
 		transform.position.y = Mathf.Lerp( transform.position.y, averagePosition.y, (t * 2.0) );
 		transform.LookAt( averagePosition );
+		camera.nearClipPlane = -25.0;
 	} else {
 		transform.rotation = Quaternion.Slerp( transform.rotation, Quaternion.LookRotation( averagePosition - transform.position ), t );
 	}

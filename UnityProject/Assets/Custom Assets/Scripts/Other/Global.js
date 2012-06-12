@@ -73,8 +73,8 @@ enum AlertTextType {
 
 // use these bounds to restrict avatar movement
 static var sharedZ : float = 0.0;
-static var sharedMinX : float = -32.0;
-static var sharedMaxX : float = 32.0;
+static var sharedMinX : float = -36.0;
+static var sharedMaxX : float = 36.0;
 
 class Score {
 	public var damageTaken : float;

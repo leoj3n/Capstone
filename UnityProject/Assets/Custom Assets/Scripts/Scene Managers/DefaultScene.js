@@ -6,7 +6,7 @@ class DefaultScene extends SceneManager {
 	private var countDownSeconds : int = 3;
 	private var countdownStartTime : float = 0.0;
 	private var timeBetweenPM : float = 10.0;
-	private var yOffsetPM : float = 10.0;
+	private var yOffsetPM : float = 25.0;
 	private var lastSpawnTimePM : float;
 	private var initial : boolean = true;
 	private var aliveTeamEnums : ControllerTeam[];
