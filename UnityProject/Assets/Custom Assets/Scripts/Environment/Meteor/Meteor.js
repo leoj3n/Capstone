@@ -95,7 +95,7 @@ function OnCollisionEnter( collision : Collision ) {
 		if (collision.collider.CompareTag( 'Floor' ))
 			Instantiate( craterPrefab, 
 				Vector3( collision.contacts[0].point.x, (collision.contacts[0].point.y + 0.01), Global.sharedZ ), 
-				Quaternion.identity );
+				Quaternion.FromToRotation( Vector3.up, collision.contacts[0].normal ) );
 		
 		// detach particle emitters from meteor so they don't get destroyed
 		var emitters : Component[] = GetComponentsInChildren( ParticleEmitter );
