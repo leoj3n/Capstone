@@ -63,7 +63,7 @@ function Update() {
 
 function OnGUI() {
 	var point = Camera.main.WorldToScreenPoint( transform.position );
-	if( (point.y > Screen.height) && (point.y < (Screen.height * 2.0)) ) {
+	if( (point.y > Screen.height) && (point.y < (Screen.height * 2.5)) ) {
 		
 		var rect : Rect = Rect( Mathf.Clamp( point.x, -30.0, (Screen.width - 30.0) ), 
 			20.0, 60.0, 60.0 );
