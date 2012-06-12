@@ -46,10 +46,10 @@ function Update() {
 			if (!skip) shakeables.Add( object.transform );
 		}
 		
-		var t : float = (60 * (1 + shake) * Time.deltaTime); // speed of slerp relative to shake value
-		var dist : float = (0.4 * Mathf.Clamp01( shake )); // distance of shake relative to shake value
+		var t : float = (70.0 * (1.0 + shake) * Time.deltaTime); // speed shake relative to shake value
+		var dist : float = (0.3 * Mathf.Clamp01( shake )); // distance of shake relative to shake value
 		var shakeRange : float = (Mathf.Round( Global.pingPongRange( t, dist ) * 100.0) / 100.0); // round to two decimal places
-		var shakeVector : Vector3 = Vector3( shakeRange, (shakeRange / 2.0), 0.0 );
+		var shakeVector : Vector3 = Vector3( shakeRange, (shakeRange / 4.0), (shakeRange / 2.0) );
 		cumulativeShakeVector += shakeVector;
 		
 		for( var shakeable : Transform in shakeables ) {
@@ -61,7 +61,7 @@ function Update() {
 		shake -= Time.deltaTime;
 	} else {
 		var beforeChange : Vector3 = cumulativeShakeVector;
-		cumulativeShakeVector = Vector3.Lerp( cumulativeShakeVector, Vector3.zero, (Time.deltaTime * 2.0) );
+		cumulativeShakeVector = Vector3.Lerp( cumulativeShakeVector, Vector3.zero, (Time.deltaTime * 4.0) );
 		var lerpDelta : Vector3 = (beforeChange - cumulativeShakeVector);
 		
 		if( lerpDelta == Vector3.zero ) {

@@ -93,7 +93,7 @@ class GameManager extends MonoBehaviour {
 	}
 	
 	function Update() {
-		audioListener.volume = audioListenerVolume;
+		audioListener.volume = Mathf.Clamp01( audioListenerVolume );
 		
 		for (var asm : AudioSourceManaged in audioSources.Values) asm.Update();
 		
@@ -158,7 +158,7 @@ class GameManager extends MonoBehaviour {
 	
 	// utility function to display an alert message
 	public function alert( message : String, position : Vector3, parent : Transform, type : AlertTextType ) {
-		floatingAlert.textPrefab = alertTextPrefabs[type];
+		floatingAlert.alertTextPrefab = alertTextPrefabs[type];
 		floatingAlert.alert( message, position, parent );
 	}
 	public function alert( message : String, position : Vector3, type : AlertTextType ) {
