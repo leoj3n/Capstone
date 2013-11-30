@@ -49,7 +49,7 @@ class DefaultScene extends SceneManager {
 					
 					// play victory for all avatars on this team
 					for( var avatar : GameObject in avatars ) {
-						avatar.GetComponent( Avatar ).playCutScene( CutScene.Victory );
+						avatar.GetComponent( PlayerAvatar ).playCutScene( CutScene.Victory );
 					}
 					
 					initial = false;
@@ -82,7 +82,7 @@ class DefaultScene extends SceneManager {
 						GUILayout.Box( ControllerTeam.GetName( ControllerTeam, i ) + ' Team' );
 						
 						for( var avatar : GameObject in avatars ) {
-							var component : Avatar = avatar.GetComponent( Avatar );
+							var component : PlayerAvatar = avatar.GetComponent( PlayerAvatar );
 							var HPPM : String = ((component.isAlive()) ? 'HP [' + parseInt( Mathf.Max( component.getHealth(), 1.0 ) ) + '] PM [0%]' : 'You are dead!' );
 							GUILayout.Box( 'Controller ' + parseInt( component.getController() ) + '\n' + component.getName() + '\n' + HPPM );
 						}
@@ -96,13 +96,13 @@ class DefaultScene extends SceneManager {
 		// character labels
 		
 		/*for( var avatar : GameObject in GameManager.instance.avatars ) {
-			var componentA : Avatar = avatar.GetComponent( Avatar );
+			var componentA : PlayerAvatar = avatar.GetComponent( PlayerAvatar );
 			var txt : String = ('Controller ' + parseInt( componentA.getController() ) + '\n(' + componentA.getTeam().ToString() + ' Team)');
 			characterLabel( componentA.getCenterInWorld(), ((componentA.getScaledHeight() / 2.0) + 1.5), txt );
 		}*/
 		
 		for( var avatar : GameObject in GameManager.instance.avatars ) {
-			component = avatar.GetComponent( Avatar );
+			component = avatar.GetComponent( PlayerAvatar );
 			var point = Camera.main.WorldToScreenPoint( component.getCenterInWorld() + Vector2( 0.0, (component.getScaledHeight() * 0.80) ) );
 			var rect : Rect = Rect( (point.x - 30.0), (Screen.height - point.y), 100.0, 60.0 );
 			GUI.Label( rect, ('Controller ' + parseInt( component.getController() )) );

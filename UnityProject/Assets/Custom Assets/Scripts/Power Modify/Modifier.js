@@ -3,7 +3,7 @@ public var modifier : PowerModifyEnum;
 public var duration : float;
 public var pickupSound : AudioClip;
 
-private var owner : Avatar;
+private var owner : PlayerAvatar;
 
 function Start() {
 	GameManager.instance.audioBind( modifier, pickupSound );
@@ -19,7 +19,7 @@ function Update() {
 	}
 }
 
-function pickup( avatar : Avatar ) {
+function pickup( avatar : PlayerAvatar ) {
 	owner = avatar;
 	transform.parent = owner.transform;
 	GameManager.instance.audioPlay( modifier, true );

@@ -1,5 +1,5 @@
 
-class ZipperFace extends Avatar {	
+class ZipperFace extends PlayerAvatar {	
 	function CharacterStateSwitch() {
 		switch( state ) {
 			case CharacterState.Attack1:

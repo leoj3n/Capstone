@@ -65,7 +65,7 @@ class CharacterSelectScene extends SceneManager {
 			
 			// play audio effects
 			GameManager.instance.audioBind( 'announcerName',
-				GameManager.instance.characterPrefabs[currentCharacter].GetComponent( Avatar ).sound[CharacterSound.AnnouncerName] );
+				GameManager.instance.characterPrefabs[currentCharacter].GetComponent( PlayerAvatar ).sound[CharacterSound.AnnouncerName] );
 			GameManager.instance.audioPlay( 'announcerName', true );
 			GameManager.instance.audioPlay( 'Swoosh', true );
 		}
@@ -79,7 +79,7 @@ class CharacterSelectScene extends SceneManager {
 			switch( true ) {
 				case Global.isButtonDown( 'A', GameManager.instance.readyControllers[selectingController] ):
 					GameManager.instance.audioBind( 'selected',
-						GameManager.instance.characterPrefabs[currentCharacter].GetComponent( Avatar ).sound[CharacterSound.Selected] );
+						GameManager.instance.characterPrefabs[currentCharacter].GetComponent( PlayerAvatar ).sound[CharacterSound.Selected] );
 					GameManager.instance.audioPlay( 'selected' );
 					hUDs[currentCharacter].GetComponent( SelectHUD ).playSelected = true;
 					waitingForTurn = true;

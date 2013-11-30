@@ -197,7 +197,7 @@ class GameManager extends MonoBehaviour {
 				characterPrefabs[controllers[ce].character], Vector3( (-5.0 + (10.0 * i)), 4.0, 0.0 ), Quaternion.identity );
 			
 			Global.bindAvatarToController( avatar, ce ); // set a reference to the Controller in Avatar
-			avatar.GetComponent( Avatar ).playCutScene( CutScene.Intro ); // assume intro should be played for now
+			avatar.GetComponent( PlayerAvatar ).playCutScene( CutScene.Intro ); // assume intro should be played for now
 			
 			avatars[i] = avatar;
 		}
@@ -208,7 +208,7 @@ class GameManager extends MonoBehaviour {
 		var avatarArray : Array = new Array();
 		
 		for( var avatar : GameObject in avatars ) {
-			if (avatar.GetComponent( Avatar ).getTeam() == team)
+			if (avatar.GetComponent( PlayerAvatar ).getTeam() == team)
 				avatarArray.Push( avatar );
 		}
 		
@@ -223,7 +223,7 @@ class GameManager extends MonoBehaviour {
 			var avatars : GameObject[] = getAvatarsOnTeam( i );
 			
 			for( var avatar : GameObject in avatars ) {
-				if (!avatar.GetComponent( Avatar ).isAlive()) continue;
+				if (!avatar.GetComponent( PlayerAvatar ).isAlive()) continue;
 				
 				teamArray.Push( i ); // push if someone is alive
 				break; // only need to add a team once
@@ -237,7 +237,7 @@ class GameManager extends MonoBehaviour {
 	public function cutScenePlaying() : boolean {
 		// loop through avatars and see if any are playing a cutscene
 		for( var avatar : GameObject in avatars ) {
-			if (avatar.GetComponent( Avatar ).isCutScenePlaying()) return true;
+			if (avatar.GetComponent( PlayerAvatar ).isCutScenePlaying()) return true;
 		}
 		
 		return false;

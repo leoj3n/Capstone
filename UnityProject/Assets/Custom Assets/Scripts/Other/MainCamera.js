@@ -23,12 +23,12 @@ function Update() {
 	t = (damping * Time.deltaTime);
 	
 	for( var i = 0; i < GameManager.instance.avatars.Length; i++ ) {
-		var iPos : Vector3 = GameManager.instance.avatars[i].GetComponent( Avatar ).getCenterInWorld();
+		var iPos : Vector3 = GameManager.instance.avatars[i].GetComponent( PlayerAvatar ).getCenterInWorld();
 		
 		averagePosition += iPos;
 		
 		for( var j = 0; j < GameManager.instance.avatars.Length; j++ ) {
-			var jPos : Vector3 = GameManager.instance.avatars[j].GetComponent( Avatar ).getCenterInWorld();
+			var jPos : Vector3 = GameManager.instance.avatars[j].GetComponent( PlayerAvatar ).getCenterInWorld();
 			
 			var distance : float = Vector3.Distance( iPos, jPos );
 			if (distance > largestDistance) largestDistance = distance;

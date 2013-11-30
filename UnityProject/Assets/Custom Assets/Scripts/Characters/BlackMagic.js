@@ -1,5 +1,5 @@
 
-class BlackMagic extends Avatar {	
+class BlackMagic extends PlayerAvatar {	
 	function CharacterStateSwitch() {
 		switch( state ) {
 			case CharacterState.CutScene:
