@@ -3,7 +3,7 @@ class Modifier extends MonoBehaviour {
 	public var duration : float;
 	public var pickupSound : AudioClip;
 	
-	protected var owner : Avatar;
+	protected var owner : PlayerAvatar;
 	protected var fadeEmitters : FadeEmitters;
 	
 	function Start() {
@@ -29,7 +29,7 @@ class Modifier extends MonoBehaviour {
 		if (owner && GameManager.instance) EndModifier(); // end
 	}
 	
-	function pickup( avatar : Avatar ) {
+	function pickup( avatar : PlayerAvatar ) {
 		owner = avatar;
 		transform.parent = owner.transform;
 		GameManager.instance.audioPlay( pickupSound.name, true );

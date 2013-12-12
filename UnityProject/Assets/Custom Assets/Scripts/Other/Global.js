@@ -272,20 +272,20 @@ static function pingPongRange( t : float, range : float ) {
 static function avatarExplosion( avatars : GameObject[], pos : Vector3, radius : float, force : float, damping : float ) {
 	for( var avatar : GameObject in avatars ) {
 		if (Vector3.Distance( pos, avatar.transform.position ) < radius)
-			avatar.GetComponent( Avatar ).addExplosionForce( pos, radius, force, damping );
+			avatar.GetComponent( PlayerAvatar ).addExplosionForce( pos, radius, force, damping );
 	}
 }
 
 // utility function for testing if a given object is an avatar
 static function isAvatar( object : System.Object ) {
-	return (object.gameObject.CompareTag( 'Player' ) || object.gameObject.GetComponent( Avatar ));
+	return (object.gameObject.CompareTag( 'Player' ) || object.gameObject.GetComponent( PlayerAvatar ));
 }
 
 
 	
 // utility function so see if avatars are on same team
 static function avatarsOnSameTeam( avatar1 : GameObject, avatar2 : GameObject ) : boolean {
-	return (avatar1.GetComponent( Avatar ).getTeam() == avatar2.GetComponent( Avatar ).getTeam());
+	return (avatar1.GetComponent( PlayerAvatar ).getTeam() == avatar2.GetComponent( PlayerAvatar ).getTeam());
 }
 
 // utility function to set reference to controller in avatar

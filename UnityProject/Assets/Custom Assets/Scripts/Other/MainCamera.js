@@ -23,7 +23,7 @@ function Update() {
 	t = (damping * Time.deltaTime);
 	
 	for( var i = 0; i < GameManager.instance.avatars.Length; i++ ) {
-		var avatari : Avatar = GameManager.instance.avatars[i].GetComponent( Avatar );
+		var avatari : PlayerAvatar = GameManager.instance.avatars[i].GetComponent( PlayerAvatar );
 		
 		if (!avatari.isAlive()) continue;
 		
@@ -32,7 +32,7 @@ function Update() {
 		var iRadius : float = avatari.getScaledRadius();
 		
 		for( var j = 0; j < GameManager.instance.avatars.Length; j++ ) {
-			var avatarj : Avatar = GameManager.instance.avatars[j].GetComponent( Avatar );
+			var avatarj : PlayerAvatar = GameManager.instance.avatars[j].GetComponent( PlayerAvatar );
 			
 			if (!avatarj.isAlive()) continue;
 			

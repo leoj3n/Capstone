@@ -1,5 +1,5 @@
 
-class ZipperFace extends Avatar {	
+class ZipperFace extends PlayerAvatar {	
 	public var shurikenPrefab : GameObject;
 	
 	private var lastSpecialTime : float = 0.0;

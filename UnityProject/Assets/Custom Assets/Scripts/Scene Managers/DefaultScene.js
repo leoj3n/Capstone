@@ -50,7 +50,7 @@ class DefaultScene extends SceneManager {
 				if( initial ) {
 					// play victory for all avatars on this team
 					var avatars : GameObject[] = GameManager.instance.getAvatarsOnTeam( aliveTeamEnums[0] );
-					for (var avatar : GameObject in avatars) avatar.GetComponent( Avatar ).playCutScene( CutScene.Victory );
+					for (var avatar : GameObject in avatars) avatar.GetComponent( PlayerAvatar ).playCutScene( CutScene.Victory );
 					
 					// fade out the background music
 					GameManager.instance.audioFadeToVolume( 'backgroundMusic', 0.1, 6.0 );
@@ -140,7 +140,7 @@ class DefaultScene extends SceneManager {
 							GUILayout.BeginVertical();
 							
 								for( var avatar : GameObject in avatars ) {
-									var component : Avatar = avatar.GetComponent( Avatar );
+									var component : PlayerAvatar = avatar.GetComponent( PlayerAvatar );
 									
 									/*var HPPM : String = (component.isAlive() ? ('HP [' + parseInt( Mathf.Max( component.getHealth(), 1.0 ) ) + '] Power [' + 
 										parseInt( component.getPower() ) + ']') : 'You are dead!');

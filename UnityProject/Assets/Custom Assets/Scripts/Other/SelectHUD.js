@@ -14,8 +14,8 @@ function Start() {
 	taRenderer.scaleAnchorVert = ScaleAnchorV.Center;
 	taRenderer.scaleAnchorHoriz = ScaleAnchorH.Middle;
 	
-	var statsTexture : Texture2D = character.GetComponent( Avatar ).statsTexture;
-	var statsAtlas : TextAsset = character.GetComponent( Avatar ).statsAtlas;
+	var statsTexture : Texture2D = character.GetComponent( PlayerAvatar ).statsTexture;
+	var statsAtlas : TextAsset = character.GetComponent( PlayerAvatar ).statsAtlas;
 	
 	for( var child : Transform in transform ) {
 		var tar : Component = child.gameObject.AddComponent( TextureAtlasRenderer );
@@ -37,7 +37,7 @@ function Start() {
 		}
 	}
 	
-	character.GetComponent( Avatar ).isControllable = false;
+	character.GetComponent( PlayerAvatar ).isControllable = false;
 	character.transform.parent = transform;
 	character.transform.localPosition = Vector3( 0.0, 2.4, -12.6 );
 	character.AddComponent( BillBoard );

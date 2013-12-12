@@ -20,7 +20,7 @@ class TimeWarp extends Modifier {
 		var avatars : GameObject[] = GameManager.instance.getAvatarsOnOtherTeams( owner.getTeam() );
 		
 		for( var avatar : GameObject in avatars ) {
-			var component : Avatar = avatar.GetComponent( Avatar );
+			var component : PlayerAvatar = avatar.GetComponent( PlayerAvatar );
 			component.setTimeWarpFactor( factor );
 		}
 	}

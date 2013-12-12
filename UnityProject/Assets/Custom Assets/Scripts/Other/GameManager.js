@@ -148,7 +148,7 @@ class GameManager extends MonoBehaviour {
 		for( var avatar : GameObject in avatars ) {
 			if (avatar == null) continue;
 			
-			if (avatar.GetComponent( Avatar ).isPlayingCutScene()) return true;
+			if (avatar.GetComponent( PlayerAvatar ).isPlayingCutScene()) return true;
 		}
 		
 		return audioIsPlaying( 'Countdown' );
@@ -268,7 +268,7 @@ class GameManager extends MonoBehaviour {
 				characterPrefabs[controllers[ce].character], Vector3( (-5.0 + (10.0 * i)), 4.0, 0.0 ), Quaternion.identity );
 			
 			Global.bindAvatarToController( avatar, ce ); // set a reference to the Controller in Avatar
-			avatar.GetComponent( Avatar ).playCutScene( CutScene.Intro ); // assume intro should be played upon instantiation
+			avatar.GetComponent( PlayerAvatar ).playCutScene( CutScene.Intro ); // assume intro should be played upon instantiation
 			avatar.GetComponentInChildren( RenderQueue ).position = (3004 + i); // to avoid z-buffer problems
 			
 			avatars[i] = avatar;
@@ -280,7 +280,7 @@ class GameManager extends MonoBehaviour {
 		var avatarArray : Array = new Array();
 		
 		for( var avatar : GameObject in avatars ) {
-			if (avatar.GetComponent( Avatar ).getTeam() == team)
+			if (avatar.GetComponent( PlayerAvatar ).getTeam() == team)
 				avatarArray.Push( avatar );
 		}
 		
@@ -292,7 +292,7 @@ class GameManager extends MonoBehaviour {
 		var avatarArray : Array = new Array();
 		
 		for( var avatar : GameObject in avatars ) {
-			if (avatar.GetComponent( Avatar ).getTeam() != team)
+			if (avatar.GetComponent( PlayerAvatar ).getTeam() != team)
 				avatarArray.Push( avatar );
 		}
 		
@@ -307,7 +307,7 @@ class GameManager extends MonoBehaviour {
 			var avatars : GameObject[] = getAvatarsOnTeam( i );
 			
 			for( var avatar : GameObject in avatars ) {
-				if (!avatar.GetComponent( Avatar ).isAlive()) continue;
+				if (!avatar.GetComponent( PlayerAvatar ).isAlive()) continue;
 				
 				teamArray.Push( i ); // push if someone is alive
 				break; // only need to add a team once

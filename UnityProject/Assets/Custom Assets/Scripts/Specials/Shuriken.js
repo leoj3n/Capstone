@@ -16,7 +16,7 @@ function Update() {
 
 function OnTriggerEnter( other : Collider ) {
 	if (Global.isAvatar( other.gameObject ))
-		other.transform.GetComponent( Avatar ).addHitForce( transform.position, 30.0, 4.0 );
+		other.transform.GetComponent( PlayerAvatar ).addHitForce( transform.position, 30.0, 4.0 );
 	
 	Destroy( gameObject );
 }
