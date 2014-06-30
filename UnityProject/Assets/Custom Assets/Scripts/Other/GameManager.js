@@ -79,8 +79,8 @@ class GameManager extends MonoBehaviour {
 		instance = null; // unset singleton
 	}
 	
-	// this gets called when a new level is being loaded
-	function OnDisable() {
+	// this gets called when a new level is loaded
+	function OnLevelWasLoaded() {
 		// do any necessary cleanup here
 		audioUnbindAll();
 		audioResetAll();
@@ -529,5 +529,14 @@ class GameManager extends MonoBehaviour {
 	// the same as GameManager.instance.controllers[ControllerEnum]
 	public function getController( ce : ControllerEnum ) : Controller {
 		return controllers[ce];
+	}
+	
+	// utility function add explosion force to one or multiple avatars
+	// todo hack - try to move back to Global.js
+	function avatarExplosion( avatars : GameObject[], pos : Vector3, radius : float, force : float, damping : float ) {
+		for( var avatar : GameObject in avatars ) {
+			if (Vector3.Distance( pos, avatar.transform.position ) < radius)
+				avatar.GetComponent( PlayerAvatar ).addExplosionForce( pos, radius, force, damping );
+		}
 	}
 }

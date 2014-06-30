@@ -816,6 +816,7 @@ class PlayerAvatar extends MonoBehaviour {
 		changeHealth( -modifier );
 		
 		// apply explosion force via co-routine
+		// todo - try instantiating an exploder prefab
 		var initial : boolean = true;
 		while( explForce != Vector3.zero ) {
 			if (!initial) explosionForce -= explForce;

@@ -268,21 +268,11 @@ static function pingPongRange( t : float, range : float ) {
 
 // GLOBAL AVATAR FUNCTIONS
 
-// utility function add explosion force to one or multiple avatars
-static function avatarExplosion( avatars : GameObject[], pos : Vector3, radius : float, force : float, damping : float ) {
-	for( var avatar : GameObject in avatars ) {
-		if (Vector3.Distance( pos, avatar.transform.position ) < radius)
-			avatar.GetComponent( PlayerAvatar ).addExplosionForce( pos, radius, force, damping );
-	}
-}
-
 // utility function for testing if a given object is an avatar
 static function isAvatar( object : System.Object ) {
-	return (object.gameObject.CompareTag( 'Player' ) || object.gameObject.GetComponent( PlayerAvatar ));
+	return (object.gameObject.CompareTag( 'Player' ) || object.gameObject.GetComponent( PlayerAvatar ));	
 }
 
-
-	
 // utility function so see if avatars are on same team
 static function avatarsOnSameTeam( avatar1 : GameObject, avatar2 : GameObject ) : boolean {
 	return (avatar1.GetComponent( PlayerAvatar ).getTeam() == avatar2.GetComponent( PlayerAvatar ).getTeam());

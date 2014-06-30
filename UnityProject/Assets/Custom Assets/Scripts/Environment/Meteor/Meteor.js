@@ -89,7 +89,8 @@ function OnCollisionEnter( collision : Collision ) {
 				
 		// add explosion force to avatars that are within 7 units
 		var force : float = (30.0 + collision.impactForceSum.magnitude);
-		Global.avatarExplosion( GameManager.instance.avatars, transform.position, 7.0, force, ((force / 10.0) - 1.0) );
+		// todo hack - see if this works w/ static: make it be Global.avExp and instantiate an exploader prefab
+		GameManager.instance.avatarExplosion( GameManager.instance.avatars, transform.position, 7.0, force, ((force / 10.0) - 1.0) );
 		
 		// add a crater decal to the floor
 		if (collision.collider.CompareTag( 'Floor' ))
